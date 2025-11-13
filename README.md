@@ -2,6 +2,8 @@ This is going to be my pet renderer. It was initially built off a DX12 base I wr
 
 List of goals:
 - [ ] Remove Breakpoint files
+- [ ] Rework scene organization to actually make sense
+- [ ] Abstract DX repeated logic(fences, etc.)
 - [ ] Add GLTF importing
 - [ ] Add environment mapping
 - [ ] Add PBR support for rasterization
