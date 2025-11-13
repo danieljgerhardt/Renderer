@@ -6,7 +6,9 @@ List of goals:
 - [ ] Rework scene organization to actually make sense
 - [ ] Abstract DX repeated logic(fences, etc.)
 - [ ] Add GLTF importing
+- [ ] Add texture/material support
 - [ ] Add environment mapping
+- [ ] Add skinning
 - [ ] Add PBR support for rasterization
 - [ ] Update IMGUI to be useful for the renderer
 - [ ] Add path tracing mode
