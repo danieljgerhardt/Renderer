@@ -9,10 +9,8 @@
 
 class ObjectScene : public Drawable {
 public:
-	ObjectScene(DXContext* context, RenderPipeline* pipeline, std::vector<SimShape>& shapes, int renderWireframe = 0);
+	ObjectScene(DXContext* context, RenderPipeline* pipeline);
 
-	void constructSceneGrid();
-	void constructSceneSpawners();
 	void constructSceneSolid();
 
 	void draw(Camera* camera);
@@ -26,8 +24,6 @@ public:
 private:
 	std::vector<Mesh> meshes;
 	std::vector<XMFLOAT4X4> modelMatrices;
-
-	std::vector<SimShape> shapes;
 
 	size_t sceneSize{ 0 };
 };

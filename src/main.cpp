@@ -30,11 +30,6 @@ int main() {
     //initialize scene
     Scene scene{camera.get(), &context};
 
-    PBMPMConstants pbmpmCurrConstants = scene.getPBMPMConstants();
-    PBMPMConstants pbmpmIterConstants = pbmpmCurrConstants;
-
-    unsigned int renderOptions = 0;
-
     while (!Window::get().getShouldClose()) {
         //update window
         Window::get().update();
@@ -50,137 +45,28 @@ int main() {
         mouse->SetMode(mState.leftButton ? Mouse::MODE_RELATIVE : Mouse::MODE_ABSOLUTE);
         camera->kmStateCheck(kState, mState);
 
-        if (mState.rightButton) {
-
-			// If right mouse button is pressed, we should update constants
-
-            if (kState.LeftShift) {
-                // Pulling Fluid
-                pbmpmIterConstants.mouseFunction = 2;
-            }
-            else if (kState.LeftAlt) {
-                // Grab Fluid Ball
-                pbmpmIterConstants.mouseFunction = 1;
-            }
-            else {
-                // Pushing Fluid
-                pbmpmIterConstants.mouseFunction = 0;
-            }
-
-            // enable mouse force
-            pbmpmIterConstants.mouseActivation = 1;
-
-            POINT mousePos;
-            GetCursorPos(&mousePos);
-            ScreenToClient(Window::get().getHWND(), &mousePos);
-            float ndcX = (2.0f * mousePos.x / clientWidth) - 1.0f;
-            float ndcY = 1.0f - (2.0f * mousePos.y / clientHeight);
-
-            XMFLOAT4 prevMousePos = pbmpmIterConstants.mousePosition;
-            ComputeMouseRay(
-                Window::get().getHWND(),
-                ndcX,
-                ndcY,
-                camera->getProjMat(),
-                camera->getViewMat(),
-                pbmpmIterConstants.mousePosition,
-                pbmpmIterConstants.mouseRayDirection
-            );
-        }
-        else {
-            pbmpmIterConstants.mouseActivation = 0;
-        }
-
-        //compute pbmpm + mesh shader
-        scene.compute(renderModeType != 2);
-
-        //get pipelines
-        auto renderPipeline = scene.getPBMPMRenderPipeline();
-        auto fluidMeshPipeline = scene.getFluidMeshPipeline();
-		auto elasticMeshPipeline = scene.getElasticMeshPipeline();
-		auto viscoMeshPipeline = scene.getViscoMeshPipeline();
-		auto sandMeshPipeline = scene.getSandMeshPipeline();
-		//auto snowMeshPipeline = scene.getSnowMeshPipeline();
-        auto objectWirePipeline = scene.getObjectWirePipeline();
-        auto objectSolidPipeline = scene.getObjectSolidPipeline();
-        //whichever pipeline renders first should begin and end the frame
-        auto firstPipeline = objectWirePipeline;
+        auto renderPipeline = scene.getObjectSolidPipeline();
 
         //begin frame
-        Window::get().beginFrame(firstPipeline->getCommandList());
+        Window::get().beginFrame(renderPipeline->getCommandList());
 
         //create viewport
         D3D12_VIEWPORT vp;
-        Window::get().createViewport(vp, firstPipeline->getCommandList());
+        Window::get().createViewport(vp, renderPipeline->getCommandList());
 
-        //wire object render pass
-        Window::get().setRT(objectWirePipeline->getCommandList());
-        Window::get().setViewport(vp, objectWirePipeline->getCommandList());
-        if (renderGrid) scene.drawGrid();
-        if (renderSpawn) scene.drawSpawners();
-        context.executeCommandList(objectWirePipeline->getCommandListID());
-
-        //solid object render pass
-        Window::get().setRT(objectSolidPipeline->getCommandList());
-        Window::get().setViewport(vp, objectSolidPipeline->getCommandList());
-        scene.drawSolidObjects();
-        context.executeCommandList(objectSolidPipeline->getCommandListID());
-
-        //particles + imgui render pass
         Window::get().setRT(renderPipeline->getCommandList());
         Window::get().setViewport(vp, renderPipeline->getCommandList());
-		// Only draw particles if we are not in the mesh shading mode
-        if (renderModeType != 0) {
-            scene.drawPBMPM();
-        }
 
-        //fluid mesh render pass
-        if (scene.renderToggles[0]) {
-            Window::get().setRT(fluidMeshPipeline->getCommandList());
-            Window::get().setViewport(vp, fluidMeshPipeline->getCommandList());
-            if (renderModeType != 2) scene.drawFluid(meshletRenderType, toonShadingLevels);
-            context.executeCommandList(fluidMeshPipeline->getCommandListID());
-        }
-
-        // elastic mesh render pass
-        if (scene.renderToggles[1]) {
-            Window::get().setRT(elasticMeshPipeline->getCommandList());
-            Window::get().setViewport(vp, elasticMeshPipeline->getCommandList());
-            if (renderModeType != 2) scene.drawElastic(meshletRenderType, toonShadingLevels);
-            context.executeCommandList(elasticMeshPipeline->getCommandListID());
-        }
-
-        // sand mesh render pass
-        if (scene.renderToggles[2]) {
-            Window::get().setRT(sandMeshPipeline->getCommandList());
-            Window::get().setViewport(vp, sandMeshPipeline->getCommandList());
-            if (renderModeType != 2) scene.drawSand(meshletRenderType, toonShadingLevels);
-            context.executeCommandList(sandMeshPipeline->getCommandListID());
-        }
-
-		// visco mesh render pass
-        if (scene.renderToggles[3]) {
-			Window::get().setRT(viscoMeshPipeline->getCommandList());
-			Window::get().setViewport(vp, viscoMeshPipeline->getCommandList());
-			if (renderModeType != 2) scene.drawVisco(meshletRenderType, toonShadingLevels);
-			context.executeCommandList(viscoMeshPipeline->getCommandListID());
-		}
-
-		// snow mesh render pass
-		/*if (scene.renderToggles[4]) {
-			Window::get().setRT(snowMeshPipeline->getCommandList());
-			Window::get().setViewport(vp, snowMeshPipeline->getCommandList());
-			if (renderModeType != 2) scene.drawSnow(meshletRenderType, toonShadingLevels);
-			context.executeCommandList(snowMeshPipeline->getCommandListID());
-		}*/
+		//draw scene
+		scene.drawSolidObjects();
 
         //set up ImGUI for frame
-        ImGui_ImplDX12_NewFrame();
+        /*ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
-        ImGui::NewFrame();
+        ImGui::NewFrame();*/
 
         //draw ImGUI
-		drawImGUIWindow(pbmpmIterConstants, io,
+		/*drawImGUIWindow(pbmpmIterConstants, io,
             scene.getFluidIsovalue(), 
             scene.getFluidKernelScale(), 
             scene.getFluidKernelRadius(),
@@ -194,46 +80,31 @@ int main() {
             scene.getViscoKernelScale(),
             scene.getViscoKernelRadius(),
             scene.getPBMPMSubstepCount(),
-            scene.getNumParticles());
+            scene.getNumParticles());*/
 
         //render ImGUI
-        ImGui::Render();
+        /*ImGui::Render();
         if (pbmpmIterConstants.mouseActivation == 1 || !PBMPMScene::constantsEqual(pbmpmIterConstants, pbmpmCurrConstants)) {
             scene.updatePBMPMConstants(pbmpmIterConstants);
             pbmpmCurrConstants = pbmpmIterConstants;
-        }
+        }*/
 
-        renderPipeline->getCommandList()->SetDescriptorHeaps(1, &imguiSRVHeap);
-        ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), renderPipeline->getCommandList());
+       /* renderPipeline->getCommandList()->SetDescriptorHeaps(1, &imguiSRVHeap);
+        ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), renderPipeline->getCommandList());*/
 
         context.executeCommandList(renderPipeline->getCommandListID());
 
         // reset the first pipeline so it can end the frame
-        context.resetCommandList(firstPipeline->getCommandListID());
+        context.resetCommandList(renderPipeline->getCommandListID());
         //end frame
-        Window::get().endFrame(firstPipeline->getCommandList());
+        Window::get().endFrame(renderPipeline->getCommandList());
         // Execute command list
-		context.executeCommandList(firstPipeline->getCommandListID());
+		context.executeCommandList(renderPipeline->getCommandListID());
 
         Window::get().present();
 		context.resetCommandList(renderPipeline->getCommandListID());
-		if (scene.renderToggles[0]) {
-			context.resetCommandList(fluidMeshPipeline->getCommandListID());
-		}
-        if (scene.renderToggles[1]) {
-            context.resetCommandList(elasticMeshPipeline->getCommandListID());
-        }
-        if (scene.renderToggles[2]) {
-			context.resetCommandList(sandMeshPipeline->getCommandListID());
-		}
-		if (scene.renderToggles[3]) {
-			context.resetCommandList(viscoMeshPipeline->getCommandListID());
-		}
-		/*if (scene.renderToggles[4]) {
-			context.resetCommandList(snowMeshPipeline->getCommandListID());
-		}*/
-        context.resetCommandList(objectWirePipeline->getCommandListID());
-        context.resetCommandList(objectSolidPipeline->getCommandListID());
+		
+        context.resetCommandList(renderPipeline->getCommandListID());
     }
 
     // Scene should release all resources, including their pipelines
