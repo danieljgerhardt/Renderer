@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "Drawable.h"
+#include "Loader.h"
 #include "Mesh.h"
-#include "PBMPMScene.h"
 
 class ObjectScene : public Drawable {
 public:

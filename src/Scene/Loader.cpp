@@ -21,7 +21,7 @@
 // #define TINYGLTF_NOEXCEPTION // optional. disable exception handling.
 #include "includes/tiny_gltf.h"
 
-void Loader::loadMeshFromObj(std::string fileLocation, UINT& numTriangles, std::vector<Vertex>& vertices, std::vector<XMFLOAT3>& vertexPositions, std::vector<unsigned int>& indices)
+void Loader::loadMeshFromObj(std::string fileLocation, MeshData& meshData)
 {
     std::ifstream file(fileLocation);
     if (!file.is_open()) {
@@ -51,8 +51,8 @@ void Loader::loadMeshFromObj(std::string fileLocation, UINT& numTriangles, std::
             }
             Vertex newVert;
             newVert.pos = XMFLOAT3(v[0], v[1], v[2]);
-            vertexPositions.push_back(XMFLOAT3(v[0], v[1], v[2]));
-            vertices.push_back(newVert);
+            meshData.vertexPositions.push_back(XMFLOAT3(v[0], v[1], v[2]));
+            meshData.vertices.push_back(newVert);
         }
         else if (line[0] == 'v' && line[1] == 'n') {
             //line is a normal
@@ -85,16 +85,16 @@ void Loader::loadMeshFromObj(std::string fileLocation, UINT& numTriangles, std::
     }
 
     for (auto face : faces) {
-        numTriangles++;
-        indices.push_back(face[0]);
-        indices.push_back(face[1]);
-        indices.push_back(face[2]);
+        meshData.numTriangles++;
+        meshData.indices.push_back(face[0]);
+        meshData.indices.push_back(face[1]);
+        meshData.indices.push_back(face[2]);
     }
 
     file.close();
 }
 
-void Loader::loadMeshFromGltf(std::string fileLocation, UINT& numTriangles, std::vector<Vertex>& vertices, std::vector<XMFLOAT3>& vertexPositions, std::vector<unsigned int>& indices)
+void Loader::loadMeshFromGltf(std::string fileLocation, std::vector<MeshData>& meshDataVector)
 {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
@@ -118,6 +118,7 @@ void Loader::loadMeshFromGltf(std::string fileLocation, UINT& numTriangles, std:
 
     //on success, make a mesh using gltf info
     for (tinygltf::Mesh& mesh : model.meshes) {
+		MeshData meshData;
         for (auto& prim : mesh.primitives) {
             //handle positions
             {
@@ -132,8 +133,8 @@ void Loader::loadMeshFromGltf(std::string fileLocation, UINT& numTriangles, std:
                         positions[i * 3 + 0],
                         positions[i * 3 + 1],
                         positions[i * 3 + 2]);
-                    vertexPositions.push_back(newVert.pos);
-                    vertices.push_back(newVert);
+                    meshData.vertexPositions.push_back(newVert.pos);
+                    meshData.vertices.push_back(newVert);
                 }
             }
 
@@ -146,18 +147,33 @@ void Loader::loadMeshFromGltf(std::string fileLocation, UINT& numTriangles, std:
                     const unsigned short* buf = reinterpret_cast<const unsigned short*>(
                         &buffer.data[accessor.byteOffset + bufferView.byteOffset]);
                     for (size_t i = 0; i < accessor.count; i++) {
-                        indices.push_back(static_cast<unsigned int>(buf[i]));
+                        meshData.indices.push_back(static_cast<unsigned int>(buf[i]));
                     }
                 }
                 else if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
                     const unsigned int* buf = reinterpret_cast<const unsigned int*>(
                         &buffer.data[accessor.byteOffset + bufferView.byteOffset]);
                     for (size_t i = 0; i < accessor.count; i++) {
-                        indices.push_back(buf[i]);
+                        meshData.indices.push_back(buf[i]);
                     }
                 }
-                numTriangles += static_cast<UINT>(accessor.count / 3);
+                meshData.numTriangles += static_cast<UINT>(accessor.count / 3);
             }
         }
+		meshDataVector.push_back(meshData);
     }
+}
+
+std::vector<Mesh> Loader::createMeshFromGltf(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, XMFLOAT3 color)
+{
+    //get data from load func
+	std::vector<MeshData> meshDataVector;
+	loadMeshFromGltf(fileLocation, meshDataVector);
+	//create and return meshes
+	std::vector<Mesh> newMeshes;
+    for (auto& meshData : meshDataVector) {
+        Mesh newMesh = Mesh(fileLocation, context, cmdList, pipeline, modelMatrix, color, meshData);
+		newMeshes.push_back(newMesh);
+    }
+	return newMeshes;
 }

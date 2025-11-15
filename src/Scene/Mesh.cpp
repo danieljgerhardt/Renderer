@@ -1,11 +1,14 @@
 #include "Mesh.h"
 
 Mesh::Mesh(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, 
-           RenderPipeline* pipeline, XMFLOAT4X4 p_modelMatrix, XMFLOAT3 p_color) 
+           RenderPipeline* pipeline, XMFLOAT4X4 p_modelMatrix, XMFLOAT3 p_color, MeshData meshData) 
     : color(p_color) {
-    //TODO - check file type to avoid switching
-	//Loader::loadMeshFromObj(fileLocation, numTriangles, vertices, vertexPositions, indices);
-	Loader::loadMeshFromGltf(fileLocation, numTriangles, vertices, vertexPositions, indices);
+
+	numTriangles = meshData.numTriangles;
+	vertices = meshData.vertices;
+	vertexPositions = meshData.vertexPositions;
+	indices = meshData.indices;
+
     vertexBuffer = VertexBuffer(vertexPositions, (UINT)(vertices.size() * sizeof(XMFLOAT3)), (UINT)sizeof(XMFLOAT3));
     indexBuffer = IndexBuffer(indices, (UINT)(indices.size() * sizeof(unsigned int)));
 

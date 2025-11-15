@@ -16,13 +16,20 @@
 
 #include "D3D/Pipeline/RenderPipeline.h"
 
-#include "Loader.h"
 #include "Vertex.h"
+
+//data passed to a mesh for construction
+struct MeshData {
+	UINT numTriangles;
+	std::vector<Vertex> vertices;
+	std::vector<XMFLOAT3> vertexPositions;
+	std::vector<unsigned int> indices;
+};
 
 class Mesh {
 public:
 	Mesh() = delete;
-	Mesh(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, XMFLOAT3 color = {0, 0, 0});
+	Mesh(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, XMFLOAT3 color, MeshData meshData);
 
 	D3D12_INDEX_BUFFER_VIEW* getIBV();
 	D3D12_VERTEX_BUFFER_VIEW* getVBV();

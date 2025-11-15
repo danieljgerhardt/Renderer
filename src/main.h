@@ -12,26 +12,13 @@
 #include "D3D/Pipeline/MeshPipeline.h"
 #include "D3D/Pipeline/ComputePipeline.h"
 
-
 #include "Scene/Camera.h"
 #include "Scene/Scene.h"
-#include "Scene/PBMPMScene.h"
 
 #include "ImGUI/ImGUIHelper.h"
 
 static ImGUIDescriptorHeapAllocator imguiHeapAllocator;
 static ID3D12DescriptorHeap* imguiSRVHeap = nullptr;
-
-static int meshletRenderType = 2; // 0 = realistic, 1 = meshlets, 2 = toon shading
-static unsigned int renderModeType = 0; // 0 = just mesh shading, 1 = both particles and mesh shading, 2 = just particles
-static int toonShadingLevels = 3;
-static int fixedPointExponent = 7;
-static bool useGridVolume = true;
-static bool renderGrid = false;
-static bool renderSpawn = false;
-
-const char* modes[] = { "Mesh Shaded Fluid, Non-Fluid Particles", "Mesh Shaded Fluid, All Particles", "No Mesh Shaded Fluid, All Particles" };
-const char* meshModes[] = { "Realistic", "Meshlets", "Toon Shaded" };
 
 ImGuiIO& initImGUI(DXContext& context) {
     IMGUI_CHECKVERSION();
@@ -68,93 +55,6 @@ ImGuiIO& initImGUI(DXContext& context) {
     ImGui_ImplDX12_Init(&imguiDXInfo);
 
     return io;
-}
-
-void drawImGUIWindow(PBMPMConstants& pbmpmConstants, ImGuiIO& io,
-    float* fluidIsovalue, float* fluidKernelScale, float* fluidKernelRadius, 
-    float* elasticIsovalue, float* elasticKernelScale, float* elasticKernelRadius,
-	float* sandIsovalue, float* sandKernelScale, float* sandKernelRadius,
-	float* viscoIsovalue, float* viscoKernelScale, float* viscoKernelRadius,
-    unsigned int* substepCount, int numParticles) {
-    ImGui::Begin("Scene Options");
-
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-    ImGui::Text("Number of Particles: %d", numParticles);
-
-    if (ImGui::CollapsingHeader("Simulation Parameters")) {
-        ImGui::SliderFloat("Gravity Strength", &pbmpmConstants.gravityStrength, 0.0f, 20.0f);
-        ImGui::SliderFloat("Liquid Relaxation", &pbmpmConstants.liquidRelaxation, 0.0f, 10.0f);
-        ImGui::SliderFloat("Liquid Viscosity", &pbmpmConstants.liquidViscosity, 0.0f, 1.0f);
-        ImGui::SliderFloat("Friction Angle", &pbmpmConstants.frictionAngle, 0.0f, 90.0f);
-
-        ImGui::SliderFloat("Elastic Relaxation", &pbmpmConstants.elasticRelaxation, 0.0f, 3.0f);
-        ImGui::SliderFloat("Elastic Ratio", &pbmpmConstants.elasticityRatio, 0.0f, 4.0f);
-
-        ImGui::SliderFloat("Sand Relaxation", &pbmpmConstants.sandRelaxation, 0.0f, 3.0f);
-        ImGui::SliderFloat("Sand Ratio", &pbmpmConstants.sandRatio, 0.0f, 2.0f);
-
-        ImGui::SliderInt("Particles Per Cell Axis", (int*)&pbmpmConstants.particlesPerCellAxis, 1, 8);
-        ImGui::SliderInt("Fixed Point Multiplier", (int*)&fixedPointExponent, 4, 13);
-        pbmpmConstants.fixedPointMultiplier = (unsigned int)pow(10, fixedPointExponent);
-
-        ImGui::SliderFloat("Border Friction", &pbmpmConstants.borderFriction, 0.0f, 1.0f);
-
-        ImGui::SliderInt("Iteration Count", (int*)&pbmpmConstants.iterationCount, 1, 10);
-        ImGui::SliderInt("Substep Count", (int*)substepCount, 1, 20);
-
-        ImGui::SliderFloat("Mouse Radius", &pbmpmConstants.mouseRadius, 0.1f, 10.f);
-        ImGui::SliderFloat("Mouse Strength", &pbmpmConstants.mouseStrength, 0.f, 40.f);
-
-        ImGui::Checkbox("Use Grid Volume for Liquid", (bool*)&useGridVolume);
-        pbmpmConstants.useGridVolumeForLiquid = useGridVolume;
-    }
-
-    if (ImGui::CollapsingHeader("Mesh Shading Parameters")) {
-        if (ImGui::CollapsingHeader("Fluid Shading Parameters")) {
-            ImGui::SliderFloat("Fluid Isovalue", fluidIsovalue, 0.01f, 3.0f);
-            ImGui::SliderFloat("Fluid Kernel Scale", fluidKernelScale, 0.0f, 12.0f);
-            ImGui::SliderFloat("Fluid Kernel Radius", fluidKernelRadius, 0.0f, 5.0f);
-        }
-        if (ImGui::CollapsingHeader("Elastic Shading Parameters")) {
-            ImGui::SliderFloat("Elastic Isovalue", elasticIsovalue, 0.01f, 3.0f);
-            ImGui::SliderFloat("Elastic Kernel Scale", elasticKernelScale, 0.0f, 12.0f);
-            ImGui::SliderFloat("Elastic Kernel Radius", elasticKernelRadius, 0.0f, 5.0f);
-        }
-        if (ImGui::CollapsingHeader("Sand Shading Parameters")) {
-			ImGui::SliderFloat("Sand Isovalue", sandIsovalue, 0.01f, 3.0f);
-			ImGui::SliderFloat("Sand Kernel Scale", sandKernelScale, 0.0f, 12.0f);
-			ImGui::SliderFloat("Sand Kernel Radius", sandKernelRadius, 0.0f, 5.0f);
-		}
-        if (ImGui::CollapsingHeader("Viscoelastic Shading Parameters")) {
-            ImGui::SliderFloat("Visco Isovalue", viscoIsovalue, 0.01f, 3.0f);
-            ImGui::SliderFloat("Visco Kernel Scale", viscoKernelScale, 0.0f, 12.0f);
-            ImGui::SliderFloat("Visco Kernel Radius", viscoKernelRadius, 0.0f, 5.0f);
-        }
-		//if (ImGui::CollapsingHeader("Snow Shading Parameters")) {
-		//	ImGui::SliderFloat("Snow Isovalue", snowIsovalue, 0.01f, 3.0f);
-		//	ImGui::SliderFloat("Snow Kernel Scale", snowKernelScale, 0.0f, 12.0f);
-		//	ImGui::SliderFloat("Snow Kernel Radius", snowKernelRadius, 0.0f, 5.0f);
-		//}
-    }
-
-    if (ImGui::CollapsingHeader("Render Parameters")) {
-
-        ImGui::Combo("Select Render Mode", (int*)&renderModeType, modes, IM_ARRAYSIZE(modes));
-
-        if (renderModeType != 2) {
-            ImGui::Combo("Select Mesh Mode", (int*)&meshletRenderType, meshModes, IM_ARRAYSIZE(meshModes));
-        }
-
-        if (meshletRenderType == 2) {
-			ImGui::SliderInt("Toon Shading Levels", (int*)&toonShadingLevels, 1, 10);
-        }
-
-        ImGui::Checkbox("Render Grid", &renderGrid);
-
-        ImGui::Checkbox("Render Spawners", &renderSpawn);
-    }
-
-    ImGui::End();
 }
 
 void ComputeMouseRay(
