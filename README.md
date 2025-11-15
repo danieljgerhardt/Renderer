@@ -12,3 +12,7 @@ List of goals:
 - [ ] Add PBR support for rasterization
 - [ ] Update IMGUI to be useful for the renderer
 - [ ] Add path tracing mode
+- [ ] Use render graph
+- [ ] Support deferred rendering
+- [ ] Add SSR
+- [ ] Support multiple lights with forward, clustered, etc.
