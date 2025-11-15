@@ -14,6 +14,13 @@
 #include "D3D/IndexBuffer.h"
 #include "D3D/StructuredBuffer.h"
 
+// Define these only in *one* .cc file.
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+// #define TINYGLTF_NOEXCEPTION // optional. disable exception handling.
+#include "includes/tiny_gltf.h"
+
 void Loader::loadMeshFromObj(std::string fileLocation, UINT& numTriangles, std::vector<Vertex>& vertices, std::vector<XMFLOAT3>& vertexPositions, std::vector<unsigned int>& indices)
 {
     std::ifstream file(fileLocation);
@@ -85,4 +92,72 @@ void Loader::loadMeshFromObj(std::string fileLocation, UINT& numTriangles, std::
     }
 
     file.close();
+}
+
+void Loader::loadMeshFromGltf(std::string fileLocation, UINT& numTriangles, std::vector<Vertex>& vertices, std::vector<XMFLOAT3>& vertexPositions, std::vector<unsigned int>& indices)
+{
+    tinygltf::Model model;
+    tinygltf::TinyGLTF loader;
+    std::string err;
+    std::string warn;
+
+    bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, fileLocation);
+    //bool ret = loader.LoadBinaryFromFile(&model, &err, &warn, filename); // for binary glTF(.glb)
+
+    if (!warn.empty()) {
+        printf("Warn: %s\n", warn.c_str());
+    }
+
+    if (!err.empty()) {
+        printf("Err: %s\n", err.c_str());
+    }
+
+    if (!ret) {
+        printf("Failed to parse glTF: %s\n", fileLocation.c_str());
+    }
+
+    //on success, make a mesh using gltf info
+    for (tinygltf::Mesh& mesh : model.meshes) {
+        for (auto& prim : mesh.primitives) {
+            //handle positions
+            {
+                const tinygltf::Accessor& accessor = model.accessors[prim.attributes["POSITION"]];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+                const float* positions = reinterpret_cast<const float*>(
+                    &buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                for (size_t i = 0; i < accessor.count; i++) {
+                    Vertex newVert;
+                    newVert.pos = XMFLOAT3(
+                        positions[i * 3 + 0],
+                        positions[i * 3 + 1],
+                        positions[i * 3 + 2]);
+                    vertexPositions.push_back(newVert.pos);
+                    vertices.push_back(newVert);
+                }
+            }
+
+            //handle indices
+            {
+                const tinygltf::Accessor& accessor = model.accessors[prim.indices];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+                if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+                    const unsigned short* buf = reinterpret_cast<const unsigned short*>(
+                        &buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                    for (size_t i = 0; i < accessor.count; i++) {
+                        indices.push_back(static_cast<unsigned int>(buf[i]));
+                    }
+                }
+                else if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
+                    const unsigned int* buf = reinterpret_cast<const unsigned int*>(
+                        &buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                    for (size_t i = 0; i < accessor.count; i++) {
+                        indices.push_back(buf[i]);
+                    }
+                }
+                numTriangles += static_cast<UINT>(accessor.count / 3);
+            }
+        }
+    }
 }

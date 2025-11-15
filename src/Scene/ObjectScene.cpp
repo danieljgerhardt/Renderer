@@ -10,13 +10,18 @@ ObjectScene::ObjectScene(DXContext* context, RenderPipeline* pipeline)
 void ObjectScene::constructSceneSolid() {
     //cube for ground
     std::vector<std::string> inputStrings;
-    inputStrings.push_back("objs\\cube.obj");
+    //inputStrings.push_back("objs\\cube.obj");
+    inputStrings.push_back("objs\\Avocado\\Avocado.gltf");
 
     XMFLOAT4X4 groundModelMatrix;
-    XMStoreFloat4x4(&groundModelMatrix, XMMatrixMultiply(
-        XMMatrixScaling(1.1f * GRID_WIDTH, 1.f, 1.1f * GRID_DEPTH),
-        XMMatrixTranslation(-0.05f * GRID_WIDTH, 0.2f, -0.05f * GRID_DEPTH)
-    ));
+    //XMStoreFloat4x4(&groundModelMatrix, XMMatrixMultiply(
+    //    XMMatrixScaling(1/*.1f * GRID_WIDTH*/, 1.f, 1/*.1f * GRID_DEPTH*/),
+    //    XMMatrixTranslation(-0.05f * GRID_WIDTH, 0.2f, -0.05f * GRID_DEPTH)
+    //));
+	XMStoreFloat4x4(&groundModelMatrix, XMMatrixMultiply(
+		XMMatrixScaling(1000.f, 1000.f, 1000.f),
+		XMMatrixTranslation(0.f, 0.f, 0.f)
+	));
     modelMatrices.push_back(groundModelMatrix);
 
     // vector for colors of grid lines
