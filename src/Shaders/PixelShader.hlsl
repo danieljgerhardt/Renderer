@@ -7,8 +7,14 @@ cbuffer CameraMatrices : register(b0) {
     float3 color;
 };
 
-[RootSignature(ROOTSIG)]
-float4 main() : SV_Target
+struct VSOutput
 {
-    return float4(color.x, color.y, color.z, 1.0f);
+    float4 Position : SV_Position;
+    float3 Normal : NORMAL;
+};
+
+[RootSignature(ROOTSIG)]
+float4 main(VSOutput vs_Out) : SV_Target
+{
+    return float4(vs_Out.Normal * 0.5f + 0.5f, 1.0);
 }

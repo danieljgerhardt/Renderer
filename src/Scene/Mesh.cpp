@@ -9,7 +9,7 @@ Mesh::Mesh(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandLi
 	vertexPositions = meshData.vertexPositions;
 	indices = meshData.indices;
 
-    vertexBuffer = VertexBuffer(vertexPositions, (UINT)(vertices.size() * sizeof(XMFLOAT3)), (UINT)sizeof(XMFLOAT3));
+    vertexBuffer = VertexBuffer(vertices, (UINT)(vertices.size() * sizeof(Vertex)), (UINT)sizeof(Vertex));
     indexBuffer = IndexBuffer(indices, (UINT)(indices.size() * sizeof(unsigned int)));
 
     modelMatrix = p_modelMatrix;

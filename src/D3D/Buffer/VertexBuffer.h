@@ -6,12 +6,14 @@
 #include "D3D/DXContext.h"
 #include "DirectXMath.h"
 
+#include "Scene/Vertex.h"
+
 using namespace DirectX;
 
 class VertexBuffer {
 public:
 	VertexBuffer() = default;
-	VertexBuffer(std::vector<XMFLOAT3> vertexData, UINT vertexDataSize, UINT vertexSize);
+	VertexBuffer(std::vector<Vertex>& vertexData, UINT vertexDataSize, UINT vertexDataStride);
 
 	D3D12_VERTEX_BUFFER_VIEW passVertexDataToGPU(DXContext& context, ID3D12GraphicsCommandList6* cmdList);
 
@@ -25,6 +27,6 @@ private:
 	ComPointer<ID3D12Resource1> vertexBuffer;
 
 	UINT vertexDataSize;
-	UINT vertexSize;
-	std::vector<XMFLOAT3> vertexData;
+	UINT vertexDataStride;
+	std::vector<Vertex> vertexData;
 };

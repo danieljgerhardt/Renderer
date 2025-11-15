@@ -1,7 +1,7 @@
 #include "VertexBuffer.h"
 
-VertexBuffer::VertexBuffer(std::vector<XMFLOAT3> vertexData, const UINT vertexDataSize, const UINT vertexSize)
-    : vertexData(vertexData), vertexDataSize(vertexDataSize), vertexSize(vertexSize), uploadBuffer(), vertexBuffer()
+VertexBuffer::VertexBuffer(std::vector<Vertex>& vertexData, const UINT vertexDataSize, const UINT vertexDataStride)
+    : vertexData(vertexData), vertexDataSize(vertexDataSize), vertexDataStride(vertexDataStride), uploadBuffer(), vertexBuffer()
 {}
 
 D3D12_VERTEX_BUFFER_VIEW VertexBuffer::passVertexDataToGPU(DXContext& context, ID3D12GraphicsCommandList6* cmdList) {
@@ -56,7 +56,7 @@ D3D12_VERTEX_BUFFER_VIEW VertexBuffer::passVertexDataToGPU(DXContext& context, I
     D3D12_VERTEX_BUFFER_VIEW vbv{};
     vbv.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
     vbv.SizeInBytes = vertexDataSize;
-    vbv.StrideInBytes = vertexSize;
+    vbv.StrideInBytes = vertexDataStride;
     return vbv;
 }
 

@@ -23,7 +23,7 @@
 struct MeshData {
 	UINT numTriangles;
 	std::vector<Vertex> vertices;
-	std::vector<XMFLOAT3> vertexPositions;
+	std::vector<XMFLOAT3> vertexPositions; //TODO - may be obsolete once transitioned to using full vertex data and not just positions
 	std::vector<unsigned int> indices;
 };
 
