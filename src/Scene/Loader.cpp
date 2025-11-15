@@ -10,9 +10,11 @@
 #include "Support/WinInclude.h"
 
 #include "D3D/DXContext.h"
-#include "D3D/VertexBuffer.h"
-#include "D3D/IndexBuffer.h"
-#include "D3D/StructuredBuffer.h"
+#include "D3D/Buffer/VertexBuffer.h"
+#include "D3D/Buffer/IndexBuffer.h"
+#include "D3D/Buffer/StructuredBuffer.h"
+
+#include "D3D/Texture.h"
 
 // Define these only in *one* .cc file.
 #define TINYGLTF_IMPLEMENTATION
@@ -175,5 +177,8 @@ std::vector<Mesh> Loader::createMeshFromGltf(std::string fileLocation, DXContext
         Mesh newMesh = Mesh(fileLocation, context, cmdList, pipeline, modelMatrix, color, meshData);
 		newMeshes.push_back(newMesh);
     }
+
+    Texture t{context, 10, 10};
+
 	return newMeshes;
 }

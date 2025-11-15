@@ -14,12 +14,13 @@
     <ClCompile Include="D3D\Pipeline\ComputePipeline.cpp" />
     <ClCompile Include="D3D\DescriptorHeap.cpp" />
     <ClCompile Include="D3D\DXContext.cpp" />
-    <ClCompile Include="D3D\IndexBuffer.cpp" />
-    <ClCompile Include="D3D\StructuredBuffer.cpp" />
+    <ClCompile Include="D3D\Buffer\IndexBuffer.cpp" />
+    <ClCompile Include="D3D\Buffer\StructuredBuffer.cpp" />
     <ClCompile Include="D3D\Pipeline\Pipeline.cpp" />
     <ClCompile Include="D3D\Pipeline\RenderPipeline.cpp" />
     <ClCompile Include="D3D\Pipeline\MeshPipeline.cpp" />
-    <ClCompile Include="D3D\VertexBuffer.cpp" />
+    <ClCompile Include="D3D\Buffer\VertexBuffer.cpp" />
+    <ClCompile Include="D3D\Texture.cpp" />
     <ClCompile Include="Debug\DebugLayer.cpp" />
     <ClCompile Include="ImGUI\backends\imgui_impl_dx12.cpp" />
     <ClCompile Include="ImGUI\backends\imgui_impl_win32.cpp" />
@@ -45,11 +46,12 @@
     <ClInclude Include="D3D\d3dx12.h" />
     <ClInclude Include="D3D\DescriptorHeap.h" />
     <ClInclude Include="D3D\DXContext.h" />
-    <ClInclude Include="D3D\IndexBuffer.h" />
+    <ClInclude Include="D3D\Buffer\IndexBuffer.h" />
     <ClInclude Include="D3D\Pipeline\MeshPipeline.h" />
     <ClInclude Include="D3D\Pipeline\RenderPipeline.h" />
     <ClInclude Include="D3D\Pipeline\Pipeline.h" />
-    <ClInclude Include="D3D\VertexBuffer.h" />
+    <ClInclude Include="D3D\Buffer\VertexBuffer.h" />
+    <ClInclude Include="D3D\Texture.h" />
     <ClInclude Include="Debug\DebugLayer.h" />
     <ClInclude Include="ImGUI\backends\imgui_impl_dx12.h" />
     <ClInclude Include="ImGUI\backends\imgui_impl_win32.h" />
@@ -66,7 +68,7 @@
     <ClInclude Include="Scene\ObjectScene.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Scene\Camera.h" />
-    <ClInclude Include="D3D\StructuredBuffer.h" />
+    <ClInclude Include="D3D\Buffer\StructuredBuffer.h" />
     <ClInclude Include="Scene\Geometry.h" />
     <ClInclude Include="Scene\Mesh.h" />
     <ClInclude Include="Scene\Drawable.h" />
@@ -113,6 +115,11 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="ImGUI\misc\debuggers\imgui.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DirectXTK12\DirectXTK_Desktop_2022_Win10.vcxproj">
+      <Project>{3e0e8608-cd9b-4c76-af33-29ca38f2c9f0}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -164,6 +171,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>DirectXTK12\Inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -180,8 +188,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>DirectXTK12\Inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

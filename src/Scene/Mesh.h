@@ -10,9 +10,9 @@
 #include "Support/WinInclude.h"
 
 #include "D3D/DXContext.h"
-#include "D3D/VertexBuffer.h"
-#include "D3D/IndexBuffer.h"
-#include "D3D/StructuredBuffer.h"
+#include "D3D/Buffer/VertexBuffer.h"
+#include "D3D/Buffer/IndexBuffer.h"
+#include "D3D/Buffer/StructuredBuffer.h"
 
 #include "D3D/Pipeline/RenderPipeline.h"
 
