@@ -96,7 +96,7 @@ void Loader::loadMeshFromObj(std::string fileLocation, MeshData& meshData)
     file.close();
 }
 
-void Loader::loadMeshFromGltf(std::string fileLocation, std::vector<MeshData>& meshDataVector)
+void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gltfConstructionData)
 {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
@@ -122,19 +122,45 @@ void Loader::loadMeshFromGltf(std::string fileLocation, std::vector<MeshData>& m
     for (tinygltf::Mesh& mesh : model.meshes) {
 		MeshData meshData;
         for (auto& prim : mesh.primitives) {
-            //handle positions
+            //handle positions, normals, uvs
             {
-                const tinygltf::Accessor& accessor = model.accessors[prim.attributes["POSITION"]];
-                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
-                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+                //get positions
+                const tinygltf::Accessor& posAccessor = model.accessors[prim.attributes["POSITION"]];
+                const tinygltf::BufferView& bufferView = model.bufferViews[posAccessor.bufferView];
+                const tinygltf::Buffer& posBuffer = model.buffers[bufferView.buffer];
                 const float* positions = reinterpret_cast<const float*>(
-                    &buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                for (size_t i = 0; i < accessor.count; i++) {
+                    &posBuffer.data[posAccessor.byteOffset + bufferView.byteOffset]);
+
+                //get normals
+				const tinygltf::Accessor& norAccessor = model.accessors[prim.attributes["NORMAL"]];
+				const tinygltf::BufferView& norBufferView = model.bufferViews[norAccessor.bufferView];
+				const tinygltf::Buffer& norBuffer = model.buffers[norBufferView.buffer];
+				const float* normals = reinterpret_cast<const float*>(
+					&norBuffer.data[norAccessor.byteOffset + norBufferView.byteOffset]);
+
+                //get uvs
+				const tinygltf::Accessor& uvAccessor = model.accessors[prim.attributes["TEXCOORD_0"]];
+				const tinygltf::BufferView& uvBufferView = model.bufferViews[uvAccessor.bufferView];
+				const tinygltf::Buffer& uvBuffer = model.buffers[uvBufferView.buffer];
+				const float* uvs = reinterpret_cast<const float*>(
+					&uvBuffer.data[uvAccessor.byteOffset + uvBufferView.byteOffset]);
+
+                for (size_t i = 0; i < posAccessor.count; i++) {
                     Vertex newVert;
                     newVert.pos = XMFLOAT3(
                         positions[i * 3 + 0],
                         positions[i * 3 + 1],
                         positions[i * 3 + 2]);
+                    
+					newVert.nor = XMFLOAT3(
+						normals[i * 3 + 0],
+						normals[i * 3 + 1],
+						normals[i * 3 + 2]);
+
+					newVert.uv = XMFLOAT2(
+						uvs[i * 2 + 0],
+						uvs[i * 2 + 1]);
+
                     meshData.vertexPositions.push_back(newVert.pos);
                     meshData.vertices.push_back(newVert);
                 }
@@ -162,23 +188,61 @@ void Loader::loadMeshFromGltf(std::string fileLocation, std::vector<MeshData>& m
                 meshData.numTriangles += static_cast<UINT>(accessor.count / 3);
             }
         }
-		meshDataVector.push_back(meshData);
+		gltfConstructionData.meshDataVector.push_back(meshData);
+    }
+
+    for (const auto& material : model.materials) {
+        // Diffuse/Base Color
+        if (material.values.find("baseColorTexture") != material.values.end()) {
+            int textureIndex = material.values.at("baseColorTexture").TextureIndex();
+            tinygltf::Image image = model.images[model.textures[textureIndex].source];
+            TextureData newTextureData{ image.width, image.height, image.image, TextureType::DIFFUSE };
+            gltfConstructionData.textureDataVector.push_back(newTextureData);
+        }
+
+        // Normal Map
+        if (material.additionalValues.find("normalTexture") != material.additionalValues.end()) {
+            int textureIndex = material.additionalValues.at("normalTexture").TextureIndex();
+            int imageIndex = model.textures[textureIndex].source;
+            tinygltf::Image image = model.images[model.textures[textureIndex].source];
+            TextureData newTextureData{ image.width, image.height, image.image, TextureType::NORMAL };
+            gltfConstructionData.textureDataVector.push_back(newTextureData);
+        }
+
+        // Metallic-Roughness
+        if (material.values.find("metallicRoughnessTexture") != material.values.end()) {
+            int textureIndex = material.values.at("metallicRoughnessTexture").TextureIndex();
+            tinygltf::Image image = model.images[model.textures[textureIndex].source];
+            TextureData newTextureData{ image.width, image.height, image.image, TextureType::METALLIC_ROUGHNESS };
+            gltfConstructionData.textureDataVector.push_back(newTextureData);
+        }
+
+        // Emissive
+        if (material.additionalValues.find("emissiveTexture") != material.additionalValues.end()) {
+            int textureIndex = material.additionalValues.at("emissiveTexture").TextureIndex();
+            tinygltf::Image image = model.images[model.textures[textureIndex].source];
+            TextureData newTextureData{ image.width, image.height, image.image, TextureType::EMISSIVE };
+            gltfConstructionData.textureDataVector.push_back(newTextureData);
+        }
     }
 }
 
-std::vector<Mesh> Loader::createMeshFromGltf(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, XMFLOAT3 color)
+GltfData Loader::createMeshFromGltf(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix)
 {
     //get data from load func
-	std::vector<MeshData> meshDataVector;
-	loadMeshFromGltf(fileLocation, meshDataVector);
+	GltfConstructionData constructionData;
+	loadDataFromGltf(fileLocation, constructionData);
 	//create and return meshes
 	std::vector<Mesh> newMeshes;
-    for (auto& meshData : meshDataVector) {
-        Mesh newMesh = Mesh(fileLocation, context, cmdList, pipeline, modelMatrix, color, meshData);
+    for (auto& meshData : constructionData.meshDataVector) {
+        Mesh newMesh = Mesh(fileLocation, context, cmdList, pipeline, modelMatrix, meshData);
 		newMeshes.push_back(newMesh);
     }
 
-    Texture t{context, 10, 10};
+    std::vector<Texture> newTextures;
+    for (auto& textureData : constructionData.textureDataVector) {
+        newTextures.push_back({ context, textureData.width, textureData.height, textureData.imageData, textureData.type });
+    }
 
-	return newMeshes;
+    return { newMeshes, newTextures };
 }

@@ -2,47 +2,52 @@
 
 #include "ResourceUploadBatch.h"
 
-Texture::Texture(DXContext* context, UINT width, UINT height) : width(width), height(height) {
+Texture::Texture(DXContext* context, UINT width, UINT height, std::vector<unsigned char> imageData, TextureType type)
+	: width(width), height(height), type(type)
+{
     D3D12_RESOURCE_DESC txtDesc = {};
-    txtDesc.MipLevels = txtDesc.DepthOrArraySize = 1;
-    txtDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    txtDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    txtDesc.Alignment = 0;
     txtDesc.Width = width;
     txtDesc.Height = height;
+    txtDesc.DepthOrArraySize = 1;
+    txtDesc.MipLevels = 1;
+    txtDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     txtDesc.SampleDesc.Count = 1;
-    txtDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    txtDesc.SampleDesc.Quality = 0;
+    txtDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    txtDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
     CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
 
-	context->getDevice()->CreateCommittedResource(
-		&heapProps,
-		D3D12_HEAP_FLAG_NONE,
-		&txtDesc,
-		D3D12_RESOURCE_STATE_COPY_DEST,
-		nullptr,
-		IID_PPV_ARGS(&textureResource));
+    context->getDevice()->CreateCommittedResource(
+        &heapProps,
+        D3D12_HEAP_FLAG_NONE,
+        &txtDesc,
+        D3D12_RESOURCE_STATE_COPY_DEST,
+        nullptr,
+        IID_PPV_ARGS(&textureResource));
 
-	static const uint32_t s_whitePixel = 0xFFFFFFFF;
+    D3D12_SUBRESOURCE_DATA textureData = {};
+    textureData.pData = imageData.data();
+    textureData.RowPitch = width * 4;
+    textureData.SlicePitch = width * height * 4;
 
-	D3D12_SUBRESOURCE_DATA textureData = {};
-	textureData.pData = &s_whitePixel;
-	textureData.RowPitch = txtDesc.Width * 4;
-	textureData.SlicePitch = txtDesc.Height * txtDesc.Width * 4;
+    DirectX::ResourceUploadBatch resourceUpload(context->getDevice());
+    resourceUpload.Begin();
 
-	DirectX::ResourceUploadBatch resourceUpload(context->getDevice());
+    resourceUpload.Upload(textureResource, 0, &textureData, 1);
 
-	resourceUpload.Begin();
+    resourceUpload.Transition(
+        textureResource,
+        D3D12_RESOURCE_STATE_COPY_DEST,
+        D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE |
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	resourceUpload.Upload(textureResource, 0, &textureData, 1);
-
-	resourceUpload.Transition(
-		textureResource,
-		D3D12_RESOURCE_STATE_COPY_DEST,
-		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-	auto uploadResourcesFinished = resourceUpload.End(context->getCommandQueue());
-
-	uploadResourcesFinished.wait();
+    auto uploadDone = resourceUpload.End(context->getCommandQueue());
+    uploadDone.wait();
 }
+
 
 Texture::~Texture()
 {
@@ -56,7 +61,7 @@ ID3D12Resource* Texture::getTextureResource() {
 void Texture::releaseResources()
 {
 	if (textureResource) {
-		textureResource->Release();
+		textureResource.Release();
 		textureResource = nullptr;
 	}
 }

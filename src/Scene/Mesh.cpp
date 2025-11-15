@@ -1,8 +1,8 @@
 #include "Mesh.h"
 
 Mesh::Mesh(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, 
-           RenderPipeline* pipeline, XMFLOAT4X4 p_modelMatrix, XMFLOAT3 p_color, MeshData meshData) 
-    : color(p_color) {
+           RenderPipeline* pipeline, XMFLOAT4X4 p_modelMatrix, MeshData meshData) 
+{
 
 	numTriangles = meshData.numTriangles;
 	vertices = meshData.vertices;

@@ -7,26 +7,22 @@ ObjectScene::ObjectScene(DXContext* context, RenderPipeline* pipeline)
 }
 
 void ObjectScene::constructSceneSolid() {
-    //TODO - this code should call loader for objects which should reutnr meshes that can be used here
     std::vector<std::string> inputStrings;
-    //inputStrings.push_back("objs\\cube.obj");
     inputStrings.push_back("objs\\Avocado\\Avocado.gltf");
 
-    XMFLOAT4X4 groundModelMatrix;
-	XMStoreFloat4x4(&groundModelMatrix, XMMatrixMultiply(
+    XMFLOAT4X4 avocadoModelMatrix;
+	XMStoreFloat4x4(&avocadoModelMatrix, XMMatrixMultiply(
 		XMMatrixScaling(1000.f, 1000.f, 1000.f),
 		XMMatrixTranslation(0.f, 0.f, 0.f)
 	));
-    modelMatrices.push_back(groundModelMatrix);
+    modelMatrices.push_back(avocadoModelMatrix);
 
-    // vector for colors of grid lines
-    std::vector<XMFLOAT3> colors = { XMFLOAT3(1.f, 0.f, 0.f) };
-
-    //push ground as solid
     auto string = inputStrings.front();
     auto m = modelMatrices.front();
-    //Mesh newMesh = Mesh((std::filesystem::current_path() / string).string(), context, renderPipeline->getCommandList(), renderPipeline, m, colors.front());
-	Mesh newMesh = Loader::createMeshFromGltf((std::filesystem::current_path() / string).string(), context, renderPipeline->getCommandList(), renderPipeline, m, colors.front())[0];
+    GltfData gltfData = Loader::createMeshFromGltf((std::filesystem::current_path() / string).string(), context, renderPipeline->getCommandList(), renderPipeline, m);
+    Mesh newMesh = gltfData.meshes[0];
+	//newMesh.assignTextures(&gltfData.textures[0], &gltfData.textures[1], &gltfData.textures[2], &gltfData.textures[3]); // TODO - build usage of all 4
+    newMesh.assignTextures(&gltfData.textures[0], nullptr, nullptr, nullptr);
     meshes.push_back(newMesh);
     sceneSize += newMesh.getNumTriangles();
 }
@@ -54,7 +50,13 @@ void ObjectScene::draw(Camera* camera) {
         cmdList->SetGraphicsRoot32BitConstants(0, 16, &viewMat, 0);
         cmdList->SetGraphicsRoot32BitConstants(0, 16, &projMat, 16);
         cmdList->SetGraphicsRoot32BitConstants(0, 16, m.getModelMatrix(), 32);
-        cmdList->SetGraphicsRoot32BitConstants(0, 3, m.getColor(), 48);
+        //TODO - remove when texes are fully supported
+		XMFLOAT3 tempCol = { 1.f, 0.8f, 0.8f };
+        cmdList->SetGraphicsRoot32BitConstants(0, 3, &tempCol, 48);
+
+		Texture* diffuseTex = m.getDiffuseTexture();
+		//renderPipeline->setTextureResourceInRoot(cmdList, diffuseTex.getTextureResource(), 0, 51);
+
         cmdList->DrawIndexedInstanced(m.getNumTriangles() * 3, 1, 0, 0, 0);
     }
 }

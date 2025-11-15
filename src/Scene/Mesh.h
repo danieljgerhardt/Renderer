@@ -17,6 +17,7 @@
 #include "D3D/Pipeline/RenderPipeline.h"
 
 #include "Vertex.h"
+#include "D3D/Texture.h"
 
 //data passed to a mesh for construction
 struct MeshData {
@@ -29,7 +30,7 @@ struct MeshData {
 class Mesh {
 public:
 	Mesh() = delete;
-	Mesh(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, XMFLOAT3 color, MeshData meshData);
+	Mesh(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, MeshData meshData);
 
 	D3D12_INDEX_BUFFER_VIEW* getIBV();
 	D3D12_VERTEX_BUFFER_VIEW* getVBV();
@@ -40,7 +41,16 @@ public:
 
 	UINT getNumTriangles();
 
-	XMFLOAT3* getColor() { return &color; }
+	void assignTextures(Texture* diffuseTex, Texture* normalTex, Texture* metallicRoughnessTex, Texture* emissiveTex) {
+		textures.push_back(diffuseTex);
+		textures.push_back(normalTex);
+		textures.push_back(metallicRoughnessTex);
+		textures.push_back(emissiveTex);
+	}
+
+	Texture* getDiffuseTexture() {
+		return textures[0];
+	}
 
 private:
 	std::vector<Vertex> vertices;
@@ -55,5 +65,5 @@ private:
 
 	XMFLOAT4X4 modelMatrix;
 
-	XMFLOAT3 color;
+	std::vector<Texture*> textures;
 };

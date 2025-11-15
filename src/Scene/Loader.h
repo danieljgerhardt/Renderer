@@ -5,14 +5,25 @@
 #include "Support/WinInclude.h"
 
 #include "Mesh.h"
+#include "D3D/Texture.h"
 #include "Vertex.h"
 
+//data we pull from a gltf file
+struct GltfData {
+	std::vector<Mesh> meshes;
+	std::vector<Texture> textures;
+};
+
+struct GltfConstructionData {
+	std::vector<MeshData> meshDataVector;
+	std::vector<TextureData> textureDataVector;
+};
 
 class Loader {
 public:
-	static std::vector<Mesh> createMeshFromGltf(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, XMFLOAT3 color);
+	static GltfData createMeshFromGltf(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix);
 
 private:
 	static void loadMeshFromObj(std::string fileLocation, MeshData& meshData);
-	static void loadMeshFromGltf(std::string fileLocation, std::vector<MeshData>& meshDataVector);
+	static void loadDataFromGltf(std::string fileLocation, GltfConstructionData& gltfConstructionData);
 };

@@ -7,5 +7,5 @@ using namespace DirectX;
 struct Vertex {
 	XMFLOAT3 pos;
 	XMFLOAT3 nor;
-	XMFLOAT3 col;
+	XMFLOAT2 uv;
 };
