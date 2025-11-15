@@ -25,7 +25,7 @@ void ObjectScene::constructSceneSolid() {
     //push ground as solid
     auto string = inputStrings.front();
     auto m = modelMatrices.front();
-    Mesh newMesh = Mesh((std::filesystem::current_path() / string).string(), context, renderPipeline->getCommandList(), renderPipeline, m, false, colors.front());
+    Mesh newMesh = Mesh((std::filesystem::current_path() / string).string(), context, renderPipeline->getCommandList(), renderPipeline, m, colors.front());
     meshes.push_back(newMesh);
     sceneSize += newMesh.getNumTriangles();
 }
@@ -36,13 +36,7 @@ void ObjectScene::draw(Camera* camera) {
         auto cmdList = renderPipeline->getCommandList();
         cmdList->IASetVertexBuffers(0, 1, m.getVBV());
         cmdList->IASetIndexBuffer(m.getIBV());
-
-        if (m.getIsWireframe()) {
-            cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-        }
-        else {
-            cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        }
+        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
         // == PSO ==
         cmdList->SetPipelineState(renderPipeline->getPSO());

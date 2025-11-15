@@ -16,19 +16,13 @@
 
 #include "D3D/Pipeline/RenderPipeline.h"
 
-using namespace DirectX;
-
-struct Vertex {
-	XMFLOAT3 pos;
-	XMFLOAT3 nor;
-	XMFLOAT3 col;
-};
+#include "Loader.h"
+#include "Vertex.h"
 
 class Mesh {
 public:
 	Mesh() = delete;
-	Mesh(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, bool doWireframeIndices = false, XMFLOAT3 color = {0, 0, 0});
-	void loadMesh(std::string fileLocation, bool doWireframeIndices);
+	Mesh(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, XMFLOAT3 color = {0, 0, 0});
 
 	D3D12_INDEX_BUFFER_VIEW* getIBV();
 	D3D12_VERTEX_BUFFER_VIEW* getVBV();
@@ -38,8 +32,6 @@ public:
 	void releaseResources();
 
 	UINT getNumTriangles();
-
-	bool getIsWireframe() { return isWireframe; }
 
 	XMFLOAT3* getColor() { return &color; }
 
@@ -57,6 +49,4 @@ private:
 	XMFLOAT4X4 modelMatrix;
 
 	XMFLOAT3 color;
-
-	bool isWireframe{ false };
 };

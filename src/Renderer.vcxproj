@@ -29,6 +29,7 @@
     <ClCompile Include="ImGUI\imgui_tables.cpp" />
     <ClCompile Include="ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="ImGUI\misc\cpp\imgui_stdlib.cpp" />
+    <ClCompile Include="Scene\Loader.cpp" />
     <ClCompile Include="Scene\ObjectScene.cpp" />
     <ClCompile Include="Scene\PBMPMScene.cpp" />
     <ClCompile Include="Scene\MeshShadingScene.cpp" />
@@ -63,6 +64,7 @@
     <ClInclude Include="ImGUI\imstb_truetype.h" />
     <ClInclude Include="ImGUI\misc\cpp\imgui_stdlib.h" />
     <ClInclude Include="Scene\GridConstants.h" />
+    <ClInclude Include="Scene\Loader.h" />
     <ClInclude Include="Scene\ObjectScene.h" />
     <ClInclude Include="Scene\PBMPMScene.h" />
     <ClInclude Include="Scene\MeshShadingScene.h" />
@@ -73,6 +75,7 @@
     <ClInclude Include="Scene\Mesh.h" />
     <ClInclude Include="Scene\Drawable.h" />
     <ClInclude Include="Scene\Scene.h" />
+    <ClInclude Include="Scene\Vertex.h" />
     <ClInclude Include="Support\ComPointer.h" />
     <ClInclude Include="Support\Shader.h" />
     <ClInclude Include="Support\Window.h" />
@@ -445,7 +448,7 @@
     <Import Project="..\packages\directxtk12_desktop_2019.2024.10.29.1\build\native\directxtk12_desktop_2019.targets" Condition="Exists('..\packages\directxtk12_desktop_2019.2024.10.29.1\build\native\directxtk12_desktop_2019.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup> 
+    <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\directxtk12_desktop_2019.2024.10.29.1\build\native\directxtk12_desktop_2019.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtk12_desktop_2019.2024.10.29.1\build\native\directxtk12_desktop_2019.targets'))" />
