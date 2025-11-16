@@ -1,10 +1,12 @@
 #include "RootSignature.hlsl"
 
+Texture2D texture : register(t0);
+SamplerState texSampler : register(s0);
+
 cbuffer CameraMatrices : register(b0) {
-    float4x4 viewMatrix;        // 16 floats
-    float4x4 projectionMatrix;  // 16 floats
+    float4x4 viewMatrix;
+    float4x4 projectionMatrix;
     float4x4 modelMatrix;
-    float3 color;
 };
 
 struct VSInput
@@ -19,6 +21,7 @@ struct VSOutput
 {
     float4 Position : SV_Position;
     float3 Normal : NORMAL;
+    float3 Color : COLOR0;
 };
 
 [RootSignature(ROOTSIG)]
@@ -30,6 +33,7 @@ VSOutput main(VSInput input)
     VSOutput o;
     o.Position = mul(projectionMatrix, viewPos);
     o.Normal = input.Normal;
+    o.Color = texture.SampleLevel(texSampler, input.UV, 0.0);
     
     return o;
 }

@@ -41,14 +41,14 @@ public:
 
 	UINT getNumTriangles();
 
-	void assignTextures(Texture* diffuseTex, Texture* normalTex, Texture* metallicRoughnessTex, Texture* emissiveTex) {
+	void assignTextures(Texture& diffuseTex, Texture& normalTex, Texture& metallicRoughnessTex, Texture& emissiveTex) {
 		textures.push_back(diffuseTex);
 		textures.push_back(normalTex);
 		textures.push_back(metallicRoughnessTex);
 		textures.push_back(emissiveTex);
 	}
 
-	Texture* getDiffuseTexture() {
+	Texture& getDiffuseTexture() {
 		return textures[0];
 	}
 
@@ -65,5 +65,5 @@ private:
 
 	XMFLOAT4X4 modelMatrix;
 
-	std::vector<Texture*> textures;
+	std::vector<Texture> textures;
 };

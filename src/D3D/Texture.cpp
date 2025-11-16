@@ -48,7 +48,6 @@ Texture::Texture(DXContext* context, UINT width, UINT height, std::vector<unsign
     uploadDone.wait();
 }
 
-
 Texture::~Texture()
 {
 	releaseResources();

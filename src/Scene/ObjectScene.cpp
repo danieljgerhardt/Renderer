@@ -21,8 +21,7 @@ void ObjectScene::constructSceneSolid() {
     auto m = modelMatrices.front();
     GltfData gltfData = Loader::createMeshFromGltf((std::filesystem::current_path() / string).string(), context, renderPipeline->getCommandList(), renderPipeline, m);
     Mesh newMesh = gltfData.meshes[0];
-	//newMesh.assignTextures(&gltfData.textures[0], &gltfData.textures[1], &gltfData.textures[2], &gltfData.textures[3]); // TODO - build usage of all 4
-    newMesh.assignTextures(&gltfData.textures[0], nullptr, nullptr, nullptr);
+    newMesh.assignTextures(gltfData.textures[0], gltfData.textures[1], gltfData.textures[2], gltfData.textures[0]);
     meshes.push_back(newMesh);
     sceneSize += newMesh.getNumTriangles();
 }
@@ -50,12 +49,9 @@ void ObjectScene::draw(Camera* camera) {
         cmdList->SetGraphicsRoot32BitConstants(0, 16, &viewMat, 0);
         cmdList->SetGraphicsRoot32BitConstants(0, 16, &projMat, 16);
         cmdList->SetGraphicsRoot32BitConstants(0, 16, m.getModelMatrix(), 32);
-        //TODO - remove when texes are fully supported
-		XMFLOAT3 tempCol = { 1.f, 0.8f, 0.8f };
-        cmdList->SetGraphicsRoot32BitConstants(0, 3, &tempCol, 48);
 
-		Texture* diffuseTex = m.getDiffuseTexture();
-		//renderPipeline->setTextureResourceInRoot(cmdList, diffuseTex.getTextureResource(), 0, 51);
+		Texture& diffuseTex = m.getDiffuseTexture();
+		cmdList->SetGraphicsRootShaderResourceView(1, diffuseTex.getTextureResource()->GetGPUVirtualAddress());
 
         cmdList->DrawIndexedInstanced(m.getNumTriangles() * 3, 1, 0, 0, 0);
     }
