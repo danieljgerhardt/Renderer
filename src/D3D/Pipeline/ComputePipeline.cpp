@@ -13,7 +13,6 @@ void ComputePipeline::createPSOD()
 {
 	psoDesc.pRootSignature = rootSignature.Get();
 	psoDesc.CS = CD3DX12_SHADER_BYTECODE(computeShader.getBuffer(), computeShader.getSize());
-
 }
 
 void ComputePipeline::createPipelineState(ComPointer<ID3D12Device6> device)

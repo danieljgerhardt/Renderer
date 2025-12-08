@@ -240,9 +240,10 @@ GltfData Loader::createMeshFromGltf(std::string fileLocation, DXContext* context
     }
 
     std::vector<Texture> newTextures;
-    for (auto& textureData : constructionData.textureDataVector) {
-        newTextures.push_back({ context, textureData.width, textureData.height, textureData.imageData, textureData.type });
-    }
+    /*for (auto& textureData : constructionData.textureDataVector) {
+        newTextures.push_back({ context, pipeline, textureData.width, textureData.height, textureData.imageData, textureData.type });
+    }*/
+    newTextures.push_back({ context, pipeline, constructionData.textureDataVector[0].width, constructionData.textureDataVector[0].height, constructionData.textureDataVector[0].imageData, constructionData.textureDataVector[0].type});
 
     return { newMeshes, newTextures };
 }

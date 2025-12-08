@@ -3,8 +3,7 @@
 
 StructuredBuffer::StructuredBuffer(const void* inputData, unsigned int numEle, UINT eleSize)
 	: data(inputData), numElements(numEle), elementSize(eleSize)
-{
-}
+{}
 
 void StructuredBuffer::findFreeHandle(DescriptorHeap* dh, CD3DX12_CPU_DESCRIPTOR_HANDLE& cpuHandle, CD3DX12_GPU_DESCRIPTOR_HANDLE& gpuHandle) {
 	unsigned int index = dh->GetNextAvailableIndex();
@@ -12,52 +11,52 @@ void StructuredBuffer::findFreeHandle(DescriptorHeap* dh, CD3DX12_CPU_DESCRIPTOR
 	gpuHandle = dh->GetGPUHandleAt(index);
 }
 
-CD3DX12_CPU_DESCRIPTOR_HANDLE StructuredBuffer::getUAVCPUDescriptorHandle()
+CD3DX12_CPU_DESCRIPTOR_HANDLE StructuredBuffer::getUavCpuDescriptorHandle()
 {
-	return UAVcpuHandle;
+	return UavCpuHandle;
 }
 
-CD3DX12_GPU_DESCRIPTOR_HANDLE StructuredBuffer::getUAVGPUDescriptorHandle()
+CD3DX12_GPU_DESCRIPTOR_HANDLE StructuredBuffer::getUavGpuDescriptorHandle()
 {
-	return UAVgpuHandle;
+	return UavGpuHandle;
 }
 
-CD3DX12_CPU_DESCRIPTOR_HANDLE StructuredBuffer::getSRVCPUDescriptorHandle()
+CD3DX12_CPU_DESCRIPTOR_HANDLE StructuredBuffer::getSrvCpuDescriptorHandle()
 {
-    return SRVcpuHandle;
+    return SrvCpuHandle;
 }
 
-CD3DX12_GPU_DESCRIPTOR_HANDLE StructuredBuffer::getSRVGPUDescriptorHandle()
+CD3DX12_GPU_DESCRIPTOR_HANDLE StructuredBuffer::getSrvGpuDescriptorHandle()
 {
-    return SRVgpuHandle;
+    return SrvGpuHandle;
 }
 
-CD3DX12_CPU_DESCRIPTOR_HANDLE StructuredBuffer::getCBVCPUDescriptorHandle()
+CD3DX12_CPU_DESCRIPTOR_HANDLE StructuredBuffer::getCbvCpuDescriptorHandle()
 {
-	return CBVcpuHandle;
+	return CbvCpuHandle;
 }
 
-CD3DX12_GPU_DESCRIPTOR_HANDLE StructuredBuffer::getCBVGPUDescriptorHandle()
+CD3DX12_GPU_DESCRIPTOR_HANDLE StructuredBuffer::getCbvGpuDescriptorHandle()
 {
-	return CBVgpuHandle;
+	return CbvGpuHandle;
 }
 
-D3D12_GPU_VIRTUAL_ADDRESS StructuredBuffer::getGPUVirtualAddress()
+D3D12_GPU_VIRTUAL_ADDRESS StructuredBuffer::getGpuVirtualAddress()
 {
 	return buffer->GetGPUVirtualAddress();
 }
 
-void StructuredBuffer::passCBVDataToGPU(DXContext& context, DescriptorHeap* dh) {
+void StructuredBuffer::passCbvDataToGpu(DXContext& context, DescriptorHeap* dh) {
 
-	if (isCBV) {
+	if (isCbv) {
 		throw std::runtime_error("CBV already created.");
     }
-	else if (isUAV || isSRV) {
+	else if (isUav || isSrv) {
 		throw std::runtime_error("Cannot create CBV after creating UAV or SRV.");
 	}
 
-    findFreeHandle(dh, CBVcpuHandle, CBVgpuHandle);
-    isCBV = true;
+    findFreeHandle(dh, CbvCpuHandle, CbvGpuHandle);
+    isCbv = true;
 
     // Calculate the aligned buffer size (256-byte alignment required for CBV)
     UINT bufferSize = (numElements * elementSize + 255) & ~255; // Round up to 256 bytes
@@ -99,16 +98,16 @@ void StructuredBuffer::passCBVDataToGPU(DXContext& context, DescriptorHeap* dh) 
     cbvDesc.BufferLocation = buffer->GetGPUVirtualAddress();
     cbvDesc.SizeInBytes = bufferSize; // Must be 256-byte aligned
 
-    context.getDevice()->CreateConstantBufferView(&cbvDesc, CBVcpuHandle);
+    context.getDevice()->CreateConstantBufferView(&cbvDesc, CbvCpuHandle);
 }
 
-void StructuredBuffer::passDataToGPU(DXContext& context, ID3D12GraphicsCommandList6* cmdList, CommandListID cmdId) {
+void StructuredBuffer::passDataToGpu(DXContext& context, ID3D12GraphicsCommandList6* cmdList, CommandListID cmdId) {
 	// THIS FUNCTION WILL RESET THE COMMAND LIST AT THE END OF THE CALL
 
-	if (isCBV) {
+	if (isCbv) {
 		throw std::runtime_error("Cannot create UAV or SRV after creating CBV.");
 	}
-    else if (isUAV || isSRV) {
+    else if (isUav || isSrv) {
 		throw std::runtime_error("UAV or SRV already created.");
 	}
 
@@ -210,14 +209,14 @@ void StructuredBuffer::passDataToGPU(DXContext& context, ID3D12GraphicsCommandLi
 
 void StructuredBuffer::createUAV(DXContext& context, DescriptorHeap* dh) {
 
-	if (isCBV) {
+	if (isCbv) {
 		throw std::runtime_error("Cannot create UAV after creating CBV.");
 	}
-    else if (isUAV) {
+    else if (isUav) {
 		throw std::runtime_error("UAV already created.");
 	}
 
-	findFreeHandle(dh, UAVcpuHandle, UAVgpuHandle);
+	findFreeHandle(dh, UavCpuHandle, UavGpuHandle);
 
     // Create the UAV in the descriptor heap
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
@@ -226,21 +225,21 @@ void StructuredBuffer::createUAV(DXContext& context, DescriptorHeap* dh) {
     uavDesc.Buffer.NumElements = numElements;
     uavDesc.Buffer.StructureByteStride = elementSize;
 
-    context.getDevice()->CreateUnorderedAccessView(buffer.Get(), nullptr, &uavDesc, UAVcpuHandle);
+    context.getDevice()->CreateUnorderedAccessView(buffer.Get(), nullptr, &uavDesc, UavCpuHandle);
 
-	isUAV = true;
+	isUav = true;
 }
 
 void StructuredBuffer::createSRV(DXContext& context, DescriptorHeap* dh) {
 
-	if (isCBV) {
+	if (isCbv) {
 		throw std::runtime_error("Cannot create SRV after creating CBV.");
 	}
-	else if (isSRV) {
+	else if (isSrv) {
 		throw std::runtime_error("SRV already created.");
 	}
 
-	findFreeHandle(dh, SRVcpuHandle, SRVgpuHandle);
+	findFreeHandle(dh, SrvCpuHandle, SrvGpuHandle);
 
 	// Create the SRV in the descriptor heap
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -251,9 +250,9 @@ void StructuredBuffer::createSRV(DXContext& context, DescriptorHeap* dh) {
 	srvDesc.Buffer.NumElements = numElements;
 	srvDesc.Buffer.StructureByteStride = elementSize;
 
-	context.getDevice()->CreateShaderResourceView(buffer.Get(), &srvDesc, SRVcpuHandle);
+	context.getDevice()->CreateShaderResourceView(buffer.Get(), &srvDesc, SrvCpuHandle);
 
-	isSRV = true;
+	isSrv = true;
 }
 
 void StructuredBuffer::copyDataFromGPU(DXContext& context, void* outputData, ID3D12GraphicsCommandList6* cmdList, D3D12_RESOURCE_STATES state, CommandListID cmdId) {
