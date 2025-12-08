@@ -26,4 +26,6 @@ private:
 	std::vector<XMFLOAT4X4> modelMatrices;
 
 	size_t sceneSize{ 0 };
+
+	GltfData gltfData;
 };

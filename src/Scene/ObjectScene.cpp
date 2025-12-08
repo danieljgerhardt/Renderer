@@ -20,23 +20,23 @@ void ObjectScene::constructSceneSolid() {
     auto string = inputStrings.front();
     auto m = modelMatrices.front();
    
-    GltfData gltfData = Loader::createMeshFromGltf((std::filesystem::current_path() / string).string(), context, renderPipeline->getCommandList(), renderPipeline, m);
+    gltfData = Loader::createMeshFromGltf((std::filesystem::current_path() / string).string(), context, renderPipeline->getCommandList(), renderPipeline, m);
     Mesh& newMesh = gltfData.meshes[0];
     newMesh.assignTextures(gltfData.textures[0], gltfData.textures[0], gltfData.textures[0], gltfData.textures[0]);
     
     context->executeCommandList(renderPipeline->getCommandListID());
     context->resetCommandList(renderPipeline->getCommandListID());
 
+	newMesh.getDiffuseTexture().makeSrv(context, renderPipeline);
     meshes.push_back(newMesh);
     sceneSize += meshes.back().getNumTriangles();
-	newMesh.getDiffuseTexture().makeSrv(context, renderPipeline);
 
     context->executeCommandList(renderPipeline->getCommandListID());
     context->resetCommandList(renderPipeline->getCommandListID());
 }
 
 void ObjectScene::draw(Camera* camera) {
-    for (Mesh m : meshes) {
+    for (Mesh& m : meshes) {
         // == IA ==
         auto cmdList = renderPipeline->getCommandList();
         cmdList->IASetVertexBuffers(0, 1, m.getVBV());
@@ -49,9 +49,7 @@ void ObjectScene::draw(Camera* camera) {
         
         // == ROOT ==
         ID3D12DescriptorHeap* descriptorHeaps[] = { renderPipeline->getDescriptorHeap()->GetAddress() };
-        if (instanced) {
-            cmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-        }
+        cmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
         auto viewMat = camera->getViewMat();
         auto projMat = camera->getProjMat();
