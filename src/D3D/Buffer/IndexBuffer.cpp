@@ -34,7 +34,7 @@ D3D12_INDEX_BUFFER_VIEW IndexBuffer::passIndexDataToGPU(DXContext& context, ID3D
 		throw std::runtime_error("Could not create committed resource for index buffer upload buffer");
 	}
     
-    if (FAILED(context.getDevice()->CreateCommittedResource(&hpDefault, D3D12_HEAP_FLAG_NONE, &rd, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&indexBuffer)))) {
+    if (FAILED(context.getDevice()->CreateCommittedResource(&hpDefault, D3D12_HEAP_FLAG_NONE, &rd, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&indexBuffer)))) {
 		throw std::runtime_error("Could not create committed resource for index buffer");
     }
 
