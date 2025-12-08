@@ -103,8 +103,6 @@ int main() {
 
         Window::get().present();
 		context.resetCommandList(renderPipeline->getCommandListID());
-		
-        context.resetCommandList(renderPipeline->getCommandListID());
     }
 
     // Scene should release all resources, including their pipelines

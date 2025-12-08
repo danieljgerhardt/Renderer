@@ -185,7 +185,8 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
                         meshData.indices.push_back(buf[i]);
                     }
                 }
-                meshData.numTriangles += static_cast<UINT>(accessor.count / 3);
+                //meshData.numTriangles += static_cast<UINT>(accessor.count / 3);
+                meshData.numTriangles += meshData.indices.size() / 3;
             }
         }
 		gltfConstructionData.meshDataVector.push_back(meshData);

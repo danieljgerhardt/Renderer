@@ -23,16 +23,10 @@ void ObjectScene::constructSceneSolid() {
     gltfData = Loader::createMeshFromGltf((std::filesystem::current_path() / string).string(), context, renderPipeline->getCommandList(), renderPipeline, m);
     Mesh& newMesh = gltfData.meshes[0];
     newMesh.assignTextures(gltfData.textures[0], gltfData.textures[0], gltfData.textures[0], gltfData.textures[0]);
-    
-    context->executeCommandList(renderPipeline->getCommandListID());
-    context->resetCommandList(renderPipeline->getCommandListID());
 
 	newMesh.getDiffuseTexture().makeSrv(context, renderPipeline);
     meshes.push_back(newMesh);
     sceneSize += meshes.back().getNumTriangles();
-
-    context->executeCommandList(renderPipeline->getCommandListID());
-    context->resetCommandList(renderPipeline->getCommandListID());
 }
 
 void ObjectScene::draw(Camera* camera) {
