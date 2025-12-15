@@ -61,36 +61,18 @@ int main() {
 		scene.drawSolidObjects();
 
         //set up ImGUI for frame
-        /*ImGui_ImplDX12_NewFrame();
+        ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
-        ImGui::NewFrame();*/
+        ImGui::NewFrame();
 
         //draw ImGUI
-		/*drawImGUIWindow(pbmpmIterConstants, io,
-            scene.getFluidIsovalue(), 
-            scene.getFluidKernelScale(), 
-            scene.getFluidKernelRadius(),
-			scene.getElasticIsovalue(),
-			scene.getElasticKernelScale(),
-			scene.getElasticKernelRadius(),
-			scene.getSandIsovalue(),
-			scene.getSandKernelScale(),
-			scene.getSandKernelRadius(),
-            scene.getViscoIsovalue(),
-            scene.getViscoKernelScale(),
-            scene.getViscoKernelRadius(),
-            scene.getPBMPMSubstepCount(),
-            scene.getNumParticles());*/
+		setupImGUIWindow(io);
 
         //render ImGUI
-        /*ImGui::Render();
-        if (pbmpmIterConstants.mouseActivation == 1 || !PBMPMScene::constantsEqual(pbmpmIterConstants, pbmpmCurrConstants)) {
-            scene.updatePBMPMConstants(pbmpmIterConstants);
-            pbmpmCurrConstants = pbmpmIterConstants;
-        }*/
+        ImGui::Render();
 
-       /* renderPipeline->getCommandList()->SetDescriptorHeaps(1, &imguiSRVHeap);
-        ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), renderPipeline->getCommandList());*/
+        renderPipeline->getCommandList()->SetDescriptorHeaps(1, &imguiSRVHeap);
+        ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), renderPipeline->getCommandList());
 
         context.executeCommandList(renderPipeline->getCommandListID());
 

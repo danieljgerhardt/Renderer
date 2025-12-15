@@ -120,25 +120,24 @@ void Camera::updateProjMat() {
 	XMStoreFloat4x4(&viewProjMat, XMLoadFloat4x4(&viewMat) * XMLoadFloat4x4(&projMat));
 }
 
-XMMATRIX Camera::getViewMat() {
+const XMMATRIX Camera::getViewMat() {
 	return XMLoadFloat4x4(&viewMat);
 }
 
-XMMATRIX Camera::getProjMat() {
+const XMMATRIX Camera::getProjMat() {
 	return XMLoadFloat4x4(&projMat);
 }
 
-XMMATRIX Camera::getViewProjMat() {
+const XMMATRIX Camera::getViewProjMat() {
 	return XMLoadFloat4x4(&viewProjMat);
 }
 
-XMMATRIX Camera::getInvViewProjMat()
+const XMMATRIX Camera::getInvViewProjMat()
 {
 	return XMMatrixInverse(nullptr, XMLoadFloat4x4(&viewProjMat));
 }
 
 void Camera::kmStateCheck(DirectX::Keyboard::State kState, DirectX::Mouse::State mState) {
-	
 	if (kState.W) {
 		translate({ 0.f, 0.f, 1.0f });
 	}
@@ -151,14 +150,14 @@ void Camera::kmStateCheck(DirectX::Keyboard::State kState, DirectX::Mouse::State
 	if (kState.D) {
 		translate({ 1.0f, 0.f, 0.f });
 	}
-	if (kState.Space) {
+	if (kState.Q) {
+		translate({ 0.0f, -1.0f, 0.f });
+	}
+	if (kState.E) {
 		translate({ 0.f, 1.0f, 0.f });
 	}
-	if (kState.LeftControl) {
-		translate({ 0.f, -1.0f, 0.f });
-	}
 
-	if (mState.positionMode == Mouse::MODE_RELATIVE && kState.LeftShift) {
+	if (mState.positionMode == Mouse::MODE_RELATIVE) {
 		rotateOnX(-mState.y * 0.01f);
 		rotateOnY(mState.x * 0.01f);
 		rotate();

@@ -96,6 +96,26 @@ void Loader::loadMeshFromObj(std::string fileLocation, MeshData& meshData)
     file.close();
 }
 
+const float* GetFloatAttrib(
+    const tinygltf::Accessor& acc,
+    const tinygltf::Model& model,
+    size_t index,
+    size_t components)
+{
+    const auto& view = model.bufferViews[acc.bufferView];
+    const auto& buffer = model.buffers[view.buffer];
+
+    size_t stride = view.byteStride;
+    if (stride == 0)
+        stride = components * sizeof(float);
+
+    return reinterpret_cast<const float*>(
+        buffer.data.data() +
+        view.byteOffset +
+        acc.byteOffset +
+        index * stride);
+}
+
 void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gltfConstructionData)
 {
     tinygltf::Model model;
@@ -122,73 +142,48 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
     for (tinygltf::Mesh& mesh : model.meshes) {
 		MeshData meshData;
         for (auto& prim : mesh.primitives) {
-            //handle positions, normals, uvs
+            const auto& posAcc = model.accessors.at(prim.attributes.at("POSITION"));
+            const auto& norAcc = model.accessors.at(prim.attributes.at("NORMAL"));
+            const auto& uvAcc = model.accessors.at(prim.attributes.at("TEXCOORD_0"));
+
+            uint32_t baseVertex = static_cast<uint32_t>(meshData.vertices.size());
+
+            for (size_t i = 0; i < posAcc.count; i++)
             {
-                //get positions
-                const tinygltf::Accessor& posAccessor = model.accessors[prim.attributes["POSITION"]];
-                const tinygltf::BufferView& bufferView = model.bufferViews[posAccessor.bufferView];
-                const tinygltf::Buffer& posBuffer = model.buffers[bufferView.buffer];
-                const float* positions = reinterpret_cast<const float*>(
-                    &posBuffer.data[posAccessor.byteOffset + bufferView.byteOffset]);
+                const float* pos = GetFloatAttrib(posAcc, model, i, 3);
+                const float* nor = GetFloatAttrib(norAcc, model, i, 3);
+                const float* uv = GetFloatAttrib(uvAcc, model, i, 2);
 
-                //get normals
-				const tinygltf::Accessor& norAccessor = model.accessors[prim.attributes["NORMAL"]];
-				const tinygltf::BufferView& norBufferView = model.bufferViews[norAccessor.bufferView];
-				const tinygltf::Buffer& norBuffer = model.buffers[norBufferView.buffer];
-				const float* normals = reinterpret_cast<const float*>(
-					&norBuffer.data[norAccessor.byteOffset + norBufferView.byteOffset]);
+                Vertex v{};
+                v.pos = { pos[0], pos[1], pos[2] };
+                v.nor = { nor[0], nor[1], nor[2] };
+                v.uv = { uv[0], uv[1] };
 
-                //get uvs
-				const tinygltf::Accessor& uvAccessor = model.accessors[prim.attributes["TEXCOORD_0"]];
-				const tinygltf::BufferView& uvBufferView = model.bufferViews[uvAccessor.bufferView];
-				const tinygltf::Buffer& uvBuffer = model.buffers[uvBufferView.buffer];
-				const float* uvs = reinterpret_cast<const float*>(
-					&uvBuffer.data[uvAccessor.byteOffset + uvBufferView.byteOffset]);
-
-                for (size_t i = 0; i < posAccessor.count; i++) {
-                    Vertex newVert;
-                    newVert.pos = XMFLOAT3(
-                        positions[i * 3 + 0],
-                        positions[i * 3 + 1],
-                        positions[i * 3 + 2]);
-                    
-					newVert.nor = XMFLOAT3(
-						normals[i * 3 + 0],
-						normals[i * 3 + 1],
-						normals[i * 3 + 2]);
-
-					newVert.uv = XMFLOAT2(
-						uvs[i * 2 + 0],
-						uvs[i * 2 + 1]);
-
-                    meshData.vertexPositions.push_back(newVert.pos);
-                    meshData.vertices.push_back(newVert);
-                }
+                meshData.vertices.push_back(v);
             }
 
-            //handle indices
+            const auto& idxAcc = model.accessors.at(prim.indices);
+            const auto& idxView = model.bufferViews.at(idxAcc.bufferView);
+            const auto& idxBuf = model.buffers.at(idxView.buffer);
+
+            const uint8_t* idxData =
+                idxBuf.data.data() +
+                idxView.byteOffset +
+                idxAcc.byteOffset;
+
+            for (size_t i = 0; i < idxAcc.count; i++)
             {
-                const tinygltf::Accessor& accessor = model.accessors[prim.indices];
-                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
-                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-                if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-                    const unsigned short* buf = reinterpret_cast<const unsigned short*>(
-                        &buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                    for (size_t i = 0; i < accessor.count; i++) {
-                        meshData.indices.push_back(static_cast<unsigned int>(buf[i]));
-                    }
-                }
-                else if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
-                    const unsigned int* buf = reinterpret_cast<const unsigned int*>(
-                        &buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                    for (size_t i = 0; i < accessor.count; i++) {
-                        meshData.indices.push_back(buf[i]);
-                    }
-                }
-                //meshData.numTriangles += static_cast<UINT>(accessor.count / 3);
-                meshData.numTriangles += meshData.indices.size() / 3;
+                uint32_t idx;
+
+                if (idxAcc.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
+                    idx = reinterpret_cast<const uint16_t*>(idxData)[i];
+                else
+                    idx = reinterpret_cast<const uint32_t*>(idxData)[i];
+
+                meshData.indices.push_back(baseVertex + idx);
             }
         }
+        meshData.numTriangles = static_cast<UINT>(meshData.indices.size() / 3);
 		gltfConstructionData.meshDataVector.push_back(meshData);
     }
 
@@ -197,7 +192,7 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
         if (material.values.find("baseColorTexture") != material.values.end()) {
             int textureIndex = material.values.at("baseColorTexture").TextureIndex();
             tinygltf::Image image = model.images[model.textures[textureIndex].source];
-            TextureData newTextureData{ image.width, image.height, image.image, TextureType::DIFFUSE };
+            TextureData newTextureData{ UINT(image.width), UINT(image.height), image.image, TextureType::DIFFUSE };
             gltfConstructionData.textureDataVector.push_back(newTextureData);
         }
 
@@ -206,7 +201,7 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
             int textureIndex = material.additionalValues.at("normalTexture").TextureIndex();
             int imageIndex = model.textures[textureIndex].source;
             tinygltf::Image image = model.images[model.textures[textureIndex].source];
-            TextureData newTextureData{ image.width, image.height, image.image, TextureType::NORMAL };
+            TextureData newTextureData{ UINT(image.width), UINT(image.height), image.image, TextureType::NORMAL };
             gltfConstructionData.textureDataVector.push_back(newTextureData);
         }
 
@@ -214,7 +209,7 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
         if (material.values.find("metallicRoughnessTexture") != material.values.end()) {
             int textureIndex = material.values.at("metallicRoughnessTexture").TextureIndex();
             tinygltf::Image image = model.images[model.textures[textureIndex].source];
-            TextureData newTextureData{ image.width, image.height, image.image, TextureType::METALLIC_ROUGHNESS };
+            TextureData newTextureData{ UINT(image.width), UINT(image.height), image.image, TextureType::METALLIC_ROUGHNESS };
             gltfConstructionData.textureDataVector.push_back(newTextureData);
         }
 
@@ -222,7 +217,7 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
         if (material.additionalValues.find("emissiveTexture") != material.additionalValues.end()) {
             int textureIndex = material.additionalValues.at("emissiveTexture").TextureIndex();
             tinygltf::Image image = model.images[model.textures[textureIndex].source];
-            TextureData newTextureData{ image.width, image.height, image.image, TextureType::EMISSIVE };
+            TextureData newTextureData{ UINT(image.width), UINT(image.height), image.image, TextureType::EMISSIVE };
             gltfConstructionData.textureDataVector.push_back(newTextureData);
         }
     }

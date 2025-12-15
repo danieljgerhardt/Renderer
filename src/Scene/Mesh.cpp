@@ -3,7 +3,6 @@
 Mesh::Mesh(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, 
            RenderPipeline* pipeline, XMFLOAT4X4 p_modelMatrix, MeshData meshData) 
 {
-
 	numTriangles = meshData.numTriangles;
 	vertices = meshData.vertices;
 	vertexPositions = meshData.vertexPositions;
@@ -35,6 +34,10 @@ Mesh::Mesh(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandLi
     barriers[1].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
     cmdList->ResourceBarrier(2, barriers);
+}
+
+Mesh::~Mesh() {
+	releaseResources();
 }
 
 D3D12_INDEX_BUFFER_VIEW* Mesh::getIBV() {

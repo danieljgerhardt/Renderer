@@ -3,12 +3,13 @@
 ObjectScene::ObjectScene(DXContext* context, RenderPipeline* pipeline)
 	: Drawable(context, pipeline)
 {
-    constructSceneSolid();
+    constructScene();
 }
 
-void ObjectScene::constructSceneSolid() {
+void ObjectScene::constructScene() {
     std::vector<std::string> inputStrings;
     inputStrings.push_back("objs\\Avocado\\Avocado.gltf");
+    //inputStrings.push_back("objs\\Cube\\Cube.gltf");
 
     XMFLOAT4X4 avocadoModelMatrix;
 	XMStoreFloat4x4(&avocadoModelMatrix, XMMatrixMultiply(

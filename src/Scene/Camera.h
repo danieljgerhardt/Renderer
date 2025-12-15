@@ -25,12 +25,12 @@ public:
 
 	XMFLOAT4 getForward() { return { forward.x, forward.y, forward.z, 0 }; }
 
-	XMMATRIX getViewMat();
-	XMMATRIX getProjMat();
-	XMMATRIX getViewProjMat();
-	XMFLOAT3 getPosition() { return position; }
+	const XMMATRIX getViewMat();
+	const XMMATRIX getProjMat();
+	const XMMATRIX getViewProjMat();
+	const XMFLOAT3 getPosition() { return position; }
 
-	XMMATRIX getInvViewProjMat();
+	const XMMATRIX getInvViewProjMat();
 	
 	void kmStateCheck(DirectX::Keyboard::State kState, DirectX::Mouse::State mState);
 

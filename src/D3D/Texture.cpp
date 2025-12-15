@@ -74,8 +74,11 @@ void Texture::makeSrv(DXContext* context, RenderPipeline* pipeline)
 
 void Texture::releaseResources()
 {
-	/*if (textureResource) {
+	if (textureResource) {
 		textureResource.Release();
-		textureResource = nullptr;
-	}*/
+	}
+
+	if (textureUploadHeap) {
+		textureUploadHeap.Release();
+	}
 }

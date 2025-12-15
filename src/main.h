@@ -54,7 +54,18 @@ ImGuiIO& initImGUI(DXContext& context) {
 
     ImGui_ImplDX12_Init(&imguiDXInfo);
 
+	ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
+    
     return io;
+}
+
+void setupImGUIWindow(ImGuiIO& io) {
+
+    ImGui::Begin("Renderer Info + Options");
+
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+
+    ImGui::End();
 }
 
 void ComputeMouseRay(

@@ -14,14 +14,14 @@ struct VSInput
     float3 Position : POSITION;
     float3 Normal : NORMAL;
     float2 UV : TEXCOORD0;
-    uint InstanceID : SV_InstanceID; // Instance ID for indexing into model matrices
+    uint InstanceID : SV_InstanceID; // Instance ID for indexing into model matrices - currently unused
 };
 
 struct VSOutput
 {
     float4 Position : SV_Position;
     float3 Normal : NORMAL;
-    float3 Color : COLOR0;
+    float2 UV : TEXCOORD;
 };
 
 [RootSignature(ROOTSIG)]
@@ -33,7 +33,7 @@ VSOutput main(VSInput input)
     VSOutput o;
     o.Position = mul(projectionMatrix, viewPos);
     o.Normal = input.Normal;
-    o.Color = texture.SampleLevel(texSampler, input.UV, 0.0);
+    o.UV = input.UV;
     
     return o;
 }
