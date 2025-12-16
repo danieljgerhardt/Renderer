@@ -1,10 +1,10 @@
 #include "MeshPipeline.h"
 
-MeshPipeline::MeshPipeline(std::string meshShaderName, std::string fragShaderName, std::string rootSignatureShaderName, DXContext& context,
+MeshPipeline::MeshPipeline(std::string meshShaderName, std::string fragShaderName, DXContext& context,
     CommandListID cmdID, D3D12_DESCRIPTOR_HEAP_TYPE type, unsigned int numberOfDescriptors, D3D12_DESCRIPTOR_HEAP_FLAGS flags)
-	: Pipeline(rootSignatureShaderName, context, cmdID, type, numberOfDescriptors, flags), meshShader(meshShaderName), fragShader(fragShaderName)
+	: Pipeline(context, cmdID, type, numberOfDescriptors, flags), meshShader(meshShaderName, ShaderType::MeshShader), fragShader(fragShaderName, ShaderType::PixelShader)
 {
-    // TODO: this should be in the base pipeline class (same for compute pipeline)
+    // TODO: this should be in the base pipeline class
     createPSOD();
     createPipelineState(context.getDevice());
 }

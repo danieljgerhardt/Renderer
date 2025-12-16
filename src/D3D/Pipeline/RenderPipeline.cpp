@@ -1,13 +1,16 @@
 #include "RenderPipeline.h"
 
-RenderPipeline::RenderPipeline(std::string vertexShaderName, std::string fragShaderName, std::string rootSignatureShaderName, DXContext& context,
+RenderPipeline::RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context,
     CommandListID id, D3D12_DESCRIPTOR_HEAP_TYPE type, unsigned int numberOfDescriptors, D3D12_DESCRIPTOR_HEAP_FLAGS flags)
-	: Pipeline(rootSignatureShaderName, context, id, type, numberOfDescriptors, flags), vertexShader(vertexShaderName), fragShader(fragShaderName) 
+	: Pipeline(context, id, type, numberOfDescriptors, flags), vertexShader(vertexShaderName, ShaderType::VertexShader), fragShader(fragShaderName, ShaderType::PixelShader)
 {
-	createPSOD();
+	generateRootSignature(context, vertexShader, fragShader);
+	
+    createPSOD();
 	createPipelineState(context.getDevice());
     getCommandList()->Close();
     context.resetCommandList(id);
+
 }
 
 D3D12_INPUT_ELEMENT_DESC vertexLayout[] =

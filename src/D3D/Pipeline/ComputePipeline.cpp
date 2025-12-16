@@ -1,10 +1,11 @@
 #include "ComputePipeline.h"
 
-ComputePipeline::ComputePipeline(std::string rootSignatureShaderName, const std::string shaderFilePath, DXContext& context,
+ComputePipeline::ComputePipeline(const std::string shaderFilePath, DXContext& context,
 	CommandListID cmdID, D3D12_DESCRIPTOR_HEAP_TYPE type, unsigned int numberOfDescriptors, D3D12_DESCRIPTOR_HEAP_FLAGS flags)
-	: Pipeline(rootSignatureShaderName, context, cmdID, type, numberOfDescriptors, flags),
-	computeShader(shaderFilePath)
+	: Pipeline(context, cmdID, type, numberOfDescriptors, flags),
+	computeShader(shaderFilePath, ShaderType::ComputeShader)
 {
+	// TODO: this should be in the base pipeline class (same for compute pipeline)
 	createPSOD();
 	createPipelineState(context.getDevice());
 }

@@ -10,18 +10,18 @@ public:
 	Scene() = delete;
 	Scene(Camera* camera, DXContext* context);
 
-	RenderPipeline* getObjectSolidPipeline();
+	RenderPipeline* getObjectPipeline();
 
 	void compute();
-	void drawSolidObjects();
+	void draw();
 
 	void releaseResources();
 
 private:
 	Camera* camera;
 
-	RenderPipeline objectRPSolid;
-	ObjectScene objectSceneSolid;
+	RenderPipeline objectRP;
+	ObjectScene objectScene;
 
 	RenderPipeline* currentRP;
 	ComputePipeline* currentCP;

@@ -30,6 +30,7 @@
     <ClCompile Include="ImGUI\imgui_tables.cpp" />
     <ClCompile Include="ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="ImGUI\misc\cpp\imgui_stdlib.cpp" />
+    <ClCompile Include="Support\RootSignatureBuilder.cpp" />
     <ClCompile Include="Scene\Loader.cpp" />
     <ClCompile Include="Scene\ObjectScene.cpp" />
     <ClCompile Include="main.cpp" />
@@ -63,6 +64,7 @@
     <ClInclude Include="ImGUI\imstb_textedit.h" />
     <ClInclude Include="ImGUI\imstb_truetype.h" />
     <ClInclude Include="ImGUI\misc\cpp\imgui_stdlib.h" />
+    <ClInclude Include="Support\RootSignatureBuilder.h" />
     <ClInclude Include="Scene\GridConstants.h" />
     <ClInclude Include="Scene\Loader.h" />
     <ClInclude Include="Scene\ObjectScene.h" />
@@ -176,7 +178,9 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d12.lib;dxgi.lib;dxguid.lib;dxcompiler.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -195,7 +199,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d12.lib;dxgi.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d12.lib;dxgi.lib;dxguid.lib;dxcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <EnableDebuggingInformation>true</EnableDebuggingInformation>

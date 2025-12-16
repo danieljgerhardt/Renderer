@@ -45,7 +45,7 @@ int main() {
         mouse->SetMode(mState.leftButton ? Mouse::MODE_RELATIVE : Mouse::MODE_ABSOLUTE);
         camera->kmStateCheck(kState, mState);
 
-        auto renderPipeline = scene.getObjectSolidPipeline();
+        auto renderPipeline = scene.getObjectPipeline();
 
         //begin frame
         Window::get().beginFrame(renderPipeline->getCommandList());
@@ -58,7 +58,7 @@ int main() {
         Window::get().setViewport(vp, renderPipeline->getCommandList());
 
 		//draw scene
-		scene.drawSolidObjects();
+		scene.draw();
 
         //set up ImGUI for frame
         ImGui_ImplDX12_NewFrame();

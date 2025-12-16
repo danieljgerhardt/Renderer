@@ -3,7 +3,8 @@
 Texture2D texture : register(t0);
 SamplerState texSampler : register(s0);
 
-cbuffer CameraMatrices : register(b0) {
+//using rc_ as an indicator that this should be a root constant - any other prefix will be interpreted as a cbv
+cbuffer rc_CameraMatrices : register(b0) {
     float4x4 viewMatrix;
     float4x4 projectionMatrix;
     float4x4 modelMatrix;

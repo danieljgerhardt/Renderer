@@ -53,7 +53,7 @@ void ObjectScene::draw(Camera* camera) {
         cmdList->SetGraphicsRoot32BitConstants(0, 16, m.getModelMatrix(), 32);
 
 		Texture& diffuseTex = m.getDiffuseTexture();
-		cmdList->SetGraphicsRootDescriptorTable(2, diffuseTex.getTextureGpuDescriptorHandle());
+		cmdList->SetGraphicsRootDescriptorTable(1, diffuseTex.getTextureGpuDescriptorHandle());
 
         cmdList->DrawIndexedInstanced(m.getNumTriangles() * 3, 1, 0, 0, 0);
     }
