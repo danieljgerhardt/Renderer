@@ -1,5 +1,3 @@
-#include "RootSignature.hlsl"
-
 Texture2D texture : register(t0);
 SamplerState texSampler : register(s0);
 
@@ -17,7 +15,6 @@ struct VSOutput
     float2 UV : TEXCOORD;
 };
 
-[RootSignature(ROOTSIG)]
 float4 main(VSOutput vsOut) : SV_Target
 {
     //return float4(vsOut.Normal * 0.5f + 0.5f, 1.0);

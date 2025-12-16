@@ -1,5 +1,3 @@
-#include "RootSignature.hlsl"
-
 Texture2D texture : register(t0);
 SamplerState texSampler : register(s0);
 
@@ -25,7 +23,6 @@ struct VSOutput
     float2 UV : TEXCOORD;
 };
 
-[RootSignature(ROOTSIG)]
 VSOutput main(VSInput input)
 {
     float4 worldPos = mul(modelMatrix, float4(input.Position, 1.0));
