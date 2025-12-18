@@ -15,7 +15,7 @@ public:
 	~Pipeline() = default;
 
 	virtual void createPSOD() = 0;
-	virtual void createPipelineState(ComPointer<ID3D12Device6> device) = 0;
+	virtual void createPipelineState(ComPointer<ID3D12Device6>& device) = 0;
 
 	void generateRootSignature(DXContext& context, Shader& vertexShader, Shader& pixelShader);
 
@@ -25,7 +25,7 @@ public:
 	ID3D12GraphicsCommandList6* getCommandList() { return cmdList; }
 	CommandListID getCommandListID() { return cmdID; }
 
-	void releaseResources();
+	virtual void releaseResources();
 
 protected:
 	ComPointer<ID3D12RootSignature> rootSignature;

@@ -215,6 +215,9 @@ void Window::shutdown() {
 
     swapChain.Release();
 
+    depthStencilBuffer.Release();
+	dsvDescHeap.Release();
+
     if (window) {
         DestroyWindow(window);
     }

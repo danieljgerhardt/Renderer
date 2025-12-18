@@ -2,16 +2,21 @@
 
 Scene::Scene(Camera* p_camera, DXContext* context)
 	:  camera(p_camera),
-	objectRP("VertexShader.cso", "PixelShader.cso", *context, CommandListID::OBJECT_RENDER_SOLID_ID,
-		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE),
-	objectScene(context, &objectRP),
 	currentRP(),
 	currentCP()
-{}
-
-RenderPipeline* Scene::getObjectPipeline()
 {
-	return &objectRP;
+	renderPipelines.push_back(std::make_unique<RenderPipeline>( "VertexShader.cso", "PixelShader.cso", *context, CommandListID::OBJECT_RENDER_SOLID_ID,
+		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE ));
+
+	std::unique_ptr<ObjectScene> objScene = std::make_unique<ObjectScene>(context, renderPipelines[0].get());
+	drawables.push_back(std::move(objScene));
+
+	std::unique_ptr<PbrScene> pbrScene = std::make_unique<PbrScene>(context, renderPipelines[0].get());
+	drawables.push_back(std::move(pbrScene));
+}
+
+RenderPipeline* Scene::getObjectPipeline() {
+	return renderPipelines[0].get();
 }
 
 void Scene::compute() {
@@ -19,9 +24,20 @@ void Scene::compute() {
 }
 
 void Scene::draw() {
-	objectScene.draw(camera);
+	for (std::unique_ptr<Drawable>& drawable : drawables) {
+		drawable->draw(camera);
+	}
 }
 
 void Scene::releaseResources() {
-	objectScene.releaseResources();
+	for (std::unique_ptr<Drawable>& drawable : drawables) {
+		drawable->releaseResources();
+		drawable.reset();
+	}
+	drawables.clear();
+	for (std::unique_ptr<RenderPipeline>& rp : renderPipelines) {
+		rp->releaseResources();
+		rp.reset();
+	}
+	renderPipelines.clear();
 }

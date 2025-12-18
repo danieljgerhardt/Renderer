@@ -20,7 +20,9 @@ public:
 	unsigned int GetNextAvailableIndex();
 	unsigned int GetDescriptorSize();
 
-	void releaseResources() { descriptorHeap.Release(); }
+	void releaseResources() { 
+		descriptorHeap.Release();
+	}
 
 private:
 	ComPointer<ID3D12DescriptorHeap> descriptorHeap;

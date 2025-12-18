@@ -354,10 +354,11 @@ void StructuredBuffer::copyDataFromGPU(DXContext& context, void* outputData, ID3
 
 ComPointer<ID3D12Resource1>& StructuredBuffer::getBuffer()
 {
-	return this->buffer;
+	return buffer;
 }
 
 void StructuredBuffer::releaseResources()
 {
-	this->buffer.Release();
+	buffer.Release();
+
 }

@@ -15,6 +15,11 @@ DescriptorHeap::DescriptorHeap(DXContext &context, D3D12_DESCRIPTOR_HEAP_TYPE ty
 	if FAILED((device->CreateDescriptorHeap(&description, IID_PPV_ARGS(&descriptorHeap)))) {
 		throw std::runtime_error("Could not create descriptor heap");
 	};
+
+#if defined(_DEBUG)
+	descriptorHeap->SetName(L"RendererHeap");
+#endif
+
 	descriptorSize = device->GetDescriptorHandleIncrementSize(type);
 }
 

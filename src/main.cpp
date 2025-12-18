@@ -87,16 +87,17 @@ int main() {
 		context.resetCommandList(renderPipeline->getCommandListID());
     }
 
-    // Scene should release all resources, including their pipelines
+    //scene should release all drawable and pipeline resources
     scene.releaseResources();
 
+    //release imgui resources
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
-
     imguiSRVHeap->Release();
 
     //flush pending buffer operations in swapchain
     context.flush(FRAME_COUNT);
+
     Window::get().shutdown();
 }

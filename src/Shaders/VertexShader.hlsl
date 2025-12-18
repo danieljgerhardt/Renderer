@@ -1,4 +1,6 @@
+
 Texture2D texture : register(t0);
+
 SamplerState texSampler : register(s0);
 
 //using rc_ as an indicator that this should be a root constant - any other prefix will be interpreted as a cbv

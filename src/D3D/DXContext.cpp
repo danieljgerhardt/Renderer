@@ -59,13 +59,29 @@ DXContext::~DXContext() {
     {
         CloseHandle(fenceEvent);
     }
+
     fence.Release();
+
     cmdQueue.Release();
-    device.Release();
     dxgiFactory.Release();
 
-    queryHeap->Release();
-    queryResultBuffer->Release();
+    queryHeap.Release();
+    queryResultBuffer.Release();
+
+//#if defined(_DEBUG)
+//    {
+//        ID3D12DebugDevice* debugDevice = nullptr;
+//        device->QueryInterface(IID_PPV_ARGS(&debugDevice));
+//
+//        if (debugDevice)
+//        {
+//            debugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL);
+//            debugDevice->Release();
+//        }
+//    }
+//#endif
+    
+    device.Release();
 }
 
 void DXContext::signalAndWait() {

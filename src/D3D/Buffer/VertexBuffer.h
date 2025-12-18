@@ -6,7 +6,7 @@
 #include "D3D/DXContext.h"
 #include "DirectXMath.h"
 
-#include "Scene/Vertex.h"
+#include "Scene/Util/Vertex.h"
 
 using namespace DirectX;
 

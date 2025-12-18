@@ -21,6 +21,6 @@ private:
 	ComPointer<ID3D12Resource1> uploadBuffer;
 	ComPointer<ID3D12Resource1> indexBuffer;
 
-	UINT indexDataSize;
+	UINT indexDataSize{ 0 };
 	std::vector<unsigned int> indexData;
 };

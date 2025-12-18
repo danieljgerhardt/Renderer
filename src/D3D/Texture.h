@@ -16,7 +16,8 @@ enum TextureType {
 	DIFFUSE,
 	NORMAL,
 	EMISSIVE,
-	METALLIC_ROUGHNESS
+	METALLIC_ROUGHNESS,
+	ENV_MAP
 };
 
 struct TextureData {
@@ -30,6 +31,13 @@ class Texture
 {
 public:
 	Texture() = delete;
+
+	Texture(const Texture&) = delete;
+	Texture& operator=(const Texture&) = delete;
+
+	Texture(Texture&&) noexcept = default;
+	Texture& operator=(Texture&&) noexcept = default;
+
 	Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT height, std::vector<unsigned char> imageData, TextureType type);
 	~Texture();
 

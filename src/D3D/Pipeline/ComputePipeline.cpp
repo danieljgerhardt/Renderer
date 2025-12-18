@@ -5,7 +5,7 @@ ComputePipeline::ComputePipeline(const std::string shaderFilePath, DXContext& co
 	: Pipeline(context, cmdID, type, numberOfDescriptors, flags),
 	computeShader(shaderFilePath, ShaderType::ComputeShader)
 {
-	// TODO: this should be in the base pipeline class (same for compute pipeline)
+	// TODO: this should be in the base pipeline class
 	createPSOD();
 	createPipelineState(context.getDevice());
 }
@@ -16,7 +16,7 @@ void ComputePipeline::createPSOD()
 	psoDesc.CS = CD3DX12_SHADER_BYTECODE(computeShader.getBuffer(), computeShader.getSize());
 }
 
-void ComputePipeline::createPipelineState(ComPointer<ID3D12Device6> device)
+void ComputePipeline::createPipelineState(ComPointer<ID3D12Device6>& device)
 {
 	HRESULT hr = device->CreateComputePipelineState(&psoDesc, IID_PPV_ARGS(&pso));
 	if (FAILED(hr)) {

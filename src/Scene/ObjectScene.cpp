@@ -23,10 +23,10 @@ void ObjectScene::constructScene() {
    
     gltfData = Loader::createMeshFromGltf((std::filesystem::current_path() / string).string(), context, renderPipeline->getCommandList(), renderPipeline, m);
     Mesh& newMesh = gltfData.meshes[0];
-    newMesh.assignTextures(gltfData.textures[0], gltfData.textures[0], gltfData.textures[0], gltfData.textures[0]);
+    newMesh.assignTextures(std::move(gltfData.textures[0]), std::move(gltfData.textures[1]), std::move(gltfData.textures[2]), std::move(gltfData.textures[2]));
 
 	newMesh.getDiffuseTexture().makeSrv(context, renderPipeline);
-    meshes.push_back(newMesh);
+    meshes.push_back(std::move(newMesh));
     sceneSize += meshes.back().getNumTriangles();
 }
 
@@ -64,7 +64,7 @@ size_t ObjectScene::getSceneSize() {
 }
 
 void ObjectScene::releaseResources() {
-	for (Mesh m : meshes) {
+	for (Mesh& m : meshes) {
 		m.releaseResources();
 	}
     renderPipeline->releaseResources();

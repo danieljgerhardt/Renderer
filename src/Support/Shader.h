@@ -109,11 +109,12 @@ class Shader
 public:
     Shader() = delete;
     Shader(std::string_view name, ShaderType type);
-    ~Shader();
     inline const void* getBuffer() const { return data; }
     inline size_t getSize() const { return size; }
 
 	ShaderReflectionData& getReflectionData() { return reflectionData; }
+
+	void releaseResources();
 private:
     void* data = nullptr;
     size_t size = 0;

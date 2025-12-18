@@ -43,7 +43,9 @@ void RenderPipeline::createPSOD() {
     gfxPsod.HS.pShaderBytecode = nullptr;
     gfxPsod.GS.BytecodeLength = 0;
     gfxPsod.GS.pShaderBytecode = nullptr;
+
     gfxPsod.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
     gfxPsod.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
     gfxPsod.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
     gfxPsod.RasterizerState.FrontCounterClockwise = FALSE;
@@ -54,6 +56,7 @@ void RenderPipeline::createPSOD() {
     gfxPsod.RasterizerState.MultisampleEnable = FALSE;
     gfxPsod.RasterizerState.AntialiasedLineEnable = FALSE;
     gfxPsod.RasterizerState.ForcedSampleCount = 0;
+
     gfxPsod.StreamOutput.NumEntries = 0;
     gfxPsod.StreamOutput.NumStrides = 0;
     gfxPsod.StreamOutput.pBufferStrides = nullptr;
@@ -61,8 +64,11 @@ void RenderPipeline::createPSOD() {
     gfxPsod.StreamOutput.RasterizedStream = 0;
 
     gfxPsod.NumRenderTargets = 1;
+
     gfxPsod.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+
     gfxPsod.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+
     gfxPsod.BlendState.AlphaToCoverageEnable = FALSE;
     gfxPsod.BlendState.IndependentBlendEnable = FALSE;
     gfxPsod.BlendState.RenderTarget[0].LogicOpEnable = FALSE;
@@ -78,6 +84,7 @@ void RenderPipeline::createPSOD() {
     gfxPsod.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
     gfxPsod.BlendState.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
     gfxPsod.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
     gfxPsod.DepthStencilState.DepthEnable = TRUE;
     gfxPsod.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
     gfxPsod.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
@@ -92,16 +99,26 @@ void RenderPipeline::createPSOD() {
     gfxPsod.DepthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
     gfxPsod.DepthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
     gfxPsod.DepthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+
     gfxPsod.SampleMask = 0xFFFFFFFF;
+
     gfxPsod.SampleDesc.Count = 1;
     gfxPsod.SampleDesc.Quality = 0;
 
     gfxPsod.NodeMask = 0;
+
     gfxPsod.CachedPSO.CachedBlobSizeInBytes = 0;
     gfxPsod.CachedPSO.pCachedBlob = nullptr;
+
     gfxPsod.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 }
 
-void RenderPipeline::createPipelineState(ComPointer<ID3D12Device6> device) {
+void RenderPipeline::createPipelineState(ComPointer<ID3D12Device6>& device) {
 	device->CreateGraphicsPipelineState(&gfxPsod, IID_PPV_ARGS(&pso));
+}
+
+void RenderPipeline::releaseResources() {
+	vertexShader.releaseResources();
+	fragShader.releaseResources();
+	Pipeline::releaseResources();
 }

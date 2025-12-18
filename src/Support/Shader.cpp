@@ -184,14 +184,18 @@ Shader::Shader(std::string_view name, ShaderType type) {
 
 	reflectionData.isReflected = true;
     
-    //data has been parsed
+    //reflection data has been parsed
 
-    //if shader is vert shader, handle input layout
-
+    //TODO - if shader is vert shader, handle input layout
 }
 
-Shader::~Shader() {
-    if (data) {
-        free(data);
-    }
+void Shader::releaseResources()
+{
+	if (data) {
+		free(data);
+		data = nullptr;
+	}
+
+	shaderBlob.Reset();
+	shaderReflection.Reset();
 }

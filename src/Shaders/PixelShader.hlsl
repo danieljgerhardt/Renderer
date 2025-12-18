@@ -1,4 +1,6 @@
+
 Texture2D texture : register(t0);
+
 SamplerState texSampler : register(s0);
 
 cbuffer rc_CameraMatrices : register(b0)

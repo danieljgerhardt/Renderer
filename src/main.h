@@ -12,7 +12,7 @@
 #include "D3D/Pipeline/MeshPipeline.h"
 #include "D3D/Pipeline/ComputePipeline.h"
 
-#include "Scene/Camera.h"
+#include "Scene/Util/Camera.h"
 #include "Scene/Scene.h"
 
 #include "ImGUI/ImGUIHelper.h"

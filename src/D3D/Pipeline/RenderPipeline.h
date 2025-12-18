@@ -12,11 +12,12 @@ public:
 
 	void createPSOD() override;
 
-	void createPipelineState(ComPointer<ID3D12Device6> device) override;
+	void createPipelineState(ComPointer<ID3D12Device6>& device) override;
+
+	void releaseResources() override;
 
 private:
 	Shader vertexShader, fragShader;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC gfxPsod{};
-
 };

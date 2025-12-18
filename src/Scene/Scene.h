@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ObjectScene.h"
+#include "PbrScene.h"
 #include "../D3D/Pipeline/RenderPipeline.h"
 #include "../D3D/Pipeline/ComputePipeline.h"
 #include "../D3D/Pipeline/MeshPipeline.h"
@@ -13,6 +14,7 @@ public:
 	RenderPipeline* getObjectPipeline();
 
 	void compute();
+
 	void draw();
 
 	void releaseResources();
@@ -20,8 +22,8 @@ public:
 private:
 	Camera* camera;
 
-	RenderPipeline objectRP;
-	ObjectScene objectScene;
+	std::vector<std::unique_ptr<RenderPipeline>> renderPipelines;
+	std::vector<std::unique_ptr<Drawable>> drawables;
 
 	RenderPipeline* currentRP;
 	ComputePipeline* currentCP;
