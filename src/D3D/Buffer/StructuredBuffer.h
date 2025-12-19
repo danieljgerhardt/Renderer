@@ -41,24 +41,21 @@ public:
 
 	void passCbvDataToGpu(DXContext& context, DescriptorHeap* dh);
 	void passDataToGpu(DXContext& context, ID3D12GraphicsCommandList6* cmdList, CommandListID id);
-	void createUAV(DXContext& context, DescriptorHeap* dh);
-	void createSRV(DXContext& context, DescriptorHeap* dh);
+	void createUav(DXContext& context, DescriptorHeap* dh);
+	void createSrv(DXContext& context, DescriptorHeap* dh);
 
 	void releaseResources();
 
 private:
-	void findFreeHandle(DescriptorHeap* dh, CD3DX12_CPU_DESCRIPTOR_HANDLE& cpuHandle, CD3DX12_GPU_DESCRIPTOR_HANDLE& gpuHandle);
-
-private:
 	ComPointer<ID3D12Resource1> buffer;
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE UavCpuHandle;
-	CD3DX12_CPU_DESCRIPTOR_HANDLE SrvCpuHandle;
-	CD3DX12_CPU_DESCRIPTOR_HANDLE CbvCpuHandle;
+	CD3DX12_CPU_DESCRIPTOR_HANDLE uavCpuHandle;
+	CD3DX12_CPU_DESCRIPTOR_HANDLE srvCpuHandle;
+	CD3DX12_CPU_DESCRIPTOR_HANDLE cbvCpuHandle;
 
-	CD3DX12_GPU_DESCRIPTOR_HANDLE UavGpuHandle;
-	CD3DX12_GPU_DESCRIPTOR_HANDLE SrvGpuHandle;
-	CD3DX12_GPU_DESCRIPTOR_HANDLE CbvGpuHandle;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE uavGpuHandle;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE srvGpuHandle;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE cbvGpuHandle;
 
 	bool isCbv = false;
 	bool isUav = false;

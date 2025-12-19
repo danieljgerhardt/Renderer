@@ -21,43 +21,63 @@ DescriptorHeap::DescriptorHeap(DXContext &context, D3D12_DESCRIPTOR_HEAP_TYPE ty
 #endif
 
 	descriptorSize = device->GetDescriptorHandleIncrementSize(type);
+
+	cpuStart = get()->GetCPUDescriptorHandleForHeapStart();
+	gpuStart = get()->GetGPUDescriptorHandleForHeapStart();
+
+	freeIndices.reserve(numberOfDescriptors);
+	for (UINT n = numberOfDescriptors; n > 0; n--)
+		freeIndices.push_back(n - 1);
 }
 
-ComPointer<ID3D12DescriptorHeap>& DescriptorHeap::Get()
+ComPointer<ID3D12DescriptorHeap>& DescriptorHeap::get()
 {
 	return descriptorHeap;
 }
 
-ID3D12DescriptorHeap* DescriptorHeap::GetAddress()
+ID3D12DescriptorHeap* DescriptorHeap::getAddress()
 {
 	return descriptorHeap.Get();
 }
 
-CD3DX12_CPU_DESCRIPTOR_HANDLE DescriptorHeap::GetCPUHandleAt(unsigned int index)
-{
-	return CD3DX12_CPU_DESCRIPTOR_HANDLE(descriptorHeap->GetCPUDescriptorHandleForHeapStart(), index, descriptorSize);
-}
-
-CD3DX12_GPU_DESCRIPTOR_HANDLE DescriptorHeap::GetGPUHandleAt(unsigned int index)
-{
-	return CD3DX12_GPU_DESCRIPTOR_HANDLE(descriptorHeap->GetGPUDescriptorHandleForHeapStart(), index, descriptorSize);
-}
-
-unsigned int DescriptorHeap::GetNextAvailableIndex()
-{
-	if (currentDescriptorIndex >= descriptorCount)
-	{
-		assert(false && "Descriptor count within heap has been exceeded!");
-		return 0;
-	}
-
-	unsigned int index = currentDescriptorIndex;
-	currentDescriptorIndex++;
-	return index;
-}
-
-unsigned int DescriptorHeap::GetDescriptorSize()
+unsigned int DescriptorHeap::getDescriptorSize()
 {
 	return descriptorSize;
+}
+
+bool DescriptorHeap::allocate(D3D12_CPU_DESCRIPTOR_HANDLE& outCpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE& outGpuHandle)
+{
+	if (freeIndices.empty())
+		return false;
+
+	UINT idx = freeIndices.back();
+	freeIndices.pop_back();
+
+	outCpuHandle.ptr = cpuStart.ptr + idx * descriptorSize;
+	outGpuHandle.ptr = gpuStart.ptr + idx * descriptorSize;
+
+	return true;
+}
+
+bool DescriptorHeap::allocate(D3D12_CPU_DESCRIPTOR_HANDLE* outCpuHandlePtr, D3D12_GPU_DESCRIPTOR_HANDLE* outGpuHandlePtr)
+{
+	if (freeIndices.empty())
+		return false;
+
+	UINT idx = freeIndices.back();
+	freeIndices.pop_back();
+
+	outCpuHandlePtr->ptr = cpuStart.ptr + idx * descriptorSize;
+	outGpuHandlePtr->ptr = gpuStart.ptr + idx * descriptorSize;
+
+	return true;
+}
+
+void DescriptorHeap::free(D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle)
+{
+	int cpuIdx = (int)((cpuHandle.ptr - cpuStart.ptr) / descriptorSize);
+	int gpuIdx = (int)((gpuHandle.ptr - gpuStart.ptr) / descriptorSize);
+	assert(cpuIdx == gpuIdx);
+	freeIndices.push_back(cpuIdx);
 }
 

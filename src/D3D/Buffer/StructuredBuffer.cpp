@@ -5,40 +5,34 @@ StructuredBuffer::StructuredBuffer(const void* inputData, unsigned int numEle, U
 	: data(inputData), numElements(numEle), elementSize(eleSize)
 {}
 
-void StructuredBuffer::findFreeHandle(DescriptorHeap* dh, CD3DX12_CPU_DESCRIPTOR_HANDLE& cpuHandle, CD3DX12_GPU_DESCRIPTOR_HANDLE& gpuHandle) {
-	unsigned int index = dh->GetNextAvailableIndex();
-    cpuHandle = dh->GetCPUHandleAt(index);
-	gpuHandle = dh->GetGPUHandleAt(index);
-}
-
 CD3DX12_CPU_DESCRIPTOR_HANDLE StructuredBuffer::getUavCpuDescriptorHandle()
 {
-	return UavCpuHandle;
+	return uavCpuHandle;
 }
 
 CD3DX12_GPU_DESCRIPTOR_HANDLE StructuredBuffer::getUavGpuDescriptorHandle()
 {
-	return UavGpuHandle;
+	return uavGpuHandle;
 }
 
 CD3DX12_CPU_DESCRIPTOR_HANDLE StructuredBuffer::getSrvCpuDescriptorHandle()
 {
-    return SrvCpuHandle;
+    return srvCpuHandle;
 }
 
 CD3DX12_GPU_DESCRIPTOR_HANDLE StructuredBuffer::getSrvGpuDescriptorHandle()
 {
-    return SrvGpuHandle;
+    return srvGpuHandle;
 }
 
 CD3DX12_CPU_DESCRIPTOR_HANDLE StructuredBuffer::getCbvCpuDescriptorHandle()
 {
-	return CbvCpuHandle;
+	return cbvCpuHandle;
 }
 
 CD3DX12_GPU_DESCRIPTOR_HANDLE StructuredBuffer::getCbvGpuDescriptorHandle()
 {
-	return CbvGpuHandle;
+	return cbvGpuHandle;
 }
 
 D3D12_GPU_VIRTUAL_ADDRESS StructuredBuffer::getGpuVirtualAddress()
@@ -55,7 +49,6 @@ void StructuredBuffer::passCbvDataToGpu(DXContext& context, DescriptorHeap* dh) 
 		throw std::runtime_error("Cannot create CBV after creating UAV or SRV.");
 	}
 
-    findFreeHandle(dh, CbvCpuHandle, CbvGpuHandle);
     isCbv = true;
 
     // Calculate the aligned buffer size (256-byte alignment required for CBV)
@@ -98,7 +91,8 @@ void StructuredBuffer::passCbvDataToGpu(DXContext& context, DescriptorHeap* dh) 
     cbvDesc.BufferLocation = buffer->GetGPUVirtualAddress();
     cbvDesc.SizeInBytes = bufferSize; // Must be 256-byte aligned
 
-    context.getDevice()->CreateConstantBufferView(&cbvDesc, CbvCpuHandle);
+	dh->allocate(cbvCpuHandle, cbvGpuHandle);
+    context.getDevice()->CreateConstantBufferView(&cbvDesc, cbvCpuHandle);
 }
 
 void StructuredBuffer::passDataToGpu(DXContext& context, ID3D12GraphicsCommandList6* cmdList, CommandListID cmdId) {
@@ -207,7 +201,7 @@ void StructuredBuffer::passDataToGpu(DXContext& context, ID3D12GraphicsCommandLi
     context.resetCommandList(cmdId);
 }
 
-void StructuredBuffer::createUAV(DXContext& context, DescriptorHeap* dh) {
+void StructuredBuffer::createUav(DXContext& context, DescriptorHeap* dh) {
 
 	if (isCbv) {
 		throw std::runtime_error("Cannot create UAV after creating CBV.");
@@ -216,8 +210,6 @@ void StructuredBuffer::createUAV(DXContext& context, DescriptorHeap* dh) {
 		throw std::runtime_error("UAV already created.");
 	}
 
-	findFreeHandle(dh, UavCpuHandle, UavGpuHandle);
-
     // Create the UAV in the descriptor heap
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
@@ -225,12 +217,13 @@ void StructuredBuffer::createUAV(DXContext& context, DescriptorHeap* dh) {
     uavDesc.Buffer.NumElements = numElements;
     uavDesc.Buffer.StructureByteStride = elementSize;
 
-    context.getDevice()->CreateUnorderedAccessView(buffer.Get(), nullptr, &uavDesc, UavCpuHandle);
+	dh->allocate(uavCpuHandle, uavGpuHandle);
+    context.getDevice()->CreateUnorderedAccessView(buffer.Get(), nullptr, &uavDesc, uavCpuHandle);
 
 	isUav = true;
 }
 
-void StructuredBuffer::createSRV(DXContext& context, DescriptorHeap* dh) {
+void StructuredBuffer::createSrv(DXContext& context, DescriptorHeap* dh) {
 
 	if (isCbv) {
 		throw std::runtime_error("Cannot create SRV after creating CBV.");
@@ -238,8 +231,6 @@ void StructuredBuffer::createSRV(DXContext& context, DescriptorHeap* dh) {
 	else if (isSrv) {
 		throw std::runtime_error("SRV already created.");
 	}
-
-	findFreeHandle(dh, SrvCpuHandle, SrvGpuHandle);
 
 	// Create the SRV in the descriptor heap
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -250,7 +241,8 @@ void StructuredBuffer::createSRV(DXContext& context, DescriptorHeap* dh) {
 	srvDesc.Buffer.NumElements = numElements;
 	srvDesc.Buffer.StructureByteStride = elementSize;
 
-	context.getDevice()->CreateShaderResourceView(buffer.Get(), &srvDesc, SrvCpuHandle);
+	dh->allocate(srvCpuHandle, srvGpuHandle);
+	context.getDevice()->CreateShaderResourceView(buffer.Get(), &srvDesc, srvCpuHandle);
 
 	isSrv = true;
 }
