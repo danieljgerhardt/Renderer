@@ -74,34 +74,20 @@ bool Window::init(DXContext* contextPtr, int w, int h) {
     }
 
     // Create RTV Heap
-    D3D12_DESCRIPTOR_HEAP_DESC descHeapDesc{};
-    descHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-    descHeapDesc.NumDescriptors = FRAME_COUNT;
-    descHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    descHeapDesc.NodeMask = 0;
-    if (FAILED(dxContext->getDevice()->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&rtvDescHeap)))) {
-        return false;
-    }
+	rtvDescHeap = std::make_unique<DescriptorHeap>(*dxContext, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, FRAME_COUNT, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 
-    // Create handles to view
-    auto firstHandle = rtvDescHeap->GetCPUDescriptorHandleForHeapStart();
-    auto handleIncrement = dxContext->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    //create rtv handles for view
     for (size_t i = 0; i < FRAME_COUNT; i++) {
-        rtvHandles[i] = firstHandle;
-        rtvHandles[i].ptr += handleIncrement * i;
+		D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle{};
+        rtvDescHeap->allocate(rtvHandles[i], gpuHandle);
     }
 
     // Create DSV Heap
-    D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
-    dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-    dsvHeapDesc.NumDescriptors = 1;
-    dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    if (FAILED(dxContext->getDevice()->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvDescHeap)))) {
-        return false;
-    }
+	dsvDescHeap = std::make_unique<DescriptorHeap>(*dxContext, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 
     // Create handles to view
-    dsvHandle = dsvDescHeap->GetCPUDescriptorHandleForHeapStart();
+	D3D12_GPU_DESCRIPTOR_HANDLE dsvGpuHandle{};
+	dsvDescHeap->allocate(dsvHandle, dsvGpuHandle);
 
     // Create the depth stencil view
     D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
@@ -211,12 +197,12 @@ void Window::endFrame(ID3D12GraphicsCommandList6* cmdList) {
 void Window::shutdown() {
     releaseBuffers();
 
-    rtvDescHeap.Release();
+    rtvDescHeap->releaseResources();
 
     swapChain.Release();
 
     depthStencilBuffer.Release();
-	dsvDescHeap.Release();
+	dsvDescHeap->releaseResources();
 
     if (window) {
         DestroyWindow(window);
