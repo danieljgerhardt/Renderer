@@ -65,11 +65,9 @@ void Texture::makeSrv(DXContext* context, RenderPipeline* pipeline)
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MipLevels = 1;
 
-    heapIndex = pipeline->getDescriptorHeap()->GetNextAvailableIndex();
-    D3D12_CPU_DESCRIPTOR_HANDLE handle = pipeline->getDescriptorHeap()->GetCPUHandleAt(heapIndex);
-    context->getDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, handle);
-
-    textureGpuDescriptorHandle = pipeline->getDescriptorHeap()->GetGPUHandleAt(heapIndex);
+    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
+    heapIndex = pipeline->getDescriptorHeap()->allocate(cpuHandle, textureGpuDescriptorHandle);
+    context->getDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, cpuHandle);
 }
 
 void Texture::releaseResources()

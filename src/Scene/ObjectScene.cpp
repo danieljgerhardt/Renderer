@@ -43,7 +43,7 @@ void ObjectScene::draw(Camera* camera) {
         cmdList->SetGraphicsRootSignature(renderPipeline->getRootSignature());
         
         // == ROOT ==
-        ID3D12DescriptorHeap* descriptorHeaps[] = { renderPipeline->getDescriptorHeap()->GetAddress() };
+        ID3D12DescriptorHeap* descriptorHeaps[] = { renderPipeline->getDescriptorHeap()->getAddress() };
         cmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
         auto viewMat = camera->getViewMat();
