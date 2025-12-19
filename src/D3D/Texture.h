@@ -9,7 +9,7 @@
 
 //TODO - unused, will be needed for more complex texture support
 enum TextureFormat {
-	RGBA32_FLOAT, //essentially just defaulting to this
+	RGBA32_FLOAT, //defaulting to this
 };
 
 enum TextureType {

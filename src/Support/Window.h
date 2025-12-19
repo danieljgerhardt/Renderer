@@ -73,10 +73,10 @@ private:
 	ComPointer<ID3D12Resource1> swapChainBuffers[FRAME_COUNT];
 	size_t currentSwapChainBufferIdx = 0;
 
-	ComPointer<ID3D12DescriptorHeap> rtvDescHeap;
+	std::unique_ptr<DescriptorHeap> rtvDescHeap;
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[FRAME_COUNT];
 
-	ComPointer<ID3D12DescriptorHeap> dsvDescHeap;
+	std::unique_ptr<DescriptorHeap> dsvDescHeap;
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
     ComPointer<ID3D12Resource> depthStencilBuffer;
 
