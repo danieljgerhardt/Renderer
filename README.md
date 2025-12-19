@@ -4,15 +4,15 @@ List of goals:
 - [x] Remove Breakpoint files
 - [x] Rename sln
 - [x] Rework scene organization to actually make sense
-- [ ] Abstract DX repeated logic(fences, etc.)
 - [x] Add GLTF importing
 - [x] Add texture/material support
+- [ ] Add resource manager
+- [ ] Add DGR namespace wrapper
+- [ ] Refactor main + ImGUI for neater code
 - [ ] Add environment mapping
+- [ ] Add rasterized PBR support
 - [ ] Add skinning
-- [ ] Add PBR support for rasterization
-- [ ] Update IMGUI to be useful for the renderer
-- [ ] Add path tracing mode
+- [ ] Add path tracing with DXR
 - [ ] Use render graph
-- [ ] Support deferred rendering
-- [ ] Add SSR
+- [ ] Add SSR and deferred rendering for rasterized PBR
 - [ ] Support multiple lights with forward, clustered, etc.
