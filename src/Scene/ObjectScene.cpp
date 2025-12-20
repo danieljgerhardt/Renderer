@@ -22,20 +22,21 @@ void ObjectScene::constructScene() {
     auto m = modelMatrices.front();
    
     gltfData = Loader::createMeshFromGltf((std::filesystem::current_path() / string).string(), context, renderPipeline->getCommandList(), renderPipeline, m);
-    Mesh& newMesh = gltfData.meshes[0];
-    newMesh.assignTextures(std::move(gltfData.textures[0]), std::move(gltfData.textures[1]), std::move(gltfData.textures[2]), std::move(gltfData.textures[2]));
+    Mesh* newMesh = gltfData.meshes[0];
+    //newMesh.assignTextures(std::move(gltfData.textures[0]), std::move(gltfData.textures[1]), std::move(gltfData.textures[2]), std::move(gltfData.textures[2]));
+	newMesh->assignTexture(TextureType::DIFFUSE, gltfData.textures[0]);
 
-	newMesh.getDiffuseTexture().makeSrv(context, renderPipeline);
-    meshes.push_back(std::move(newMesh));
-    sceneSize += meshes.back().getNumTriangles();
+	newMesh->getDiffuseTexture()->makeSrv(context, renderPipeline);
+    meshes.push_back(newMesh);
+    sceneSize += meshes.back()->getNumTriangles();
 }
 
 void ObjectScene::draw(Camera* camera) {
-    for (Mesh& m : meshes) {
+    for (Mesh* m : meshes) {
         // == IA ==
         auto cmdList = renderPipeline->getCommandList();
-        cmdList->IASetVertexBuffers(0, 1, m.getVBV());
-        cmdList->IASetIndexBuffer(m.getIBV());
+        cmdList->IASetVertexBuffers(0, 1, m->getVBV());
+        cmdList->IASetIndexBuffer(m->getIBV());
         cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
         // == PSO ==
@@ -50,12 +51,12 @@ void ObjectScene::draw(Camera* camera) {
         auto projMat = camera->getProjMat();
         cmdList->SetGraphicsRoot32BitConstants(0, 16, &viewMat, 0);
         cmdList->SetGraphicsRoot32BitConstants(0, 16, &projMat, 16);
-        cmdList->SetGraphicsRoot32BitConstants(0, 16, m.getModelMatrix(), 32);
+        cmdList->SetGraphicsRoot32BitConstants(0, 16, m->getModelMatrix(), 32);
 
-		Texture& diffuseTex = m.getDiffuseTexture();
+		Texture& diffuseTex = *m->getDiffuseTexture();
 		cmdList->SetGraphicsRootDescriptorTable(1, diffuseTex.getTextureGpuDescriptorHandle());
 
-        cmdList->DrawIndexedInstanced(m.getNumTriangles() * 3, 1, 0, 0, 0);
+        cmdList->DrawIndexedInstanced(m->getNumTriangles() * 3, 1, 0, 0, 0);
     }
 }
 
@@ -64,8 +65,8 @@ size_t ObjectScene::getSceneSize() {
 }
 
 void ObjectScene::releaseResources() {
-	for (Mesh& m : meshes) {
-		m.releaseResources();
+	for (Mesh* m : meshes) {
+		m->releaseResources();
 	}
     renderPipeline->releaseResources();
 }

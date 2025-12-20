@@ -17,6 +17,8 @@
 
 #include "ImGUI/ImGUIHelper.h"
 
+#include "D3D/ResourceManager.h"
+
 static ImGUIDescriptorHeapAllocator imguiHeapAllocator;
 static ID3D12DescriptorHeap* imguiSRVHeap = nullptr;
 

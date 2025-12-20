@@ -4,13 +4,16 @@
 
 #include "Support/WinInclude.h"
 
-#include "Mesh.h"
+#include "D3D/ResourceManager.h"
+
 #include "D3D/Texture.h"
+
+#include "Mesh.h"
 #include "Vertex.h"
 
 struct GltfData {
-	std::vector<Mesh> meshes;
-	std::vector<Texture> textures;
+	std::vector<Mesh*> meshes;
+	std::vector<Texture*> textures;
 };
 
 struct GltfConstructionData {

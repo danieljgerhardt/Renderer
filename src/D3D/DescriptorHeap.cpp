@@ -23,7 +23,9 @@ DescriptorHeap::DescriptorHeap(DXContext &context, D3D12_DESCRIPTOR_HEAP_TYPE ty
 	descriptorSize = device->GetDescriptorHandleIncrementSize(type);
 
 	cpuStart = get()->GetCPUDescriptorHandleForHeapStart();
-	gpuStart = get()->GetGPUDescriptorHandleForHeapStart();
+	if (type != D3D12_DESCRIPTOR_HEAP_TYPE_DSV && type != D3D12_DESCRIPTOR_HEAP_TYPE_RTV) {
+		gpuStart = get()->GetGPUDescriptorHandleForHeapStart();
+	}
 
 	freeIndices.reserve(numberOfDescriptors);
 	for (UINT n = numberOfDescriptors; n > 0; n--)

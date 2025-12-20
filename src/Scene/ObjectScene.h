@@ -20,7 +20,7 @@ public:
 	bool instanced{ false };
 
 private:
-	std::vector<Mesh> meshes;
+	std::vector<Mesh*> meshes;
 	std::vector<XMFLOAT4X4> modelMatrices;
 
 	size_t sceneSize{ 0 };

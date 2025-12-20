@@ -4,9 +4,12 @@ int main() {
     //set up DX, window, keyboard mouse
     DebugLayer debugLayer = DebugLayer();
     DXContext context = DXContext();
+
     std::unique_ptr<Camera> camera = std::make_unique<Camera>();
     std::unique_ptr<Keyboard> keyboard = std::make_unique<Keyboard>();
     std::unique_ptr<Mouse> mouse = std::make_unique<Mouse>();
+
+	ResourceManager& resourceManager = ResourceManager::get(&context);
 
     if (!Window::get().init(&context, SCREEN_WIDTH, SCREEN_HEIGHT)) {
         //handle could not initialize window
@@ -20,12 +23,6 @@ int main() {
 
     //set mouse to use the window
     mouse->SetWindow(Window::get().getHWND());
-
-    // Get the client area of the window
-    RECT rect;
-    GetClientRect(Window::get().getHWND(), &rect);
-    float clientWidth = static_cast<float>(rect.right - rect.left);
-    float clientHeight = static_cast<float>(rect.bottom - rect.top);
 
     //initialize scene
     Scene scene{camera.get(), &context};
@@ -98,6 +95,8 @@ int main() {
 
     //flush pending buffer operations in swapchain
     context.flush(FRAME_COUNT);
+
+	ResourceManager::get(&context).releaseAllResources();
 
     Window::get().shutdown();
 }

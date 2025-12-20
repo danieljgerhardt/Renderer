@@ -37,7 +37,7 @@ public:
 	Mesh(Mesh&&) noexcept = default;
 	Mesh& operator=(Mesh&&) noexcept = default;
 
-	Mesh(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, MeshData meshData);
+	Mesh(DXContext* context, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, MeshData meshData);
 
 	~Mesh();
 
@@ -51,15 +51,26 @@ public:
 	UINT getNumTriangles();
 
 	//TODO - use smart pointers or resource manager to cleanly transfer ownership
-	void assignTextures(Texture diffuseTex, Texture normalTex, Texture metallicRoughnessTex, Texture emissiveTex) {
+	void assignTexture(TextureType type, Texture* tex) {
 		textures.reserve(4);
-		textures.push_back(std::move(diffuseTex));
-		textures.push_back(std::move(normalTex));
-		textures.push_back(std::move(metallicRoughnessTex));
-		textures.push_back(std::move(emissiveTex));
+
+		switch (type) {
+		case TextureType::DIFFUSE:
+			textures.push_back(tex);
+			break;
+		case TextureType::NORMAL:
+			textures.push_back(tex);
+			break;
+		case TextureType::METALLIC_ROUGHNESS:
+			textures.push_back(tex);
+			break;
+		case TextureType::EMISSIVE:
+			textures.push_back(tex);
+			break;
+		}
 	}
 
-	Texture& getDiffuseTexture() {
+	Texture* getDiffuseTexture() {
 		return textures[0];
 	}
 
@@ -69,12 +80,12 @@ private:
 	std::vector<unsigned int> indices;
 	UINT numTriangles;
 
-	VertexBuffer vertexBuffer;
-	IndexBuffer indexBuffer;
+	VertexBuffer* vertexBuffer;
+	IndexBuffer* indexBuffer;
 	D3D12_VERTEX_BUFFER_VIEW vbv;
 	D3D12_INDEX_BUFFER_VIEW ibv;
 
 	XMFLOAT4X4 modelMatrix;
 
-	std::vector<Texture> textures;
+	std::vector<Texture*> textures;
 };
