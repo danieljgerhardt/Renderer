@@ -68,7 +68,7 @@ int main() {
         //render ImGUI
         ImGui::Render();
 
-        renderPipeline->getCommandList()->SetDescriptorHeaps(1, &imguiSRVHeap);
+        renderPipeline->getCommandList()->SetDescriptorHeaps(1, &imguiSrvHeapPtr);
         ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), renderPipeline->getCommandList());
 
         context.executeCommandList(renderPipeline->getCommandListID());
@@ -91,7 +91,6 @@ int main() {
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
-    imguiSRVHeap->Release();
 
     //flush pending buffer operations in swapchain
     context.flush(FRAME_COUNT);
