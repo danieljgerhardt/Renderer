@@ -1,4 +1,4 @@
-This is going to be my pet renderer. It was initially built off a DX12 base I wrote for a project called Breakpoint. I am going to gut the "Breakpoint" part of the project and start building a renderer out of it, to keep my programming and graphics knowledge up.
+This is my personal renderer project. It was initially built off a DX12 base I wrote for a project called Breakpoint. I have gutted the "Breakpoint" part of the project and built a renderer out of it, to keep my programming and graphics knowledge up and have some fun.
 
 List of goals:
 - [x] Remove Breakpoint files
@@ -6,9 +6,9 @@ List of goals:
 - [x] Rework scene organization to actually make sense
 - [x] Add GLTF importing
 - [x] Add texture/material support
-- [ ] Add resource manager
+- [x] Add resource manager
+- [x] Refactor main + ImGUI for neater code
 - [ ] Add DGR namespace wrapper
-- [ ] Refactor main + ImGUI for neater code
 - [ ] Add environment mapping
 - [ ] Add rasterized PBR support
 - [ ] Add skinning
