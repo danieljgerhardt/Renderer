@@ -17,8 +17,10 @@
 
 #include "ImGUI/ImGUIHelper.h"
 
-static ImGUIDescriptorHeapAllocator imguiHeapAllocator;
-static ID3D12DescriptorHeap* imguiSRVHeap = nullptr;
+#include "D3D/ResourceManager.h"
+
+static ID3D12DescriptorHeap* imguiSrvHeapPtr = nullptr;
+static DescriptorHeap* imguiSrvHeap = nullptr;
 
 ImGuiIO& initImGUI(DXContext& context) {
     IMGUI_CHECKVERSION();
@@ -34,23 +36,20 @@ ImGuiIO& initImGUI(DXContext& context) {
     ImGui_ImplDX12_InitInfo imguiDXInfo;
     imguiDXInfo.CommandQueue = context.getCommandQueue();
     imguiDXInfo.Device = context.getDevice();
-    imguiDXInfo.NumFramesInFlight = 2;
+    imguiDXInfo.NumFramesInFlight = FRAME_COUNT;
     imguiDXInfo.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-    desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    desc.NumDescriptors = 64;
-    desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    if (context.getDevice()->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&imguiSRVHeap)) != S_OK) {
-        std::cout << "could not create imgui descriptor heap\n";
-        Window::get().shutdown();
-    }
-    imguiHeapAllocator.Create(context.getDevice(), imguiSRVHeap);
-
-    imguiHeapAllocator.Heap = imguiSRVHeap;
-    imguiDXInfo.SrvDescriptorHeap = imguiSRVHeap;
-    imguiDXInfo.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle) { return imguiHeapAllocator.Alloc(out_cpu_handle, out_gpu_handle); };
-    imguiDXInfo.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle) { return imguiHeapAllocator.Free(cpu_handle, gpu_handle); };
+	ResourceHandle imguiHeapHandle = ResourceManager::get(&context).createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 64, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+	imguiSrvHeap = ResourceManager::get(&context).getDescriptorHeap(imguiHeapHandle);
+	imguiSrvHeapPtr = imguiSrvHeap->getAddress();
+    
+    imguiDXInfo.SrvDescriptorHeap = imguiSrvHeapPtr;
+    imguiDXInfo.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle) { 
+        imguiSrvHeap->allocate(out_cpu_handle, out_gpu_handle);
+    };
+    imguiDXInfo.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle) { 
+        imguiSrvHeap->free(cpu_handle, gpu_handle);
+    };
 
     ImGui_ImplDX12_Init(&imguiDXInfo);
 

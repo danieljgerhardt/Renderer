@@ -29,7 +29,7 @@ public:
 
 protected:
 	ComPointer<ID3D12RootSignature> rootSignature;
-	DescriptorHeap descriptorHeap;
+	DescriptorHeap* descriptorHeap;
 	ComPointer<ID3D12PipelineState> pso;
 	CommandListID cmdID;
 

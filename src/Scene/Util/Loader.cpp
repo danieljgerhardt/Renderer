@@ -230,16 +230,22 @@ GltfData Loader::createMeshFromGltf(std::string fileLocation, DXContext* context
 	loadDataFromGltf(fileLocation, constructionData);
 
 	//create and return meshes
-	std::vector<Mesh> newMeshes;
+	std::vector<Mesh*> newMeshes;
 	newMeshes.reserve(constructionData.meshDataVector.size());
     for (auto& meshData : constructionData.meshDataVector) {
-		newMeshes.emplace_back(fileLocation, context, cmdList, pipeline, modelMatrix, meshData);
+		//newMeshes.emplace_back(context, pipeline, modelMatrix, meshData);
+		newMeshes.emplace_back(ResourceManager::get(context).getMesh(
+			ResourceManager::get(context).createMesh(pipeline, modelMatrix, meshData)
+		));
     }
 
-    std::vector<Texture> newTextures;
+    std::vector<Texture*> newTextures;
 	newTextures.reserve(constructionData.textureDataVector.size());
     for (auto& textureData : constructionData.textureDataVector) {
-        newTextures.emplace_back(context, pipeline, textureData.width, textureData.height, textureData.imageData, textureData.type);
+        //newTextures.emplace_back(context, pipeline, textureData.width, textureData.height, textureData.imageData, textureData.type);
+		newTextures.emplace_back(ResourceManager::get(context).getTexture(
+			ResourceManager::get(context).createTexture(pipeline, textureData.width, textureData.height, textureData.imageData, textureData.type)
+		));
     }
     
     return { std::move(newMeshes), std::move(newTextures) };

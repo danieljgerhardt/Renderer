@@ -1,10 +1,15 @@
 #include "Pipeline.h"
 
+#include "D3D/ResourceManager.h"
+
 Pipeline::Pipeline(DXContext& context, CommandListID cmdID,
 	D3D12_DESCRIPTOR_HEAP_TYPE type, unsigned int numberOfDescriptors, D3D12_DESCRIPTOR_HEAP_FLAGS flags)
-	: descriptorHeap(context, type, numberOfDescriptors, flags), cmdID(cmdID),
-	cmdList(context.createCommandList(cmdID))
+	: cmdID(cmdID), cmdList(context.createCommandList(cmdID))
 {
+	//TODO - number of descriptors should be pulled from reflection if possible
+	ResourceManager& manager = ResourceManager::get(&context);
+	descriptorHeap = manager.getDescriptorHeap(manager.createDescriptorHeap(type, numberOfDescriptors, flags));
+
   	context.resetCommandList(cmdID);
 }
 
@@ -80,11 +85,10 @@ ComPointer<ID3D12RootSignature>& Pipeline::getRootSignature()
 
 DescriptorHeap* Pipeline::getDescriptorHeap()
 {
-	return &descriptorHeap;
+	return descriptorHeap;
 }
 
 void Pipeline::releaseResources()
 {
 	rootSignature.Release();
-	descriptorHeap.releaseResources();
 }

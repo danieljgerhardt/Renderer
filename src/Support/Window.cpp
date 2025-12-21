@@ -1,5 +1,7 @@
 #include "Window.h"
 
+#include "D3D/ResourceManager.h"
+
 bool Window::init(DXContext* contextPtr, int w, int h) {
     width = w;
     height = h;
@@ -74,7 +76,8 @@ bool Window::init(DXContext* contextPtr, int w, int h) {
     }
 
     // Create RTV Heap
-	rtvDescHeap = std::make_unique<DescriptorHeap>(*dxContext, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, FRAME_COUNT, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+	ResourceHandle rtvDescHeapHandle = ResourceManager::get(dxContext).createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, FRAME_COUNT, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+	rtvDescHeap = ResourceManager::get(dxContext).getDescriptorHeap(rtvDescHeapHandle);
 
     //create rtv handles for view
     for (size_t i = 0; i < FRAME_COUNT; i++) {
@@ -83,7 +86,8 @@ bool Window::init(DXContext* contextPtr, int w, int h) {
     }
 
     // Create DSV Heap
-	dsvDescHeap = std::make_unique<DescriptorHeap>(*dxContext, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+	ResourceHandle dsvDescHeapHandle = ResourceManager::get(dxContext).createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+	dsvDescHeap = ResourceManager::get(dxContext).getDescriptorHeap(dsvDescHeapHandle);
 
     // Create handles to view
 	D3D12_GPU_DESCRIPTOR_HANDLE dsvGpuHandle{};
@@ -197,12 +201,9 @@ void Window::endFrame(ID3D12GraphicsCommandList6* cmdList) {
 void Window::shutdown() {
     releaseBuffers();
 
-    rtvDescHeap->releaseResources();
-
     swapChain.Release();
 
     depthStencilBuffer.Release();
-	dsvDescHeap->releaseResources();
 
     if (window) {
         DestroyWindow(window);
