@@ -115,6 +115,9 @@ void RenderPipeline::createPSOD() {
 
 void RenderPipeline::createPipelineState(ComPointer<ID3D12Device6>& device) {
 	device->CreateGraphicsPipelineState(&gfxPsod, IID_PPV_ARGS(&pso));
+#if defined(_DEBUG)
+    pso->SetName(L"RenderPipelinePSO");
+#endif
 }
 
 void RenderPipeline::releaseResources() {

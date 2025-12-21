@@ -1,11 +1,7 @@
 #include <iostream>
 
 #include "Support/WinInclude.h"
-#include "Support/ComPointer.h"
 #include "Support/Window.h"
-#include "Support/Shader.h"
-
-#include "Debug/DebugLayer.h"
 
 #include "D3D/DXContext.h"
 #include "D3D/Pipeline/RenderPipeline.h"
@@ -15,13 +11,11 @@
 #include "Scene/Util/Camera.h"
 #include "Scene/Scene.h"
 
-#include "ImGUI/ImGUIHelper.h"
 #include "Support/ImguiHelper.h"
 
 #include "D3D/ResourceManager.h"
 
 int main() {
-    //set up DX, window, keyboard mouse
     DebugLayer debugLayer = DebugLayer();
     DXContext context = DXContext();
 
@@ -30,30 +24,31 @@ int main() {
     std::unique_ptr<Mouse> mouse = std::make_unique<Mouse>();
 
 	ResourceManager& resourceManager = ResourceManager::get(&context);
+	Window& window = Window::get();
 
-    if (!Window::get().init(&context, SCREEN_WIDTH, SCREEN_HEIGHT)) {
+    if (!window.init(&context, SCREEN_WIDTH, SCREEN_HEIGHT)) {
         //handle could not initialize window
         std::cout << "could not initialize window\n";
-        Window::get().shutdown();
+        window.shutdown();
         return false;
     }
 
     ImguiManager imguiManager{ context };
 
     //set mouse to use the window
-    mouse->SetWindow(Window::get().getHWND());
+    mouse->SetWindow(window.getHWND());
 
     //initialize scene
     Scene scene{camera.get(), &context};
 
-    while (!Window::get().getShouldClose()) {
+    while (!window.getShouldClose()) {
         //update window
-        Window::get().update();
-        if (Window::get().getShouldResize()) {
+        window.update();
+        if (window.getShouldResize()) {
             //flush pending buffer operations in swapchain
             context.flush(FRAME_COUNT);
-            Window::get().resize();
-            camera->updateAspect((float)Window::get().getWidth() / (float)Window::get().getHeight());
+            window.resize();
+            camera->updateAspect((float)window.getWidth() / (float)window.getHeight());
         }
 
         auto kState = keyboard->GetState();
@@ -64,14 +59,14 @@ int main() {
         auto renderPipeline = scene.getObjectPipeline();
 
         //begin frame
-        Window::get().beginFrame(renderPipeline->getCommandList());
+        window.beginFrame(renderPipeline->getCommandList());
 
         //create viewport
         D3D12_VIEWPORT vp;
-        Window::get().createViewport(vp, renderPipeline->getCommandList());
+        window.createViewport(vp, renderPipeline->getCommandList());
 
-        Window::get().setRT(renderPipeline->getCommandList());
-        Window::get().setViewport(vp, renderPipeline->getCommandList());
+        window.setRT(renderPipeline->getCommandList());
+        window.setViewport(vp, renderPipeline->getCommandList());
 
 		//draw scene
 		scene.draw();
@@ -82,11 +77,11 @@ int main() {
         context.resetCommandList(renderPipeline->getCommandListID());
 
         //end frame
-        Window::get().endFrame(renderPipeline->getCommandList());
+        window.endFrame(renderPipeline->getCommandList());
 
         // Execute command list
 		context.executeCommandList(renderPipeline->getCommandListID());
-        Window::get().present();
+        window.present();
 		context.resetCommandList(renderPipeline->getCommandListID());
     }
 
@@ -99,7 +94,7 @@ int main() {
     //flush pending buffer operations in swapchain
     context.flush(FRAME_COUNT);
 
-	ResourceManager::get(&context).releaseAllResources();
+	resourceManager.releaseAllResources();
 
-    Window::get().shutdown();
+    window.shutdown();
 }

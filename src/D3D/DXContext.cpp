@@ -68,18 +68,18 @@ DXContext::~DXContext() {
     queryHeap.Release();
     queryResultBuffer.Release();
 
-//#if defined(_DEBUG)
-//    {
-//        ID3D12DebugDevice* debugDevice = nullptr;
-//        device->QueryInterface(IID_PPV_ARGS(&debugDevice));
-//
-//        if (debugDevice)
-//        {
-//            debugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL);
-//            debugDevice->Release();
-//        }
-//    }
-//#endif
+#if defined(_DEBUG)
+    {
+        ID3D12DebugDevice* debugDevice = nullptr;
+        device->QueryInterface(IID_PPV_ARGS(&debugDevice));
+
+        if (debugDevice)
+        {
+            debugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL);
+            debugDevice->Release();
+        }
+    }
+#endif
     
     device.Release();
 }
