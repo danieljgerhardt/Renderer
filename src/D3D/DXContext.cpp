@@ -50,7 +50,6 @@ DXContext::~DXContext() {
     for (auto& cmdList : cmdLists) {
         cmdList.Release();
     }
-
     for (auto& cmdAllocator : cmdAllocators) {
         cmdAllocator.Release();
     }
@@ -59,29 +58,25 @@ DXContext::~DXContext() {
     {
         CloseHandle(fenceEvent);
     }
-
     fence.Release();
 
     cmdQueue.Release();
-    dxgiFactory.Release();
 
     queryHeap.Release();
     queryResultBuffer.Release();
 
-//#if defined(_DEBUG)
-//    {
-//        ID3D12DebugDevice* debugDevice = nullptr;
-//        device->QueryInterface(IID_PPV_ARGS(&debugDevice));
-//
-//        if (debugDevice)
-//        {
-//            debugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL);
-//            debugDevice->Release();
-//        }
-//    }
-//#endif
-    
+    dxgiFactory.Release();
+
     device.Release();
+
+#if defined(_DEBUG)
+    IDXGIDebug1* dxgiDebug = nullptr;
+    if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug))))
+    {
+        dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
+        dxgiDebug->Release();
+    }
+#endif
 }
 
 void DXContext::signalAndWait() {
