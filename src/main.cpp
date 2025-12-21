@@ -1,4 +1,24 @@
-#include "main.h"
+#include <iostream>
+
+#include "Support/WinInclude.h"
+#include "Support/ComPointer.h"
+#include "Support/Window.h"
+#include "Support/Shader.h"
+
+#include "Debug/DebugLayer.h"
+
+#include "D3D/DXContext.h"
+#include "D3D/Pipeline/RenderPipeline.h"
+#include "D3D/Pipeline/MeshPipeline.h"
+#include "D3D/Pipeline/ComputePipeline.h"
+
+#include "Scene/Util/Camera.h"
+#include "Scene/Scene.h"
+
+#include "ImGUI/ImGUIHelper.h"
+#include "Support/ImguiHelper.h"
+
+#include "D3D/ResourceManager.h"
 
 int main() {
     //set up DX, window, keyboard mouse
@@ -18,8 +38,7 @@ int main() {
         return false;
     }
 
-    //initialize ImGUI
-    ImGuiIO& io = initImGUI(context);
+    ImguiManager imguiManager{ context };
 
     //set mouse to use the window
     mouse->SetWindow(Window::get().getHWND());
@@ -57,29 +76,16 @@ int main() {
 		//draw scene
 		scene.draw();
 
-        //set up ImGUI for frame
-        ImGui_ImplDX12_NewFrame();
-        ImGui_ImplWin32_NewFrame();
-        ImGui::NewFrame();
-
-        //draw ImGUI
-		setupImGUIWindow(io);
-
-        //render ImGUI
-        ImGui::Render();
-
-        renderPipeline->getCommandList()->SetDescriptorHeaps(1, &imguiSrvHeapPtr);
-        ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), renderPipeline->getCommandList());
-
+        //render imgui
+		imguiManager.render(renderPipeline->getCommandList());
         context.executeCommandList(renderPipeline->getCommandListID());
-
-        // reset the first pipeline so it can end the frame
         context.resetCommandList(renderPipeline->getCommandListID());
+
         //end frame
         Window::get().endFrame(renderPipeline->getCommandList());
+
         // Execute command list
 		context.executeCommandList(renderPipeline->getCommandListID());
-
         Window::get().present();
 		context.resetCommandList(renderPipeline->getCommandListID());
     }
@@ -88,9 +94,7 @@ int main() {
     scene.releaseResources();
 
     //release imgui resources
-    ImGui_ImplDX12_Shutdown();
-    ImGui_ImplWin32_Shutdown();
-    ImGui::DestroyContext();
+	imguiManager.releaseResources();
 
     //flush pending buffer operations in swapchain
     context.flush(FRAME_COUNT);

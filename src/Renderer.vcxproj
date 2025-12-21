@@ -32,6 +32,7 @@
     <ClCompile Include="ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="ImGUI\misc\cpp\imgui_stdlib.cpp" />
     <ClCompile Include="Scene\PbrScene.cpp" />
+    <ClCompile Include="Support\ImguiHelper.cpp" />
     <ClCompile Include="Support\RootSignatureBuilder.cpp" />
     <ClCompile Include="Scene\Util\Loader.cpp" />
     <ClCompile Include="Scene\ObjectScene.cpp" />
@@ -68,11 +69,11 @@
     <ClInclude Include="ImGUI\imstb_truetype.h" />
     <ClInclude Include="ImGUI\misc\cpp\imgui_stdlib.h" />
     <ClInclude Include="Scene\PbrScene.h" />
+    <ClInclude Include="Support\ImguiHelper.h" />
     <ClInclude Include="Support\RootSignatureBuilder.h" />
     <ClInclude Include="Scene\GridConstants.h" />
     <ClInclude Include="Scene\Util\Loader.h" />
     <ClInclude Include="Scene\ObjectScene.h" />
-    <ClInclude Include="main.h" />
     <ClInclude Include="Scene\Util\Camera.h" />
     <ClInclude Include="D3D\Buffer\StructuredBuffer.h" />
     <ClInclude Include="Scene\Util\Geometry.h" />
