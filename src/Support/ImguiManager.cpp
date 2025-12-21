@@ -1,4 +1,4 @@
-#include "ImguiHelper.h"
+#include "ImguiManager.h"
 
 static ID3D12DescriptorHeap* imguiSrvHeapPtr = nullptr;
 static DescriptorHeap* imguiSrvHeap = nullptr;

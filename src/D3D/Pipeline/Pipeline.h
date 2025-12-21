@@ -10,14 +10,8 @@
 class Pipeline {
 public:
 	Pipeline() = delete;
-	Pipeline(DXContext& context, CommandListID cmdID,
-		D3D12_DESCRIPTOR_HEAP_TYPE type, unsigned int numberOfDescriptors, D3D12_DESCRIPTOR_HEAP_FLAGS flags);
+	Pipeline(DXContext& context, CommandListID cmdID);
 	~Pipeline() = default;
-
-	virtual void createPSOD() = 0;
-	virtual void createPipelineState(ComPointer<ID3D12Device6>& device) = 0;
-
-	void generateRootSignature(DXContext& context, Shader& vertexShader, Shader& pixelShader);
 
 	ComPointer<ID3D12RootSignature>& getRootSignature();
 	DescriptorHeap* getDescriptorHeap();
@@ -28,9 +22,17 @@ public:
 	virtual void releaseResources();
 
 protected:
+	virtual void createPSOD() = 0;
+	virtual void createPipelineState(ComPointer<ID3D12Device6>& device) = 0;
+	virtual void createRootSignature(DXContext& context, std::vector<Shader*> shaders) = 0;
+
 	ComPointer<ID3D12RootSignature> rootSignature;
+
 	DescriptorHeap* descriptorHeap;
+	UINT numDescriptors{ 0 };
+
 	ComPointer<ID3D12PipelineState> pso;
+
 	CommandListID cmdID;
 
 	ID3D12GraphicsCommandList6* cmdList;

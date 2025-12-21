@@ -1,16 +1,18 @@
 #include "RenderPipeline.h"
 
+#include "D3D/ResourceManager.h"
+
 RenderPipeline::RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context,
-    CommandListID id, D3D12_DESCRIPTOR_HEAP_TYPE type, unsigned int numberOfDescriptors, D3D12_DESCRIPTOR_HEAP_FLAGS flags)
-	: Pipeline(context, id, type, numberOfDescriptors, flags), vertexShader(vertexShaderName, ShaderType::VertexShader), fragShader(fragShaderName, ShaderType::PixelShader)
+    CommandListID id, D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flags)
+	: Pipeline(context, id), vertexShader(vertexShaderName, ShaderType::VertexShader), fragShader(fragShaderName, ShaderType::PixelShader)
 {
-	generateRootSignature(context, vertexShader, fragShader);
+    createRootSignature(context, { &vertexShader, &fragShader });
+
+    ResourceManager& manager = ResourceManager::get(&context);
+    descriptorHeap = manager.getDescriptorHeap(manager.createDescriptorHeap(type, numDescriptors, flags));
 	
     createPSOD();
 	createPipelineState(context.getDevice());
-    getCommandList()->Close();
-    context.resetCommandList(id);
-
 }
 
 D3D12_INPUT_ELEMENT_DESC vertexLayout[] =
@@ -24,6 +26,81 @@ D3D12_INPUT_ELEMENT_DESC vertexLayout[] =
     { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,
         D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 };
+
+void RenderPipeline::createRootSignature(DXContext& context, std::vector<Shader*> shaders)
+{
+	if (shaders.size() != 2) {
+		throw std::runtime_error("RenderPipeline::createRootSignature requires exactly 2 shaders (vertex and pixel)");
+	}
+	generateRootSignature(context, *shaders[0], *shaders[1]);
+}
+
+void RenderPipeline::generateRootSignature(DXContext& context, Shader& vertexShader, Shader& pixelShader) {
+    ComPointer<ID3D12Device6> device = context.getDevice();
+
+    RootSignatureBuilder builder;
+
+    std::vector<ShaderResourceBinding> resources;
+    std::vector<ConstantBufferReflection> constantBuffers;
+    Shader::mergeShaderReflections(vertexShader.getReflectionData(), pixelShader.getReflectionData(), resources, constantBuffers);
+
+	numDescriptors += static_cast<UINT>(resources.size());
+	numDescriptors += static_cast<UINT>(constantBuffers.size());
+
+    //cbvs, srvs, uavs, samplers
+    std::array<std::vector<ShaderResourceBinding>, 4> resourceBindings;
+
+    for (size_t i = 0; i < resources.size(); i++) {
+        const ShaderResourceBinding& res = resources[i];
+
+        switch (res.type) {
+        case ShaderResourceType::RootConstant:
+        case ShaderResourceType::ConstantBuffer:
+            resourceBindings[0].push_back(res);
+            break;
+        case ShaderResourceType::Texture:
+        case ShaderResourceType::StructuredBuffer:
+            resourceBindings[1].push_back(res);
+            break;
+        case ShaderResourceType::RWTexture:
+        case ShaderResourceType::RWStructuredBuffer:
+            resourceBindings[2].push_back(res);
+            break;
+        case ShaderResourceType::Sampler:
+            resourceBindings[3].push_back(res);
+            break;
+        }
+    }
+
+    UINT rootParamIdx = 0;
+    for (const auto& cb : resourceBindings[0]) {
+        if (cb.type == ShaderResourceType::RootConstant) {
+            //assume size is in bytes, convert to 32-bit values
+            UINT num32BitValues = cb.size / 4;
+            builder.addRootConstant(cb.bindPoint, cb.space, num32BitValues, cb.visibility);
+            rootParamIdx++;
+            continue;
+        }
+        builder.addConstantBufferView(cb.bindPoint, cb.space, D3D12_SHADER_VISIBILITY_ALL);
+        rootParamIdx++;
+    }
+
+    for (const auto& srv : resourceBindings[1]) {
+        builder.addShaderResourceView(srv.bindPoint, srv.space, srv.visibility);
+        rootParamIdx++;
+    }
+
+    for (const auto& uav : resourceBindings[2]) {
+        builder.addUnorderedAccessView(uav.bindPoint, uav.space, uav.visibility);
+        rootParamIdx++;
+    }
+
+    for (const auto& sampler : resourceBindings[3]) {
+        builder.addStaticSampler(sampler.bindPoint, sampler.space);
+    }
+
+    builder.build(device.Get(), rootSignature);
+}
 
 void RenderPipeline::createPSOD() {
     gfxPsod.pRootSignature = rootSignature;
@@ -72,8 +149,6 @@ void RenderPipeline::createPSOD() {
     gfxPsod.BlendState.AlphaToCoverageEnable = FALSE;
     gfxPsod.BlendState.IndependentBlendEnable = FALSE;
     gfxPsod.BlendState.RenderTarget[0].LogicOpEnable = FALSE;
-    //gfxPsod.BlendState.RenderTarget[0].BlendEnable = FALSE;
-    //gfxPsod.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
     gfxPsod.BlendState.RenderTarget[0].BlendEnable = TRUE;
     gfxPsod.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
 
@@ -115,9 +190,6 @@ void RenderPipeline::createPSOD() {
 
 void RenderPipeline::createPipelineState(ComPointer<ID3D12Device6>& device) {
 	device->CreateGraphicsPipelineState(&gfxPsod, IID_PPV_ARGS(&pso));
-#if defined(_DEBUG)
-    pso->SetName(L"RenderPipelinePSO");
-#endif
 }
 
 void RenderPipeline::releaseResources() {

@@ -127,6 +127,7 @@ private:
 	ShaderType shaderType;
 
 public:
+    //TODO - this can be reused for mesh shaders, so calling it vsData is misleading
     static void mergeShaderReflections(ShaderReflectionData& vsData, ShaderReflectionData& psData, std::vector<ShaderResourceBinding>& outResources, std::vector<ConstantBufferReflection>& outConstants) {
         outResources.clear();
         outConstants.clear();

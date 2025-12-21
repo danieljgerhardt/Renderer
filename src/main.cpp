@@ -11,7 +11,7 @@
 #include "Scene/Util/Camera.h"
 #include "Scene/Scene.h"
 
-#include "Support/ImguiHelper.h"
+#include "Support/ImguiManager.h"
 
 #include "D3D/ResourceManager.h"
 

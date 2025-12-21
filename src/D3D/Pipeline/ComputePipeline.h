@@ -12,13 +12,16 @@ class ComputePipeline : public Pipeline
 public: 
 	ComputePipeline() = delete;
 	ComputePipeline(const std::string shaderFilePath, DXContext& context, CommandListID cmdID,
-		D3D12_DESCRIPTOR_HEAP_TYPE type, unsigned int numberOfDescriptors, D3D12_DESCRIPTOR_HEAP_FLAGS flags);
+		D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flags);
 
 	Shader& getComputeShader() { return computeShader; }
 	void createPSOD() override;
 	void createPipelineState(ComPointer<ID3D12Device6>& device) override;
 
 private:
+	void createRootSignature(DXContext& context, std::vector<Shader*> shaders);
+	void generateRootSignature(DXContext& context, Shader& computeShader);
+
 	Shader computeShader;
 	D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
 };
