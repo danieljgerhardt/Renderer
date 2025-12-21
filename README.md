@@ -8,11 +8,18 @@ List of goals:
 - [x] Add texture/material support
 - [x] Add resource manager
 - [x] Refactor main + ImGUI for neater code
-- [ ] Add DGR namespace wrapper
-- [ ] Add environment mapping
-- [ ] Add rasterized PBR support
-- [ ] Add skinning
-- [ ] Add path tracing with DXR
+- [ ] DGR namespace wrapper
+- [ ] shaders + pipelines owned by resource manager
+- [ ] improve scene vs pipeline vs drawable abstractions to allow easier swapping
+- [ ] post processing
+- [ ] Math abstraction class
+- [ ] More info in ImGUI(num passes, num resources, num triangles)
+- [ ] Real time scene loading GUI
+- [ ] environment mapping
+- [ ] rasterized PBR support
+- [ ] skinning
+- [ ] path tracing with DXR
 - [ ] Use render graph
-- [ ] Add SSR and deferred rendering for rasterized PBR
+- [ ] Support gaussian splats
+- [ ] SSR and deferred rendering for rasterized PBR
 - [ ] Support multiple lights with forward, clustered, etc.
