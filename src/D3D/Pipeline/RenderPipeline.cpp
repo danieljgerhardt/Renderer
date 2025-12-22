@@ -73,7 +73,7 @@ void RenderPipeline::generateRootSignature(DXContext& context, Shader& vertexSha
     }
 
     UINT rootParamIdx = 0;
-    for (const auto& cb : resourceBindings[0]) {
+    for (const ShaderResourceBinding& cb : resourceBindings[0]) {
         if (cb.type == ShaderResourceType::RootConstant) {
             //assume size is in bytes, convert to 32-bit values
             UINT num32BitValues = cb.size / 4;
@@ -85,17 +85,17 @@ void RenderPipeline::generateRootSignature(DXContext& context, Shader& vertexSha
         rootParamIdx++;
     }
 
-    for (const auto& srv : resourceBindings[1]) {
+    for (const ShaderResourceBinding& srv : resourceBindings[1]) {
         builder.addShaderResourceView(srv.bindPoint, srv.space, srv.visibility);
         rootParamIdx++;
     }
 
-    for (const auto& uav : resourceBindings[2]) {
+    for (const ShaderResourceBinding& uav : resourceBindings[2]) {
         builder.addUnorderedAccessView(uav.bindPoint, uav.space, uav.visibility);
         rootParamIdx++;
     }
 
-    for (const auto& sampler : resourceBindings[3]) {
+    for (const ShaderResourceBinding& sampler : resourceBindings[3]) {
         builder.addStaticSampler(sampler.bindPoint, sampler.space);
     }
 

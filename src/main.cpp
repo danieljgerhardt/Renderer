@@ -51,12 +51,12 @@ int main() {
             camera->updateAspect((float)window.getWidth() / (float)window.getHeight());
         }
 
-        auto kState = keyboard->GetState();
-        auto mState = mouse->GetState();
+        DirectX::Keyboard::State kState = keyboard->GetState();
+        DirectX::Mouse::State mState = mouse->GetState();
         mouse->SetMode(mState.leftButton ? Mouse::MODE_RELATIVE : Mouse::MODE_ABSOLUTE);
         camera->kmStateCheck(kState, mState);
 
-        auto renderPipeline = scene.getObjectPipeline();
+        RenderPipeline* renderPipeline = scene.getObjectPipeline();
 
         //begin frame
         window.beginFrame(renderPipeline->getCommandList());

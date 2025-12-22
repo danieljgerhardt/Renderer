@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ObjectScene.h"
-#include "PbrScene.h"
+#include "ObjectDrawable.h"
+#include "PbrDrawable.h"
 #include "../D3D/Pipeline/RenderPipeline.h"
 #include "../D3D/Pipeline/ComputePipeline.h"
 #include "../D3D/Pipeline/MeshPipeline.h"

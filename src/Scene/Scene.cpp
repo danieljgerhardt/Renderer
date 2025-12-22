@@ -8,10 +8,10 @@ Scene::Scene(Camera* p_camera, DXContext* context)
 	renderPipelines.push_back(std::make_unique<RenderPipeline>( "VertexShader.cso", "PixelShader.cso", *context, CommandListID::OBJECT_RENDER_SOLID_ID,
 		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE));
 
-	std::unique_ptr<ObjectScene> objScene = std::make_unique<ObjectScene>(context, renderPipelines[0].get());
+	std::unique_ptr<ObjectDrawable> objScene = std::make_unique<ObjectDrawable>(context, renderPipelines[0].get());
 	drawables.push_back(std::move(objScene));
 
-	std::unique_ptr<PbrScene> pbrScene = std::make_unique<PbrScene>(context, renderPipelines[0].get());
+	std::unique_ptr<PbrDrawable> pbrScene = std::make_unique<PbrDrawable>(context, renderPipelines[0].get());
 	drawables.push_back(std::move(pbrScene));
 }
 

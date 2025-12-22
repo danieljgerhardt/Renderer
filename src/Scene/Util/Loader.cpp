@@ -85,7 +85,7 @@ void Loader::loadMeshFromObj(std::string fileLocation, MeshData& meshData)
         }
     }
 
-    for (auto face : faces) {
+    for (std::vector<int>& face : faces) {
         meshData.numTriangles++;
         meshData.indices.push_back(face[0]);
         meshData.indices.push_back(face[1]);
@@ -101,8 +101,8 @@ const float* GetFloatAttrib(
     size_t index,
     size_t components)
 {
-    const auto& view = model.bufferViews[acc.bufferView];
-    const auto& buffer = model.buffers[view.buffer];
+    const tinygltf::BufferView& view = model.bufferViews[acc.bufferView];
+    const tinygltf::Buffer& buffer = model.buffers[view.buffer];
 
     size_t stride = view.byteStride;
     if (stride == 0)
@@ -140,10 +140,10 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
     //on success, make a mesh using gltf info
     for (tinygltf::Mesh& mesh : model.meshes) {
 		MeshData meshData;
-        for (auto& prim : mesh.primitives) {
-            const auto& posAcc = model.accessors.at(prim.attributes.at("POSITION"));
-            const auto& norAcc = model.accessors.at(prim.attributes.at("NORMAL"));
-            const auto& uvAcc = model.accessors.at(prim.attributes.at("TEXCOORD_0"));
+        for (tinygltf::Primitive& prim : mesh.primitives) {
+            const tinygltf::Accessor& posAcc = model.accessors.at(prim.attributes.at("POSITION"));
+            const tinygltf::Accessor& norAcc = model.accessors.at(prim.attributes.at("NORMAL"));
+            const tinygltf::Accessor &uvAcc = model.accessors.at(prim.attributes.at("TEXCOORD_0"));
 
             uint32_t baseVertex = static_cast<uint32_t>(meshData.vertices.size());
 
@@ -161,9 +161,9 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
                 meshData.vertices.push_back(v);
             }
 
-            const auto& idxAcc = model.accessors.at(prim.indices);
-            const auto& idxView = model.bufferViews.at(idxAcc.bufferView);
-            const auto& idxBuf = model.buffers.at(idxView.buffer);
+            const tinygltf::Accessor& idxAcc = model.accessors.at(prim.indices);
+            const tinygltf::BufferView& idxView = model.bufferViews.at(idxAcc.bufferView);
+            const tinygltf::Buffer& idxBuf = model.buffers.at(idxView.buffer);
 
             const uint8_t* idxData =
                 idxBuf.data.data() +
@@ -186,7 +186,7 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
 		gltfConstructionData.meshDataVector.push_back(meshData);
     }
 
-    for (const auto& material : model.materials) {
+    for (const tinygltf::Material& material : model.materials) {
         // Diffuse/Base Color
         if (material.values.find("baseColorTexture") != material.values.end()) {
             int textureIndex = material.values.at("baseColorTexture").TextureIndex();
@@ -231,7 +231,7 @@ GltfData Loader::createMeshFromGltf(std::string fileLocation, DXContext* context
 	//create and return meshes
 	std::vector<Mesh*> newMeshes;
 	newMeshes.reserve(constructionData.meshDataVector.size());
-    for (auto& meshData : constructionData.meshDataVector) {
+    for (MeshData& meshData : constructionData.meshDataVector) {
 		//newMeshes.emplace_back(context, pipeline, modelMatrix, meshData);
 		newMeshes.emplace_back(ResourceManager::get(context).getMesh(
 			ResourceManager::get(context).createMesh(pipeline, modelMatrix, meshData)
@@ -240,7 +240,7 @@ GltfData Loader::createMeshFromGltf(std::string fileLocation, DXContext* context
 
     std::vector<Texture*> newTextures;
 	newTextures.reserve(constructionData.textureDataVector.size());
-    for (auto& textureData : constructionData.textureDataVector) {
+    for (TextureData& textureData : constructionData.textureDataVector) {
         //newTextures.emplace_back(context, pipeline, textureData.width, textureData.height, textureData.imageData, textureData.type);
 		newTextures.emplace_back(ResourceManager::get(context).getTexture(
 			ResourceManager::get(context).createTexture(pipeline, textureData.width, textureData.height, textureData.imageData, textureData.type)

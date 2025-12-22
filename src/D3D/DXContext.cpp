@@ -47,10 +47,10 @@ DXContext::DXContext() {
 }
 
 DXContext::~DXContext() {
-    for (auto& cmdList : cmdLists) {
+    for (ComPointer<ID3D12GraphicsCommandList6>& cmdList : cmdLists) {
         cmdList.Release();
     }
-    for (auto& cmdAllocator : cmdAllocators) {
+    for (ComPointer<ID3D12CommandAllocator> cmdAllocator : cmdAllocators) {
         cmdAllocator.Release();
     }
 

@@ -7,18 +7,11 @@
 
 class Drawable {
 public:
-	Drawable() = delete;
-	Drawable(DXContext* context, RenderPipeline* pipeline);
-	Drawable(DXContext* context, MeshPipeline* pipeline);
+	Drawable(){};
 
-	virtual void constructScene();
+	virtual void construct() = 0;
 
-	virtual void draw(Camera* camera);
+	virtual void draw(Camera* camera) = 0;
 
-	virtual void releaseResources();
-
-protected:
-	DXContext* context;
-	RenderPipeline* renderPipeline;
-	MeshPipeline* meshPipeline;
+	virtual void releaseResources() = 0;
 };

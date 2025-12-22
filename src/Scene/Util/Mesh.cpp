@@ -2,8 +2,7 @@
 
 #include "D3D/ResourceManager.h"
 
-Mesh::Mesh(DXContext* context, RenderPipeline* pipeline, XMFLOAT4X4 p_modelMatrix, MeshData meshData) 
-{
+Mesh::Mesh(DXContext* context, RenderPipeline* pipeline, XMFLOAT4X4 p_modelMatrix, MeshData meshData) {
 	numTriangles = meshData.numTriangles;
 	vertices = meshData.vertices;
 	indices = meshData.indices;

@@ -9,6 +9,7 @@
 #include <dxcapi.h>
 #include <d3d12shader.h>
 #include <unordered_map>
+#include <functional>
 
 #include "ComPointer.h"
 
@@ -134,18 +135,18 @@ public:
 
         std::unordered_map<std::string, size_t> nameToIndex;
 
-        auto mergeResources = [](ShaderResourceBinding& dst, const ShaderResourceBinding& src)
-            {
+        std::function<void(ShaderResourceBinding&, const ShaderResourceBinding&)> mergeResources =
+            [](ShaderResourceBinding& dst, const ShaderResourceBinding& src) {
                 if (dst.visibility != src.visibility)
                     dst.visibility = D3D12_SHADER_VISIBILITY_ALL;
             };
 
-        for (const auto& res : vsData.resources) {
+        for (const ShaderResourceBinding& res : vsData.resources) {
             nameToIndex[res.name] = outResources.size();
             outResources.push_back(res);
         }
 
-        for (const auto& res : psData.resources) {
+        for (const ShaderResourceBinding& res : psData.resources) {
             if (nameToIndex.find(res.name) != nameToIndex.end()) {
                 size_t idx = nameToIndex[res.name];
                 ShaderResourceBinding& dst = outResources[idx];
@@ -157,17 +158,17 @@ public:
         }
 
         nameToIndex.clear();
-        for (const auto& cb : vsData.constantBuffers) {
+        for (const ConstantBufferReflection& cb : vsData.constantBuffers) {
             outConstants.push_back(cb);
             nameToIndex[cb.name] = outConstants.size() - 1;
         }
 
-        for (const auto& constant : psData.constantBuffers) {
-            auto it = nameToIndex.find(constant.name);
+        for (const ConstantBufferReflection& constant : psData.constantBuffers) {
+            std::unordered_map<std::string, size_t>::iterator it = nameToIndex.find(constant.name);
             if (it != nameToIndex.end())
             {
                 // CB exists in both shaders - merge variables
-                auto& existingCB = outConstants[it->second];
+                ConstantBufferReflection& existingCB = outConstants[it->second];
 
                 // Verify same size and binding
                 if (existingCB.size != constant.size ||
@@ -179,11 +180,11 @@ public:
 
 
                 // Merge variables (avoid duplicates)
-                for (const auto& var : constant.variables)
+                for (const ParameterDesc& var : constant.variables)
                 {
                     // TODO: This feels a bit slow
                     bool found = false;
-                    for (const auto& existingVar : existingCB.variables)
+                    for (const ParameterDesc& existingVar : existingCB.variables)
                     {
                         if (existingVar.name == var.name)
                         {

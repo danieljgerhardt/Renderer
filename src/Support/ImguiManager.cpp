@@ -7,15 +7,14 @@ ImguiManager::ImguiManager(DXContext& context) : context(context) {
 	initImGUI(context);
 }
 
-void ImguiManager::initImGUI(DXContext& context)
-{
+void ImguiManager::initImGUI(DXContext& context) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ioPtr = &ImGui::GetIO();
 	ImGuiIO& io = *ioPtr;
     (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
     ImGui::StyleColorsDark();
 

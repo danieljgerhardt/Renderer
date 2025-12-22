@@ -7,9 +7,9 @@
 #include "Util/Loader.h"
 #include "Util/Mesh.h"
 
-class PbrScene : public Drawable {
+class PbrDrawable : public Drawable {
 public:
-	PbrScene(DXContext* context, RenderPipeline* pipeline);
+	PbrDrawable(DXContext* context, RenderPipeline* pipeline);
 
 	void draw(Camera* camera);
 
@@ -20,6 +20,9 @@ public:
 	bool instanced{ false };
 
 private:
+	DXContext* context;
+	RenderPipeline* renderPipeline;
+
 	std::vector<Mesh> meshes;
 	std::vector<XMFLOAT4X4> modelMatrices;
 
@@ -29,5 +32,5 @@ private:
 
 	//Texture envMap;
 
-	void constructScene();
+	void construct();
 };

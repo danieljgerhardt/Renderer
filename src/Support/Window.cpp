@@ -68,7 +68,7 @@ bool Window::init(DXContext* contextPtr, int w, int h) {
 
     //swap chain creation
     dxContext = contextPtr;
-    auto& factory = dxContext->getFactory();
+    ComPointer<IDXGIFactory7>& factory = dxContext->getFactory();
     ComPointer<IDXGISwapChain1> swapChain1;
     factory->CreateSwapChainForHwnd(dxContext->getCommandQueue(), window, &swapChainDesc, &swapChainFullScreenDesc, nullptr, &swapChain1);
     if (!swapChain1.QueryInterface(swapChain)) {

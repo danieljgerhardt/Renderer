@@ -1,12 +1,10 @@
-#include "PbrScene.h"
+#include "PbrDrawable.h"
 
-PbrScene::PbrScene(DXContext* context, RenderPipeline* pipeline)
-    : Drawable(context, pipeline)
-{
-    constructScene();
+PbrDrawable::PbrDrawable(DXContext* context, RenderPipeline* pipeline) : context(context), renderPipeline(pipeline) {
+    construct();
 }
 
-void PbrScene::constructScene() {
+void PbrDrawable::construct() {
     std::vector<std::string> inputStrings;
     inputStrings.push_back("objs\\Avocado\\Avocado.gltf");
     //inputStrings.push_back("objs\\Cube\\Cube.gltf");
@@ -18,8 +16,8 @@ void PbrScene::constructScene() {
     ));
     modelMatrices.push_back(avocadoModelMatrix);
 
-    auto string = inputStrings.front();
-    auto m = modelMatrices.front();
+    std::string& string = inputStrings.front();
+    DirectX::XMFLOAT4X4& m = modelMatrices.front();
 
     gltfData = Loader::createMeshFromGltf((std::filesystem::current_path() / string).string(), context, renderPipeline->getCommandList(), renderPipeline, m);
     Mesh& newMesh = *gltfData.meshes[0];
@@ -30,10 +28,10 @@ void PbrScene::constructScene() {
     meshes.push_back(std::move(newMesh));
     sceneSize += meshes.back().getNumTriangles();}
 
-void PbrScene::draw(Camera* camera) {
+void PbrDrawable::draw(Camera* camera) {
     for (Mesh& m : meshes) {
         // == IA ==
-        auto cmdList = renderPipeline->getCommandList();
+        ID3D12GraphicsCommandList6* cmdList = renderPipeline->getCommandList();
         cmdList->IASetVertexBuffers(0, 1, m.getVBV());
         cmdList->IASetIndexBuffer(m.getIBV());
         cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -46,8 +44,8 @@ void PbrScene::draw(Camera* camera) {
         ID3D12DescriptorHeap* descriptorHeaps[] = { renderPipeline->getDescriptorHeap()->getAddress() };
         cmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
-        auto viewMat = camera->getViewMat();
-        auto projMat = camera->getProjMat();
+        DirectX::XMMATRIX viewMat = camera->getViewMat();
+        DirectX::XMMATRIX projMat = camera->getProjMat();
         cmdList->SetGraphicsRoot32BitConstants(0, 16, &viewMat, 0);
         cmdList->SetGraphicsRoot32BitConstants(0, 16, &projMat, 16);
         cmdList->SetGraphicsRoot32BitConstants(0, 16, m.getModelMatrix(), 32);
@@ -59,16 +57,13 @@ void PbrScene::draw(Camera* camera) {
     }
 }
 
-size_t PbrScene::getSceneSize() {
+size_t PbrDrawable::getSceneSize() {
     return sceneSize;
 }
 
-void PbrScene::releaseResources() {
+void PbrDrawable::releaseResources() {
     for (Mesh& m : meshes) {
         m.releaseResources();
     }
     renderPipeline->releaseResources();
-
-	//TODO - fix when environment map is used
-    //envMap.releaseResources();
 }

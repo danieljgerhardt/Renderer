@@ -7,9 +7,9 @@
 #include "Util/Loader.h"
 #include "Util/Mesh.h"
 
-class ObjectScene : public Drawable {
+class ObjectDrawable : public Drawable {
 public:
-	ObjectScene(DXContext* context, RenderPipeline* pipeline);
+	ObjectDrawable(DXContext* context, RenderPipeline* pipeline);
 
 	void draw(Camera* camera) override;
 
@@ -20,6 +20,9 @@ public:
 	bool instanced{ false };
 
 private:
+	DXContext* context;
+	RenderPipeline* renderPipeline;
+
 	std::vector<Mesh*> meshes;
 	std::vector<XMFLOAT4X4> modelMatrices;
 
@@ -27,5 +30,5 @@ private:
 
 	GltfData gltfData;
 
-    void constructScene();
+    void construct();
 };
