@@ -232,7 +232,6 @@ GltfData Loader::createMeshFromGltf(std::string fileLocation, DXContext* context
 	std::vector<Mesh*> newMeshes;
 	newMeshes.reserve(constructionData.meshDataVector.size());
     for (MeshData& meshData : constructionData.meshDataVector) {
-		//newMeshes.emplace_back(context, pipeline, modelMatrix, meshData);
 		newMeshes.emplace_back(ResourceManager::get(context).getMesh(
 			ResourceManager::get(context).createMesh(pipeline, modelMatrix, meshData)
 		));
@@ -241,7 +240,6 @@ GltfData Loader::createMeshFromGltf(std::string fileLocation, DXContext* context
     std::vector<Texture*> newTextures;
 	newTextures.reserve(constructionData.textureDataVector.size());
     for (TextureData& textureData : constructionData.textureDataVector) {
-        //newTextures.emplace_back(context, pipeline, textureData.width, textureData.height, textureData.imageData, textureData.type);
 		newTextures.emplace_back(ResourceManager::get(context).getTexture(
 			ResourceManager::get(context).createTexture(pipeline, textureData.width, textureData.height, textureData.imageData, textureData.type)
 		));
@@ -255,7 +253,7 @@ Texture Loader::createTextureFromFile(std::string fileLocation, DXContext* conte
 	int width, height, channels;
 	unsigned char* data = stbi_load(fileLocation.c_str(), &width, &height, &channels, STBI_rgb_alpha);
     
-    //TODO - resize may neede to incorporate channels + depth
+    //TODO - resize may need to incorporate channels + depth
     std::vector<unsigned char> imageData;
 	imageData.resize(width * height * 4);
 	std::copy(data, data + (width * height * 4), imageData.begin());

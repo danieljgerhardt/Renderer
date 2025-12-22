@@ -4,10 +4,10 @@ static ID3D12DescriptorHeap* imguiSrvHeapPtr = nullptr;
 static DescriptorHeap* imguiSrvHeap = nullptr;
 
 ImguiManager::ImguiManager(DXContext& context) : context(context) {
-	initImGUI(context);
+    initImgui(context);
 }
 
-void ImguiManager::initImGUI(DXContext& context) {
+void ImguiManager::initImgui(DXContext& context) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ioPtr = &ImGui::GetIO();
@@ -43,10 +43,12 @@ void ImguiManager::initImGUI(DXContext& context) {
     ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
 }
 
-void ImguiManager::setupImGUIWindow() {
+void ImguiManager::setupImguiWindow(ImguiInfo& imguiInfo) {
     ImGui::Begin("Renderer Info + Options");
 
     ImGui::Text("%.1f FPS", ioPtr->Framerate);
+
+	ImGui::Text("Triangle Count: %zu", imguiInfo.triangleCount);
 
     ImGui::End();
 }
@@ -55,14 +57,14 @@ ID3D12DescriptorHeap* ImguiManager::getImguiSrvHeap() {
     return imguiSrvHeapPtr;
 }
 
-void ImguiManager::render(ID3D12GraphicsCommandList6* cmdList) {
+void ImguiManager::render(ID3D12GraphicsCommandList6* cmdList, ImguiInfo& imguiInfo) {
     //set up ImGUI for frame
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
     //draw ImGUI
-    setupImGUIWindow();
+    setupImguiWindow(imguiInfo);
 
     //render ImGUI
     ImGui::Render();

@@ -34,12 +34,14 @@ int main() {
     }
 
     ImguiManager imguiManager{ context };
+	ImguiInfo imguiInfo{};
 
     //set mouse to use the window
     mouse->SetWindow(window.getHWND());
 
     //initialize scene
     Scene scene{camera.get(), &context};
+	imguiInfo.triangleCount = scene.getTriangleCount();
 
     while (!window.getShouldClose()) {
         //update window
@@ -72,7 +74,7 @@ int main() {
 		scene.draw();
 
         //render imgui
-		imguiManager.render(renderPipeline->getCommandList());
+		imguiManager.render(renderPipeline->getCommandList(), imguiInfo);
         context.executeCommandList(renderPipeline->getCommandListID());
         context.resetCommandList(renderPipeline->getCommandListID());
 

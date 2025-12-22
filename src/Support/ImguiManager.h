@@ -14,18 +14,23 @@
 
 #include "D3D/ResourceManager.h"
 
+//info for imgui rendering
+struct ImguiInfo {
+    size_t triangleCount{ 0 };
+};
+
 class ImguiManager {
 public:
     ImguiManager() = delete;
     ImguiManager(DXContext& context);
 
-    void initImGUI(DXContext& context);
+    void initImgui(DXContext& context);
 
-    void setupImGUIWindow();
+    void setupImguiWindow(ImguiInfo& imguiInfo);
 
     ID3D12DescriptorHeap* getImguiSrvHeap();
 
-    void render(ID3D12GraphicsCommandList6* cmdList);
+    void render(ID3D12GraphicsCommandList6* cmdList, ImguiInfo& imguiInfo);
 
     void releaseResources();
 

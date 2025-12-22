@@ -26,7 +26,8 @@ void PbrDrawable::construct() {
 
     newMesh.getDiffuseTexture()->makeSrv(context, renderPipeline);
     meshes.push_back(std::move(newMesh));
-    sceneSize += meshes.back().getNumTriangles();}
+    triangleCount += meshes.back().getNumTriangles();
+}
 
 void PbrDrawable::draw(Camera* camera) {
     for (Mesh& m : meshes) {
@@ -57,8 +58,8 @@ void PbrDrawable::draw(Camera* camera) {
     }
 }
 
-size_t PbrDrawable::getSceneSize() {
-    return sceneSize;
+size_t PbrDrawable::getTriangleCount() {
+    return triangleCount;
 }
 
 void PbrDrawable::releaseResources() {

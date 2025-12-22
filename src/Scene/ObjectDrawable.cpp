@@ -26,7 +26,7 @@ void ObjectDrawable::construct() {
 
 	newMesh->getDiffuseTexture()->makeSrv(context, renderPipeline);
     meshes.push_back(newMesh);
-    sceneSize += meshes.back()->getNumTriangles();
+    triangleCount += meshes.back()->getNumTriangles();
 }
 
 void ObjectDrawable::draw(Camera* camera) {
@@ -58,8 +58,8 @@ void ObjectDrawable::draw(Camera* camera) {
     }
 }
 
-size_t ObjectDrawable::getSceneSize() {
-    return sceneSize;
+size_t ObjectDrawable::getTriangleCount() {
+    return triangleCount;
 }
 
 void ObjectDrawable::releaseResources() {

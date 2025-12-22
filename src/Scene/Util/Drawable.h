@@ -14,4 +14,6 @@ public:
 	virtual void draw(Camera* camera) = 0;
 
 	virtual void releaseResources() = 0;
+
+	virtual size_t getTriangleCount() = 0;
 };

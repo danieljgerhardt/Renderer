@@ -13,7 +13,7 @@ public:
 
 	void draw(Camera* camera);
 
-	size_t getSceneSize();
+	size_t getTriangleCount() override;
 
 	void releaseResources() override;
 
@@ -26,7 +26,7 @@ private:
 	std::vector<Mesh> meshes;
 	std::vector<XMFLOAT4X4> modelMatrices;
 
-	size_t sceneSize{ 0 };
+	size_t triangleCount{ 0 };
 
 	GltfData gltfData;
 

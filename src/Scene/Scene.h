@@ -17,6 +17,8 @@ public:
 
 	void draw();
 
+	size_t getTriangleCount();
+
 	void releaseResources();
 
 private:

@@ -29,6 +29,14 @@ void Scene::draw() {
 	}
 }
 
+size_t Scene::getTriangleCount() {
+	size_t triangleCount = 0;
+	for (std::unique_ptr<Drawable>& drawable : drawables) {
+		triangleCount += drawable->getTriangleCount();
+	}
+	return triangleCount;
+}
+
 void Scene::releaseResources() {
 	for (std::unique_ptr<Drawable>& drawable : drawables) {
 		drawable->releaseResources();
