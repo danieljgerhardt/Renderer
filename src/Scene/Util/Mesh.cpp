@@ -6,7 +6,6 @@ Mesh::Mesh(DXContext* context, RenderPipeline* pipeline, XMFLOAT4X4 p_modelMatri
 {
 	numTriangles = meshData.numTriangles;
 	vertices = meshData.vertices;
-	vertexPositions = meshData.vertexPositions;
 	indices = meshData.indices;
 
 	vertexBuffer = ResourceManager::get(context).getVertexBuffer(

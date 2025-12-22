@@ -47,7 +47,7 @@ void ImguiManager::initImGUI(DXContext& context)
 void ImguiManager::setupImGUIWindow() {
     ImGui::Begin("Renderer Info + Options");
 
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ioPtr->Framerate, ioPtr->Framerate);
+    ImGui::Text("%.1f FPS", ioPtr->Framerate);
 
     ImGui::End();
 }

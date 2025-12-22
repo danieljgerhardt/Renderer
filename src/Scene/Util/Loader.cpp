@@ -53,7 +53,6 @@ void Loader::loadMeshFromObj(std::string fileLocation, MeshData& meshData)
             }
             Vertex newVert;
             newVert.pos = XMFLOAT3(v[0], v[1], v[2]);
-            meshData.vertexPositions.push_back(XMFLOAT3(v[0], v[1], v[2]));
             meshData.vertices.push_back(newVert);
         }
         else if (line[0] == 'v' && line[1] == 'n') {
