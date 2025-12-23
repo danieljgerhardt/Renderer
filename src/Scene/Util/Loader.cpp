@@ -243,6 +243,8 @@ GltfData Loader::createMeshFromGltf(std::string fileLocation, DXContext* context
 		newTextures.emplace_back(ResourceManager::get(context).getTexture(
 			ResourceManager::get(context).createTexture(pipeline, textureData.width, textureData.height, textureData.imageData, textureData.type)
 		));
+        //TODO - will not work when multiple meshes are loaded from a single gltf
+		newMeshes[0]->assignTexture(newTextures.back());
     }
     
     return { std::move(newMeshes), std::move(newTextures) };

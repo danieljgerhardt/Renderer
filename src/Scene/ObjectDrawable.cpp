@@ -7,26 +7,32 @@ ObjectDrawable::ObjectDrawable(DXContext* context, RenderPipeline* pipeline) : c
 void ObjectDrawable::construct() {
     std::vector<std::string> inputStrings;
     inputStrings.push_back("objs\\Avocado\\Avocado.gltf");
-    //inputStrings.push_back("objs\\Cube\\Cube.gltf");
+	inputStrings.push_back("objs\\Avocado\\Avocado.gltf");
 
     XMFLOAT4X4 avocadoModelMatrix;
 	XMStoreFloat4x4(&avocadoModelMatrix, XMMatrixMultiply(
 		XMMatrixScaling(1000.f, 1000.f, 1000.f),
-		XMMatrixTranslation(0.f, 0.f, 0.f)
+		XMMatrixTranslation(0.f, 0.f, 30.f)
 	));
     modelMatrices.push_back(avocadoModelMatrix);
+    XMFLOAT4X4 avocadoModelMatrix2;
+    XMStoreFloat4x4(&avocadoModelMatrix2, XMMatrixMultiply(
+        XMMatrixScaling(1000.f, 1000.f, 1000.f),
+        XMMatrixTranslation(-50.f, 0.f, 30.f)
+    ));
+    modelMatrices.push_back(avocadoModelMatrix2);
 
-    std::string& string = inputStrings.front();
-    DirectX::XMFLOAT4X4& m = modelMatrices.front();
-   
-    gltfData = Loader::createMeshFromGltf((std::filesystem::current_path() / string).string(), context, renderPipeline->getCommandList(), renderPipeline, m);
-    Mesh* newMesh = gltfData.meshes[0];
-    //TODO - make texture assigning and srv generation more dynamic
-	newMesh->assignTexture(TextureType::DIFFUSE, gltfData.textures[0]);
+    UINT currentMeshIdx = 0;
+    for (UINT i = 0; i < inputStrings.size(); i++) {
+		std::string& inputString = inputStrings[i];
+        gltfData = Loader::createMeshFromGltf((std::filesystem::current_path() / inputString).string(), context, renderPipeline->getCommandList(), renderPipeline, modelMatrices[i]);
+        
+        for (Mesh* newMesh : gltfData.meshes) {
+            meshes.push_back(newMesh);
 
-	newMesh->getDiffuseTexture()->makeSrv(context, renderPipeline);
-    meshes.push_back(newMesh);
-    triangleCount += meshes.back()->getNumTriangles();
+            triangleCount += meshes.back()->getNumTriangles();
+        }
+    }
 }
 
 void ObjectDrawable::draw(Camera* camera) {

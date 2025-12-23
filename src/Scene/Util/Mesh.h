@@ -50,10 +50,10 @@ public:
 	UINT getNumTriangles();
 
 	//TODO - use smart pointers or resource manager to cleanly transfer ownership
-	void assignTexture(TextureType type, Texture* tex) {
+	void assignTexture(Texture* tex) {
 		textures.reserve(4);
 
-		switch (type) {
+		switch (tex->getType()) {
 		case TextureType::DIFFUSE:
 			textures.push_back(tex);
 			break;
@@ -65,6 +65,9 @@ public:
 			break;
 		case TextureType::EMISSIVE:
 			textures.push_back(tex);
+			break;
+		default:
+			std::cerr << "Error: Unsupported texture type assigned to mesh.\n";
 			break;
 		}
 	}

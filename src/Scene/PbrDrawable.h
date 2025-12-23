@@ -23,7 +23,7 @@ private:
 	DXContext* context;
 	RenderPipeline* renderPipeline;
 
-	std::vector<Mesh> meshes;
+	std::vector<Mesh*> meshes;
 	std::vector<XMFLOAT4X4> modelMatrices;
 
 	size_t triangleCount{ 0 };

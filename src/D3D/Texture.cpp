@@ -45,6 +45,9 @@ Texture::Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT 
     UpdateSubresources(pipeline->getCommandList(), textureResource.Get(), textureUploadHeap, 0, 0, 1, &subresource);
 	CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(textureResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
     pipeline->getCommandList()->ResourceBarrier(1, &barrier);
+
+    //TODO - better logic for making srvs
+	if (type == TextureType::DIFFUSE) makeSrv(context, pipeline);
 }
 
 Texture::~Texture()

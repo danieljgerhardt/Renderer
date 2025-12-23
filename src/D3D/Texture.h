@@ -45,15 +45,20 @@ public:
 
 	void makeSrv(DXContext* context, RenderPipeline* pipeline);
 
+	TextureType getType() { return type; }
+
 	void releaseResources();
 
 private:
 	ComPointer<ID3D12Resource> textureResource;
 	ComPointer<ID3D12Resource> textureUploadHeap;
+
 	UINT width, height;
+
 	TextureType type;
 
 	UINT heapIndex;
+
 	D3D12_GPU_DESCRIPTOR_HANDLE textureGpuDescriptorHandle;
 };
 
