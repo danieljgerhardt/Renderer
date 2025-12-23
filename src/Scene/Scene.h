@@ -11,7 +11,7 @@ public:
 	Scene() = delete;
 	Scene(Camera* camera, DXContext* context);
 
-	RenderPipeline* getObjectPipeline();
+	RenderPipeline* getRenderPipeline(UINT index);
 
 	void compute();
 

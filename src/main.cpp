@@ -58,7 +58,7 @@ int main() {
         mouse->SetMode(mState.leftButton ? Mouse::MODE_RELATIVE : Mouse::MODE_ABSOLUTE);
         camera->kmStateCheck(kState, mState);
 
-        RenderPipeline* renderPipeline = scene.getObjectPipeline();
+        RenderPipeline* renderPipeline = scene.getRenderPipeline(0);
 
         //begin frame
         window.beginFrame(renderPipeline->getCommandList());

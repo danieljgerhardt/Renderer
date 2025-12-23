@@ -15,8 +15,8 @@ Scene::Scene(Camera* p_camera, DXContext* context)
 	drawables.push_back(std::move(pbrScene));
 }
 
-RenderPipeline* Scene::getObjectPipeline() {
-	return renderPipelines[0].get();
+RenderPipeline* Scene::getRenderPipeline(UINT index) {
+	return renderPipelines[index].get();
 }
 
 void Scene::compute() {
