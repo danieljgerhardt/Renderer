@@ -4,9 +4,10 @@
 #include <stdexcept>
 #include <array>
 
-#define NUM_CMDLISTS 1
+#define NUM_CMDLISTS 2
 enum CommandListID {
     OBJECT_RENDER_SOLID_ID,
+    PBR_RENDER_ID,
 };
 
 class DXContext

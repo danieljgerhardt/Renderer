@@ -137,7 +137,6 @@ void Window::update() {
 }
 
 void Window::present() {
-
 	// Transition swap chain from render target to present
 	D3D12_RESOURCE_BARRIER barrier;
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -179,10 +178,10 @@ void Window::beginFrame(ID3D12GraphicsCommandList6* cmdList) {
     cmdList->ClearRenderTargetView(rtvHandles[currentSwapChainBufferIdx], clearColor, 0, nullptr);
     cmdList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.f, 0, 0, nullptr);
 
-    setRT(cmdList);
+    setCmdListRenderTarget(cmdList);
 }
 
-void Window::setRT(ID3D12GraphicsCommandList6* cmdList) {
+void Window::setCmdListRenderTarget(ID3D12GraphicsCommandList6* cmdList) {
     cmdList->OMSetRenderTargets(1, &rtvHandles[currentSwapChainBufferIdx], false, &dsvHandle);
 }
 

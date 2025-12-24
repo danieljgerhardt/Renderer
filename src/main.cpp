@@ -67,11 +67,8 @@ int main() {
         D3D12_VIEWPORT vp;
         window.createViewport(vp, renderPipeline->getCommandList());
 
-        window.setRT(renderPipeline->getCommandList());
-        window.setViewport(vp, renderPipeline->getCommandList());
-
 		//draw scene
-		scene.draw();
+		scene.draw(vp);
 
         //render imgui
 		imguiManager.render(renderPipeline->getCommandList(), imguiInfo);

@@ -11,7 +11,7 @@ class ObjectDrawable : public Drawable {
 public:
 	ObjectDrawable(DXContext* context, RenderPipeline* pipeline);
 
-	void draw(Camera* camera) override;
+	void draw(Camera* camera, D3D12_VIEWPORT& vp) override;
 
 	size_t getTriangleCount() override;
 

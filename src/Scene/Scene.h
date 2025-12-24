@@ -15,7 +15,7 @@ public:
 
 	void compute();
 
-	void draw();
+	void draw(D3D12_VIEWPORT& vp);
 
 	size_t getTriangleCount();
 

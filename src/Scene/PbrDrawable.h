@@ -11,7 +11,7 @@ class PbrDrawable : public Drawable {
 public:
 	PbrDrawable(DXContext* context, RenderPipeline* pipeline);
 
-	void draw(Camera* camera);
+	void draw(Camera* camera, D3D12_VIEWPORT& vp);
 
 	size_t getTriangleCount() override;
 

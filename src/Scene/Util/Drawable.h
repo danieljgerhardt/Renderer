@@ -11,7 +11,7 @@ public:
 
 	virtual void construct() = 0;
 
-	virtual void draw(Camera* camera) = 0;
+	virtual void draw(Camera* camera, D3D12_VIEWPORT& vp) = 0;
 
 	virtual void releaseResources() = 0;
 

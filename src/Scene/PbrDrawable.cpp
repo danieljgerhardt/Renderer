@@ -31,10 +31,12 @@ void PbrDrawable::construct() {
     }
 }
 
-void PbrDrawable::draw(Camera* camera) {
+void PbrDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
+    ID3D12GraphicsCommandList6* cmdList = renderPipeline->getCommandList();
+    Window::get().setCmdListRenderTarget(cmdList);
+    Window::get().setViewport(vp, cmdList);
     for (Mesh* m : meshes) {
         // == IA ==
-        ID3D12GraphicsCommandList6* cmdList = renderPipeline->getCommandList();
         cmdList->IASetVertexBuffers(0, 1, m->getVBV());
         cmdList->IASetIndexBuffer(m->getIBV());
         cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -58,6 +60,8 @@ void PbrDrawable::draw(Camera* camera) {
 
         cmdList->DrawIndexedInstanced(m->getNumTriangles() * 3, 1, 0, 0, 0);
     }
+    context->executeCommandList(renderPipeline->getCommandListID());
+    context->resetCommandList(renderPipeline->getCommandListID());
 }
 
 size_t PbrDrawable::getTriangleCount() {

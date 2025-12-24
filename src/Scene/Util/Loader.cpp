@@ -184,6 +184,8 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
         }
         meshData.numTriangles = static_cast<UINT>(meshData.indices.size() / 3);
 		gltfConstructionData.meshDataVector.push_back(meshData);
+
+        //TODO - materials should be extracted here, created if they do not exist, and assigned to the mesh
     }
 
     for (const tinygltf::Material& material : model.materials) {
@@ -219,6 +221,9 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
             TextureData newTextureData{ UINT(image.width), UINT(image.height), image.image, TextureType::EMISSIVE };
             gltfConstructionData.textureDataVector.push_back(newTextureData);
         }
+
+        //determine which mesh the material is for
+
     }
 }
 
