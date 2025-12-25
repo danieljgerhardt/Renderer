@@ -174,7 +174,7 @@ void Window::beginFrame(ID3D12GraphicsCommandList6* cmdList) {
 
     cmdList->ResourceBarrier(1, &barrier);
 
-    float clearColor[] = { 0.9f, 0.9f, 0.9f, 1.f };
+    float clearColor[] = { 0.3f, 0.3f, 0.3f, 1.f };
     cmdList->ClearRenderTargetView(rtvHandles[currentSwapChainBufferIdx], clearColor, 0, nullptr);
     cmdList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.f, 0, 0, nullptr);
 

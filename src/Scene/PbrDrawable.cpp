@@ -10,8 +10,8 @@ void PbrDrawable::construct() {
 
     XMFLOAT4X4 avocadoModelMatrix;
     XMStoreFloat4x4(&avocadoModelMatrix, XMMatrixMultiply(
-        XMMatrixScaling(10.f, 10.f, 10.f),
-        XMMatrixTranslation(50.f, 30.f, 30.f)
+        XMMatrixScaling(1.f, 1.f, 1.f),
+        XMMatrixTranslation(0.f, 0.f, 0.f)
     ));
     modelMatrices.push_back(avocadoModelMatrix);
 
@@ -51,12 +51,14 @@ void PbrDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
 
         DirectX::XMMATRIX viewMat = camera->getViewMat();
         DirectX::XMMATRIX projMat = camera->getProjMat();
+		DirectX::XMVECTOR pos = camera->getPositionVector();
         cmdList->SetGraphicsRoot32BitConstants(0, 16, &viewMat, 0);
         cmdList->SetGraphicsRoot32BitConstants(0, 16, &projMat, 16);
         cmdList->SetGraphicsRoot32BitConstants(0, 16, m->getModelMatrix(), 32);
+		cmdList->SetGraphicsRoot32BitConstants(0, 4, &pos, 48);
 
         cmdList->SetGraphicsRootDescriptorTable(1, m->getTexture(TextureType::DIFFUSE)->getTextureGpuDescriptorHandle());
-        //cmdList->SetGraphicsRootDescriptorTable(2, m->getTexture(TextureType::METALLIC_ROUGHNESS)->getTextureGpuDescriptorHandle());
+        cmdList->SetGraphicsRootDescriptorTable(2, m->getTexture(TextureType::METALLIC_ROUGHNESS)->getTextureGpuDescriptorHandle());
 
         cmdList->DrawIndexedInstanced(m->getNumTriangles() * 3, 1, 0, 0, 0);
     }

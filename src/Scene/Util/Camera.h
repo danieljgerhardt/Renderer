@@ -5,7 +5,7 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
-#define MOVE_SCALAR 2.f
+#define MOVE_SCALAR 0.3f
 
 using namespace DirectX;
 
@@ -28,6 +28,7 @@ public:
 	const XMMATRIX getViewMat();
 	const XMMATRIX getProjMat();
 	const XMMATRIX getViewProjMat();
+	const XMVECTOR getPositionVector();
 	const XMFLOAT3 getPosition() { return position; }
 
 	const XMMATRIX getInvViewProjMat();

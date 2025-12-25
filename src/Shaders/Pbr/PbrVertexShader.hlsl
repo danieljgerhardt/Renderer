@@ -7,6 +7,7 @@ cbuffer rc_CameraMatrices : register(b0)
     float4x4 viewMatrix;
     float4x4 projectionMatrix;
     float4x4 modelMatrix;
+    float4 cameraPos;
 };
 
 struct VSInput
@@ -20,6 +21,7 @@ struct VSInput
 struct VSOutput
 {
     float4 Position : SV_Position;
+    float3 WorldPos : POSITION;
     float3 Normal : NORMAL;
     float2 UV : TEXCOORD;
 };
@@ -30,6 +32,7 @@ VSOutput main(VSInput input)
     float4 viewPos = mul(viewMatrix, worldPos);
     
     VSOutput o;
+    o.WorldPos = worldPos.xyz;
     o.Position = mul(projectionMatrix, viewPos);
     o.Normal = input.Normal;
     o.UV = input.UV;
