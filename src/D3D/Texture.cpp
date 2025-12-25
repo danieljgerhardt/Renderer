@@ -47,7 +47,9 @@ Texture::Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT 
     pipeline->getCommandList()->ResourceBarrier(1, &barrier);
 
     //TODO - better logic for making srvs
-	if (type == TextureType::DIFFUSE) makeSrv(context, pipeline);
+    if (type == TextureType::DIFFUSE || (pipeline->getCommandListID() == CommandListID::PBR_RENDER_ID && type == TextureType::METALLIC_ROUGHNESS)) {
+        makeSrv(context, pipeline);
+    }
 }
 
 Texture::~Texture()

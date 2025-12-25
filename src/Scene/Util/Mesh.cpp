@@ -7,6 +7,9 @@ Mesh::Mesh(DXContext* context, RenderPipeline* pipeline, XMFLOAT4X4 p_modelMatri
 	vertices = meshData.vertices;
 	indices = meshData.indices;
 
+    //a mesh will never have an env map
+    textures.resize(NUM_TEXTURE_TYPES - 1);
+
 	vertexBuffer = ResourceManager::get(context).getVertexBuffer(
 		ResourceManager::get(context).createVertexBuffer(
 			pipeline,

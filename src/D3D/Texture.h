@@ -13,11 +13,12 @@ enum TextureFormat {
 };
 
 enum TextureType {
-	DIFFUSE,
+	DIFFUSE = 0,
 	NORMAL,
 	EMISSIVE,
 	METALLIC_ROUGHNESS,
-	ENV_MAP
+	ENV_MAP,
+	NUM_TEXTURE_TYPES
 };
 
 struct TextureData {

@@ -1,5 +1,7 @@
 
-Texture2D texture : register(t0);
+Texture2D diffuseTexture : register(t0);
+Texture2D metallicRoughness : register(t1);
+Texture2D normalTexture : register(t2);
 
 SamplerState texSampler : register(s0);
 
@@ -20,7 +22,8 @@ struct VSOutput
 float4 main(VSOutput vsOut) : SV_Target
 {
     //return float4(vsOut.Normal * 0.5f + 0.5f, 1.0);
-    float3 texColor = texture.SampleLevel(texSampler, vsOut.UV, 0.f).rgb;
+    float3 texColor = diffuseTexture.SampleLevel(texSampler, vsOut.UV, 0.f).rgb;
+    //texColor = metallicRoughness.SampleLevel(texSampler, vsOut.UV, 0.f).rgb;
     return float4(texColor, 1.0);
 
 }

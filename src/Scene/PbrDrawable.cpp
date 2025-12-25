@@ -55,8 +55,8 @@ void PbrDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
         cmdList->SetGraphicsRoot32BitConstants(0, 16, &projMat, 16);
         cmdList->SetGraphicsRoot32BitConstants(0, 16, m->getModelMatrix(), 32);
 
-        Texture& diffuseTex = *m->getDiffuseTexture();
-        cmdList->SetGraphicsRootDescriptorTable(1, diffuseTex.getTextureGpuDescriptorHandle());
+        cmdList->SetGraphicsRootDescriptorTable(1, m->getTexture(TextureType::DIFFUSE)->getTextureGpuDescriptorHandle());
+        //cmdList->SetGraphicsRootDescriptorTable(2, m->getTexture(TextureType::METALLIC_ROUGHNESS)->getTextureGpuDescriptorHandle());
 
         cmdList->DrawIndexedInstanced(m->getNumTriangles() * 3, 1, 0, 0, 0);
     }

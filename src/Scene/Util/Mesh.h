@@ -51,29 +51,18 @@ public:
 
 	//TODO - use smart pointers or resource manager to cleanly transfer ownership
 	void assignTexture(Texture* tex) {
-		textures.reserve(4);
-
-		switch (tex->getType()) {
-		case TextureType::DIFFUSE:
-			textures.push_back(tex);
-			break;
-		case TextureType::NORMAL:
-			textures.push_back(tex);
-			break;
-		case TextureType::METALLIC_ROUGHNESS:
-			textures.push_back(tex);
-			break;
-		case TextureType::EMISSIVE:
-			textures.push_back(tex);
-			break;
-		default:
+		TextureType type = tex->getType();
+		if (type > NUM_TEXTURE_TYPES - 1) {
 			std::cerr << "Error: Unsupported texture type assigned to mesh.\n";
-			break;
 		}
+		textures[type] = tex;
 	}
 
-	Texture* getDiffuseTexture() {
-		return textures[0];
+	Texture* getTexture(TextureType type) {
+		if (type > NUM_TEXTURE_TYPES - 1) {
+			return nullptr;
+		}
+		return textures[type];
 	}
 
 private:
