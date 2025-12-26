@@ -8,8 +8,16 @@ CubemapDrawable::CubemapDrawable(DXContext* context, RenderPipeline* pipeline) :
 
 void CubemapDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
 	ID3D12GraphicsCommandList6* cmdList = renderPipeline->getCommandList();
-	Window::get().setCmdListRenderTarget(cmdList);
-	Window::get().setViewport(vp, cmdList);
+	
+	D3D12_VIEWPORT cubemapVp;
+	cubemapVp.TopLeftX = 0.f;
+	cubemapVp.TopLeftY = 0.f;
+	cubemapVp.Width = 512.f;
+	cubemapVp.Height = 512.f;
+	cubemapVp.MinDepth = 0.f;
+	cubemapVp.MaxDepth = 1.f;
+
+	Window::get().setViewport(cubemapVp, cmdList);
 
 	CD3DX12_RESOURCE_BARRIER toRenderTarget = CD3DX12_RESOURCE_BARRIER::Transition(
 		envCubeMap->getTextureResource(),

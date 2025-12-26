@@ -17,6 +17,17 @@ Texture::Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT 
 	if (type == TextureType::ENV_MAP) {
         resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
         resourceDesc.DepthOrArraySize = 6;
+
+        CD3DX12_HEAP_PROPERTIES heapDefault(D3D12_HEAP_TYPE_DEFAULT);
+        context->getDevice()->CreateCommittedResource(
+            &heapDefault,
+            D3D12_HEAP_FLAG_NONE,
+            &resourceDesc,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+            nullptr,
+            IID_PPV_ARGS(&textureResource));
+
+        return;
 	}
     
     CD3DX12_HEAP_PROPERTIES heapDefault(D3D12_HEAP_TYPE_DEFAULT);
@@ -27,8 +38,6 @@ Texture::Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT 
         D3D12_RESOURCE_STATE_COPY_DEST,
         nullptr,
         IID_PPV_ARGS(&textureResource));
-
-    if (type == TextureType::ENV_MAP) return;
 
     const UINT64 uploadBufferSize = GetRequiredIntermediateSize(textureResource.Get(), 0, 1);
 
