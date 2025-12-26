@@ -89,9 +89,11 @@ float4 main(VSOutput vsOut) : SV_Target
     float3 pos = vsOut.WorldPos.xyz;
     float3 nor = vsOut.Normal;
     float3 metalRough = metallicRoughness.SampleLevel(texSampler, vsOut.UV, 0.f).rgb;
+    //float3 metalRough = float3(0.0, 1.0, 0.0);
     float metallic = metalRough.b;
     float roughness = metalRough.g;
     float3 albedo = diffuseTexture.SampleLevel(texSampler, vsOut.UV, 0.f).rgb;
+    //float3 albedo = float3(1.0, 0.0, 0.0);
     
     float ambientOccl = 1.0;
 

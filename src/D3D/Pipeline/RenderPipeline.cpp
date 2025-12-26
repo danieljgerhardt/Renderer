@@ -3,14 +3,14 @@
 #include "D3D/ResourceManager.h"
 
 RenderPipeline::RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context,
-    CommandListID id, D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flags)
-	: Pipeline(context, id), vertexShader(vertexShaderName, ShaderType::VertexShader), fragShader(fragShaderName, ShaderType::PixelShader)
+    CommandListID id, D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flags, bool useDsv)
+	: Pipeline(context, id), vertexShader(vertexShaderName, ShaderType::VertexShader), fragShader(fragShaderName, ShaderType::PixelShader), useDsv(useDsv)
 {
     createRootSignature(context, { &vertexShader, &fragShader });
 
     ResourceManager& manager = ResourceManager::get(&context);
     descriptorHeap = manager.getDescriptorHeap(manager.createDescriptorHeap(type, numDescriptors, flags));
-	
+
     createPSOD();
 	createPipelineState(context.getDevice());
 }
@@ -144,7 +144,28 @@ void RenderPipeline::createPSOD() {
 
     gfxPsod.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    gfxPsod.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+    if (useDsv) {
+        gfxPsod.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+        gfxPsod.DepthStencilState.DepthEnable = TRUE;
+        gfxPsod.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+        gfxPsod.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+        gfxPsod.DepthStencilState.StencilEnable = FALSE;
+        gfxPsod.DepthStencilState.StencilReadMask = 0;
+        gfxPsod.DepthStencilState.StencilWriteMask = 0;
+        gfxPsod.DepthStencilState.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+        gfxPsod.DepthStencilState.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+        gfxPsod.DepthStencilState.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+        gfxPsod.DepthStencilState.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+        gfxPsod.DepthStencilState.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+        gfxPsod.DepthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+        gfxPsod.DepthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+        gfxPsod.DepthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+    }
+    else {
+		gfxPsod.DSVFormat = DXGI_FORMAT_UNKNOWN;
+		gfxPsod.DepthStencilState.DepthEnable = FALSE;
+        gfxPsod.DepthStencilState.StencilEnable = FALSE;
+    }
 
     gfxPsod.BlendState.AlphaToCoverageEnable = FALSE;
     gfxPsod.BlendState.IndependentBlendEnable = FALSE;
@@ -159,21 +180,6 @@ void RenderPipeline::createPSOD() {
     gfxPsod.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
     gfxPsod.BlendState.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
     gfxPsod.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-    gfxPsod.DepthStencilState.DepthEnable = TRUE;
-    gfxPsod.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
-    gfxPsod.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-    gfxPsod.DepthStencilState.StencilEnable = FALSE;
-    gfxPsod.DepthStencilState.StencilReadMask = 0;
-    gfxPsod.DepthStencilState.StencilWriteMask = 0;
-    gfxPsod.DepthStencilState.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-    gfxPsod.DepthStencilState.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-    gfxPsod.DepthStencilState.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-    gfxPsod.DepthStencilState.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-    gfxPsod.DepthStencilState.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-    gfxPsod.DepthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-    gfxPsod.DepthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-    gfxPsod.DepthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
 
     gfxPsod.SampleMask = 0xFFFFFFFF;
 

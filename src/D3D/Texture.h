@@ -50,6 +50,10 @@ public:
 
 	void releaseResources();
 
+	D3D12_RESOURCE_DESC getResourceDesc() { return resourceDesc; }
+
+	ID3D12Resource* getTextureResource() { return textureResource.Get(); }
+
 private:
 	ComPointer<ID3D12Resource> textureResource;
 	ComPointer<ID3D12Resource> textureUploadHeap;
@@ -61,5 +65,7 @@ private:
 	UINT heapIndex;
 
 	D3D12_GPU_DESCRIPTOR_HANDLE textureGpuDescriptorHandle;
+
+	D3D12_RESOURCE_DESC resourceDesc;
 };
 
