@@ -21,6 +21,13 @@ void CubemapDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
 
 	Window::get().setViewport(cubemapVp, cmdList);
 
+	D3D12_RECT scissorRect;
+	scissorRect.left = 0;
+	scissorRect.top = 0;
+	scissorRect.right = envCubeMap->getWidth();
+	scissorRect.bottom = envCubeMap->getHeight();
+	cmdList->RSSetScissorRects(1, &scissorRect);
+
 	CD3DX12_RESOURCE_BARRIER toRenderTarget = CD3DX12_RESOURCE_BARRIER::Transition(
 		envCubeMap->getTextureResource(),
 		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
@@ -90,7 +97,7 @@ void CubemapDrawable::construct() {
 	viewMatrices[0] = XMMatrixLookToLH(XMVectorZero(), XMVectorSet(1.f, 0.f, 0.f, 0.f), XMVectorSet(0.f, -1.f, 0.f, 0.f));   // +X
 	viewMatrices[1] = XMMatrixLookToLH(XMVectorZero(), XMVectorSet(-1.f, 0.f, 0.f, 0.f), XMVectorSet(0.f, -1.f, 0.f, 0.f));  // -X
 	viewMatrices[2] = XMMatrixLookToLH(XMVectorZero(), XMVectorSet(0.f, 1.f, 0.f, 0.f), XMVectorSet(0.f, 0.f, 1.f, 0.f));    // +Y
-	viewMatrices[3] = XMMatrixLookToLH(XMVectorZero(), XMVectorSet(0.f, -1.f, 0.f, 0.f), XMVectorSet(0.f, 0.f, -1.f, 0.f));  // -Y
+	viewMatrices[3] = XMMatrixLookToLH(XMVectorZero(), XMVectorSet(0.f, -1.f, 0.f, 0.f), XMVectorSet(0.f, 0.f, -1.f, 0.f));  // -Y -- currently broken
 	viewMatrices[4] = XMMatrixLookToLH(XMVectorZero(), XMVectorSet(0.f, 0.f, 1.f, 0.f), XMVectorSet(0.f, -1.f, 0.f, 0.f));   // +Z
 	viewMatrices[5] = XMMatrixLookToLH(XMVectorZero(), XMVectorSet(0.f, 0.f, -1.f, 0.f), XMVectorSet(0.f, -1.f, 0.f, 0.f));  // -Z
 
@@ -100,7 +107,7 @@ void CubemapDrawable::construct() {
 		{XMFLOAT3(1.f,  -1.f, -1.f), XMFLOAT3(0.f, 0.f, -1.f), XMFLOAT2(0.f, 0.f)},
 		{XMFLOAT3(1.f,  1.f, -1.f), XMFLOAT3(0.f, 0.f, -1.f), XMFLOAT2(1.f, 0.f)},
 		{XMFLOAT3(-1.f, 1.f, -1.f), XMFLOAT3(0.f, 0.f, -1.f), XMFLOAT2(1.f, 1.f)},
-		{XMFLOAT3(-1.f, -1.f, -1.f), XMFLOAT3(0.f, 0.f, -1.f), XMFLOAT2(0.f, 1.f)},
+		{XMFLOAT3(-1.f, -1.f, 1.f), XMFLOAT3(0.f, 0.f, -1.f), XMFLOAT2(0.f, 1.f)},
 		{XMFLOAT3(1.f, -1.f, 1.f), XMFLOAT3(0.f, 0.f, -1.f), XMFLOAT2(0.f, 0.f)},
 		{XMFLOAT3(1.f,  1.f, 1.f), XMFLOAT3(0.f, 0.f, -1.f), XMFLOAT2(1.f, 0.f)},
 		{XMFLOAT3(-1.f, 1.f, 1.f), XMFLOAT3(0.f, 0.f, -1.f), XMFLOAT2(1.f, 1.f)}
