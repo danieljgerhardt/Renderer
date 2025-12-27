@@ -25,10 +25,10 @@ private:
 	Texture* envMap;
 	Texture* envCubeMap;
 
-	VertexBuffer* quadVb;
-	D3D12_VERTEX_BUFFER_VIEW quadVbv;
-	IndexBuffer* quadIb;
-	D3D12_INDEX_BUFFER_VIEW quadIbv;
+	VertexBuffer* cubeVb;
+	D3D12_VERTEX_BUFFER_VIEW cubeVbv;
+	IndexBuffer* cubeIb;
+	D3D12_INDEX_BUFFER_VIEW cubeIbv;
 
 	std::vector<XMMATRIX> viewMatrices;
 

@@ -54,6 +54,9 @@ public:
 
 	ID3D12Resource* getTextureResource() { return textureResource.Get(); }
 
+	UINT getWidth() { return width; }
+	UINT getHeight() { return height; }
+
 private:
 	ComPointer<ID3D12Resource> textureResource;
 	ComPointer<ID3D12Resource> textureUploadHeap;

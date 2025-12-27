@@ -20,7 +20,7 @@ float2 sampleSphericalMap(float3 v) {
 
 float4 main(VSOutput psIn) : SV_TARGET
 {
-    float2 uv = sampleSphericalMap(normalize(psIn.ClipPosition.xyz));
+    float2 uv = sampleSphericalMap(normalize(psIn.WorldPosition.xyz));
     float3 color = envMap.Sample(envMapSampler, uv).rgb;
     
 	return float4(color, 1.0f);

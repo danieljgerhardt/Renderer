@@ -15,10 +15,10 @@ cbuffer rc_viewMatrix : register(b0)
     float4x4 ViewMatrix;
 };
 
-VSOutput main( VSInput vsIn )
+VSOutput main(VSInput vsIn)
 {
     VSOutput o;
     o.WorldPosition = float4(vsIn.Position, 1.f);
-    o.ClipPosition = mul(float4(vsIn.Position, 1.0f), ViewMatrix);
+    o.ClipPosition = mul(ViewMatrix, o.WorldPosition);
 	return o;
 }
