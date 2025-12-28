@@ -26,6 +26,7 @@ void CubemapDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
 	scissorRect.top = 0;
 	scissorRect.right = envCubeMap->getWidth();
 	scissorRect.bottom = envCubeMap->getHeight();
+
 	cmdList->RSSetScissorRects(1, &scissorRect);
 
 	CD3DX12_RESOURCE_BARRIER toRenderTarget = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -93,15 +94,13 @@ void CubemapDrawable::construct() {
 	ResourceHandle envCubeMapHandle = rm.createTexture(renderPipeline, 1024, 1024, {}, TextureType::ENV_MAP);
 	envCubeMap = rm.getTexture(envCubeMapHandle);
 
-	viewMatrices.resize(6);
 	viewMatrices[0] = XMMatrixLookToLH(XMVectorZero(), XMVectorSet(1.f, 0.f, 0.f, 0.f), XMVectorSet(0.f, -1.f, 0.f, 0.f));   // +X
 	viewMatrices[1] = XMMatrixLookToLH(XMVectorZero(), XMVectorSet(-1.f, 0.f, 0.f, 0.f), XMVectorSet(0.f, -1.f, 0.f, 0.f));  // -X
 	viewMatrices[2] = XMMatrixLookToLH(XMVectorZero(), XMVectorSet(0.f, 1.f, 0.f, 0.f), XMVectorSet(0.f, 0.f, 1.f, 0.f));    // +Y
-	viewMatrices[3] = XMMatrixLookToLH(XMVectorZero(), XMVectorSet(0.f, -1.f, 0.f, 0.f), XMVectorSet(0.f, 0.f, -1.f, 0.f));  // -Y -- currently broken
+	viewMatrices[3] = XMMatrixLookToLH(XMVectorZero(), XMVectorSet(0.f, -1.f, 0.f, 0.f), XMVectorSet(0.f, 0.f, -1.f, 0.f));  // -Y
 	viewMatrices[4] = XMMatrixLookToLH(XMVectorZero(), XMVectorSet(0.f, 0.f, 1.f, 0.f), XMVectorSet(0.f, -1.f, 0.f, 0.f));   // +Z
 	viewMatrices[5] = XMMatrixLookToLH(XMVectorZero(), XMVectorSet(0.f, 0.f, -1.f, 0.f), XMVectorSet(0.f, -1.f, 0.f, 0.f));  // -Z
 
-	//screen spanning quad vert buffer
 	std::vector<Vertex> vertData{
 		{XMFLOAT3(-1.f, -1.f, -1.f), XMFLOAT3(0.f, 0.f, -1.f), XMFLOAT2(0.f, 1.f)},
 		{XMFLOAT3(1.f,  -1.f, -1.f), XMFLOAT3(0.f, 0.f, -1.f), XMFLOAT2(0.f, 0.f)},

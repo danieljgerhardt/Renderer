@@ -9,10 +9,15 @@ struct VSOutput
     float4 ClipPosition : SV_POSITION;
 };
 
+cbuffer rc_viewMatrix : register(b0)
+{
+    float4x4 ViewMatrix;
+};
+
 static const float2 normalizeUv = float2(0.1591f, 0.3183f); // (1 / (2 * PI), 1 / PI))
 
 float2 sampleSphericalMap(float3 v) {
-    float2 uv = float2(atan2(v.z, v.x), asin(clamp(v.y, -1.0f, 1.0f)));
+    float2 uv = float2(atan2(v.x, v.z), asin(clamp(v.y, -1.0f, 1.0f)));
     uv *= normalizeUv;
     uv += 0.5f;
     return uv;
@@ -20,8 +25,9 @@ float2 sampleSphericalMap(float3 v) {
 
 float4 main(VSOutput psIn) : SV_TARGET
 {
-    float2 uv = sampleSphericalMap(normalize(psIn.WorldPosition.xyz));
+    float3 direction = mul((float3x3) ViewMatrix, normalize(psIn.WorldPosition.xyz));
+    float2 uv = sampleSphericalMap(normalize(direction));
     float3 color = envMap.Sample(envMapSampler, uv).rgb;
     
-	return float4(color, 1.0f);
+    return float4(color, 1.0f);
 }

@@ -21,6 +21,6 @@ VSOutput main(VSInput vsIn)
 {
     VSOutput o;
     o.WorldPosition = float4(vsIn.Position, 1.f);
-    o.ClipPosition = mul(ViewMatrix, o.WorldPosition);
+    o.ClipPosition = o.WorldPosition;
 	return o;
 }

@@ -30,7 +30,7 @@ private:
 	IndexBuffer* cubeIb;
 	D3D12_INDEX_BUFFER_VIEW cubeIbv;
 
-	std::vector<XMMATRIX> viewMatrices;
+	std::array<XMMATRIX, 6> viewMatrices;
 
 	std::array<std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE>, 6> cubeMapSrvHandles;
 
