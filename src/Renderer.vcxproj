@@ -76,6 +76,7 @@
     <ClInclude Include="Scene\CubemapGlossyConvolution.h" />
     <ClInclude Include="Scene\EnvironmentMapDrawable.h" />
     <ClInclude Include="Scene\PbrDrawable.h" />
+    <ClInclude Include="Scene\Util\CubeMapGeometry.h" />
     <ClInclude Include="Support\ImguiManager.h" />
     <ClInclude Include="Support\RootSignatureBuilder.h" />
     <ClInclude Include="Scene\GridConstants.h" />

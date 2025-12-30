@@ -1,23 +1,20 @@
 #include "EnvironmentMapDrawable.h"
 
+#include "D3D/ResourceManager.h"
+
+#include "Scene/Util/CubeMapGeometry.h"
+
 EnvironmentMapDrawable::EnvironmentMapDrawable(DXContext* context, RenderPipeline* pipeline, Texture* envCubeMap) 
     : context(context), renderPipeline(pipeline), envCubeMap(envCubeMap) {
     construct();
 }
 
 void EnvironmentMapDrawable::construct() {
-    XMFLOAT4X4 identityModelMatrix;
-    XMStoreFloat4x4(&identityModelMatrix, XMMatrixMultiply(
-        XMMatrixScaling(1.f, 1.f, 1.f),
-        XMMatrixTranslation(0.f, 0.f, 0.f)
-    ));
+	ResourceManager& rm = ResourceManager::get(context);
 
-    std::string inputString = "objs\\cube\\Cube.gltf";
-    gltfData = Loader::createMeshFromGltf((std::filesystem::current_path() / inputString).string(), context, renderPipeline->getCommandList(), renderPipeline, identityModelMatrix);
-    
-    cube = gltfData.meshes[0];
+    createCubeGeometry(context, renderPipeline, cubeIbv, cubeVbv);
 
-    triangleCount += cube->getNumTriangles();
+    triangleCount = 12;
 }
 
 void EnvironmentMapDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
@@ -26,8 +23,8 @@ void EnvironmentMapDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
     Window::get().setViewport(vp, cmdList);
     
     // == IA ==
-    cmdList->IASetVertexBuffers(0, 1, cube->getVBV());
-    cmdList->IASetIndexBuffer(cube->getIBV());
+    cmdList->IASetVertexBuffers(0, 1, &cubeVbv);
+    cmdList->IASetIndexBuffer(&cubeIbv);
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     // == PSO ==
@@ -43,7 +40,7 @@ void EnvironmentMapDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
 
     cmdList->SetGraphicsRootDescriptorTable(1, envCubeMap->getTextureGpuDescriptorHandle());
 
-    cmdList->DrawIndexedInstanced(cube->getNumTriangles() * 3, 1, 0, 0, 0);
+    cmdList->DrawIndexedInstanced(UINT(triangleCount) * 3, 1, 0, 0, 0);
 
     context->executeCommandList(renderPipeline->getCommandListID());
     context->resetCommandList(renderPipeline->getCommandListID());
@@ -54,6 +51,5 @@ size_t EnvironmentMapDrawable::getTriangleCount() {
 }
 
 void EnvironmentMapDrawable::releaseResources() {
-    cube->releaseResources();
     renderPipeline->releaseResources();
 }

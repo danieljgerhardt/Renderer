@@ -4,8 +4,9 @@
 #include <vector>
 
 #include "Util/Drawable.h"
-#include "Util/Loader.h"
-#include "Util/Mesh.h"
+#include "D3D/Buffer/IndexBuffer.h"
+#include "D3D/Buffer/VertexBuffer.h"
+#include "D3D/Texture.h"
 
 class EnvironmentMapDrawable : public Drawable {
 public:
@@ -25,13 +26,15 @@ private:
 	DXContext* context;
 	RenderPipeline* renderPipeline;
 
-	Mesh* cube;
+	VertexBuffer* cubeVb;
+	D3D12_VERTEX_BUFFER_VIEW cubeVbv;
+
+	IndexBuffer* cubeIb;
+	D3D12_INDEX_BUFFER_VIEW cubeIbv;
 
 	Texture* envCubeMap;
 
 	size_t triangleCount{ 0 };
-
-	GltfData gltfData;
 
 	void construct();
 };

@@ -19,7 +19,8 @@ cbuffer rc_cameraMatrix : register(b0)
 VSOutput main(VSInput vsIn)
 {
     VSOutput o;
-    o.WorldPosition = mul(viewProjMatrix, float4(vsIn.Position, 1.f));
-    o.ClipPosition = o.WorldPosition.xyww;
+    o.WorldPosition = float4(vsIn.Position, 1.f);
+    o.ClipPosition = mul(viewProjMatrix, float4(vsIn.Position, 1.f));
+    o.ClipPosition.z = o.ClipPosition.w;
     return o;
 }
