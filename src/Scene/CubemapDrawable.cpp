@@ -93,7 +93,8 @@ void CubemapDrawable::construct() {
 	ResourceHandle envMapHandle = rm.createTextureFromFile("textures\\environments\\Frozen_Waterfall_Ref.hdr", context, renderPipeline->getCommandList(), renderPipeline, TextureType::DIFFUSE);
 	envMap = rm.getTexture(envMapHandle);
 
-	ResourceHandle envCubeMapHandle = rm.createTexture(renderPipeline, 1024, 1024, {}, TextureType::ENV_MAP);
+	TextureData textureData{ .width = 1024, .height = 1024, .type = TextureType::ENV_MAP };
+	ResourceHandle envCubeMapHandle = rm.createTexture(renderPipeline, textureData);
 	envCubeMap = rm.getTexture(envCubeMapHandle);
 
 	fillCubemapViewMatrices(viewMatrices);

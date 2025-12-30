@@ -91,7 +91,8 @@ void CubemapDiffuseConvolution::releaseResources() {
 void CubemapDiffuseConvolution::construct() {
 	ResourceManager& rm = ResourceManager::get(context);
 
-	ResourceHandle diffuseConvolutionHandle = rm.createTexture(renderPipeline, 1024, 1024, {}, TextureType::ENV_MAP);
+	TextureData textureData{ .width = 1024, .height = 1024, .type = TextureType::ENV_MAP };
+	ResourceHandle diffuseConvolutionHandle = rm.createTexture(renderPipeline, textureData);
 	diffuseConvolution = rm.getTexture(diffuseConvolutionHandle);
 
 	fillCubemapViewMatrices(viewMatrices);

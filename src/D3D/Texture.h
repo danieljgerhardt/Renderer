@@ -24,8 +24,14 @@ enum TextureType {
 struct TextureData {
 	UINT width;
 	UINT height;
+
+	//TODO - not both nececssary
 	std::vector<unsigned char> imageData;
-	TextureType type;
+	std::vector<float> imageDataFloat;
+
+	TextureType type{ DIFFUSE };
+	UINT mipLevels{ 1 };
+	DXGI_FORMAT format{ DXGI_FORMAT_R8G8B8A8_UNORM };
 };
 
 class Texture
@@ -39,7 +45,7 @@ public:
 	Texture(Texture&&) noexcept = default;
 	Texture& operator=(Texture&&) noexcept = default;
 
-	Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT height, std::vector<unsigned char> imageData, TextureType type, UINT mipLevels = 1);
+	Texture(DXContext* context, RenderPipeline* pipeline, TextureData textureData);
 	~Texture();
 
 	D3D12_GPU_DESCRIPTOR_HANDLE getTextureGpuDescriptorHandle();
@@ -71,9 +77,11 @@ private:
 
 	TextureType type;
 
-	UINT heapIndex;
+	DXGI_FORMAT format;
 
-	D3D12_GPU_DESCRIPTOR_HANDLE textureGpuDescriptorHandle;
+	UINT heapIndex{};
+
+	D3D12_GPU_DESCRIPTOR_HANDLE textureGpuDescriptorHandle{};
 
 	D3D12_RESOURCE_DESC resourceDesc;
 };

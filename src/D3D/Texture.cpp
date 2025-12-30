@@ -4,15 +4,15 @@
 
 #include <iostream>
 
-Texture::Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT height, std::vector<unsigned char> imageData, TextureType type, UINT mipLevels)
-	: width(width), height(height), type(type)
+Texture::Texture(DXContext* context, RenderPipeline* pipeline, TextureData textureData)
+	: width(textureData.width), height(textureData.height), type(textureData.type), format(textureData.format)
 {
     resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
     resourceDesc.Width = width;
     resourceDesc.Height = height;
     resourceDesc.DepthOrArraySize = 1;
     resourceDesc.MipLevels = mipLevels;
-    resourceDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    resourceDesc.Format = format;
     resourceDesc.SampleDesc.Count = 1;
     resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 
@@ -61,10 +61,18 @@ Texture::Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT 
         nullptr,
         IID_PPV_ARGS(&textureUploadHeap));
 
+    UINT bytesPerPixel;
     D3D12_SUBRESOURCE_DATA subresource = {};
-    subresource.pData = imageData.data();
-    subresource.RowPitch = width * 4;
-    subresource.SlicePitch = width * height * 4;
+	if (textureData.format == DXGI_FORMAT_R32G32B32A32_FLOAT) {
+		subresource.pData = textureData.imageDataFloat.data();
+		bytesPerPixel = 16;
+	}
+    else {
+        subresource.pData = textureData.imageData.data();
+		bytesPerPixel = 4;
+    }
+    subresource.RowPitch = width * bytesPerPixel;
+    subresource.SlicePitch = width * height * bytesPerPixel;
 
     UpdateSubresources(pipeline->getCommandList(), textureResource.Get(), textureUploadHeap, 0, 0, 1, &subresource);
 	CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(textureResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -96,9 +104,9 @@ void Texture::makeSrv(DXContext* context, RenderPipeline* pipeline, D3D12_SRV_DI
 
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //TODO - may change
+    srvDesc.Format = format;
     srvDesc.ViewDimension = srvDimension;
-    srvDesc.Texture2D.MipLevels = 1;
+    srvDesc.Texture2D.MipLevels = mipLevels;
 
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
     heapIndex = pipeline->getDescriptorHeap()->allocate(cpuHandle, textureGpuDescriptorHandle);
