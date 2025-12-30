@@ -2,11 +2,16 @@
 
 #include "Pipeline.h"
 
+enum DepthMode {
+	DISABLED,
+	STANDARD,
+	ENVIRONMENT_MAP
+};
+
 class RenderPipeline : public Pipeline {
 public:
 	RenderPipeline() = delete;
-	RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context,
-		CommandListID id, D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flags, bool useDsv = true);
+	RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context, CommandListID id, DescriptorHeap* dh, DepthMode depthMode = DISABLED);
 
 	Shader& getVertexShader() { return vertexShader; }
 	Shader& getFragmentShader() { return fragShader; }
@@ -25,5 +30,5 @@ protected:
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC gfxPsod{};
 
-	bool useDsv{ true };
+	DepthMode depthMode{ DISABLED };
 };

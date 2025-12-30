@@ -13,6 +13,8 @@ public:
 
 	void draw(Camera* camera, D3D12_VIEWPORT& vp) override;
 
+	bool drawEveryFrame() override { return true; }
+
 	size_t getTriangleCount() override;
 
 	void releaseResources() override;

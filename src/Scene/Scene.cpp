@@ -1,18 +1,40 @@
 #include "Scene.h"
 
+#include "D3D/ResourceManager.h"
+
 Scene::Scene(Camera* p_camera, DXContext* context)
 	:  camera(p_camera),
 	currentRP(),
 	currentCP()
 {
+	ResourceManager& rm = ResourceManager::get(context);
+	ResourceHandle renderHeapHandle = rm.createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1000,
+		D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+	DescriptorHeap* renderHeap = rm.getDescriptorHeap(renderHeapHandle);
+
+	//solid object rendering
 	renderPipelines.push_back(std::make_unique<RenderPipeline>( "VertexShader.cso", "PixelShader.cso", *context, CommandListID::OBJECT_RENDER_SOLID_ID,
-		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE));
+		renderHeap, DepthMode::STANDARD));
 
+	//pbr rendering
 	renderPipelines.push_back(std::make_unique<RenderPipeline>("PbrVertexShader.cso", "PbrPixelShader.cso", *context, CommandListID::PBR_RENDER_ID,
-		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE));
+		renderHeap, DepthMode::STANDARD));
 
+	//cubemap uv conversion
 	renderPipelines.push_back(std::make_unique<RenderPipeline>("CubemapVert.cso", "CubemapUvConversionPixel.cso", *context, CommandListID::CUBEMAP_UV_CONVERSION_ID,
-		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE, false));
+		renderHeap, DepthMode::DISABLED));
+
+	//diffuse convolution
+	renderPipelines.push_back(std::make_unique<RenderPipeline>("CubemapVert.cso", "DiffuseConvolutionPixel.cso", *context, CommandListID::CUBEMAP_DIFFUSE_CONVOLUTION_ID,
+		renderHeap, DepthMode::DISABLED));
+
+	//glossy convolution
+	renderPipelines.push_back(std::make_unique<RenderPipeline>("CubemapVert.cso", "GlossyConvolutionPixel.cso", *context, CommandListID::CUBEMAP_GLOSSY_CONVOLUTION_ID,
+		renderHeap, DepthMode::DISABLED));
+
+	//render environment map
+	renderPipelines.push_back(std::make_unique<RenderPipeline>("EnvMapVert.cso", "EnvMapPixel.cso", *context, CommandListID::ENV_MAP_ID,
+		renderHeap, DepthMode::ENVIRONMENT_MAP));
 
 	std::unique_ptr<ObjectDrawable> objScene = std::make_unique<ObjectDrawable>(context, renderPipelines[0].get());
 	drawables.push_back(std::move(objScene));
@@ -21,7 +43,27 @@ Scene::Scene(Camera* p_camera, DXContext* context)
 	drawables.push_back(std::move(pbrScene));
 
 	std::unique_ptr<CubemapDrawable> cubemapUvConversionScene = std::make_unique<CubemapDrawable>(context, renderPipelines[2].get());
+	Texture* envCubeMap = cubemapUvConversionScene->getEnvCubeMap();
+	CubemapDrawable* cubemapPtr = cubemapUvConversionScene.get();
 	drawables.push_back(std::move(cubemapUvConversionScene));
+
+	std::unique_ptr<CubemapDiffuseConvolution> cubemapDiffuseConvolutionScene = std::make_unique<CubemapDiffuseConvolution>(context, renderPipelines[3].get(), envCubeMap);
+	drawables.push_back(std::move(cubemapDiffuseConvolutionScene));
+
+	std::unique_ptr<CubemapGlossyConvolution> cubemapGlossyConvolutionScene = std::make_unique<CubemapGlossyConvolution>(context, renderPipelines[4].get(), envCubeMap);
+	drawables.push_back(std::move(cubemapGlossyConvolutionScene));
+
+	std::unique_ptr<EnvironmentMapDrawable> environmentMapScene = std::make_unique<EnvironmentMapDrawable>(context, renderPipelines[5].get(), envCubeMap);
+	drawables.push_back(std::move(environmentMapScene));
+
+	for (std::unique_ptr<Drawable>& drawable : drawables) {
+		D3D12_VIEWPORT tempVp{};
+		if (!drawable->drawEveryFrame()) {
+			drawable->draw(camera, tempVp);
+		}
+	}
+
+	cubemapPtr->getEnvCubeMap()->makeSrv(context, renderPipelines[2].get(), D3D12_SRV_DIMENSION_TEXTURECUBE);
 }
 
 RenderPipeline* Scene::getRenderPipeline(UINT index) {
@@ -34,6 +76,9 @@ void Scene::compute() {
 
 void Scene::draw(D3D12_VIEWPORT& vp) {
 	for (std::unique_ptr<Drawable>& drawable : drawables) {
+		if (!drawable->drawEveryFrame()) {
+			continue;
+		}
 		drawable->draw(camera, vp);
 	}
 }

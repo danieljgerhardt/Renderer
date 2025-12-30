@@ -2,14 +2,16 @@
 
 #include "ResourceUploadBatch.h"
 
-Texture::Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT height, std::vector<unsigned char> imageData, TextureType type)
+#include <iostream>
+
+Texture::Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT height, std::vector<unsigned char> imageData, TextureType type, UINT mipLevels)
 	: width(width), height(height), type(type)
 {
     resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
     resourceDesc.Width = width;
     resourceDesc.Height = height;
     resourceDesc.DepthOrArraySize = 1;
-    resourceDesc.MipLevels = 1;
+    resourceDesc.MipLevels = mipLevels;
     resourceDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     resourceDesc.SampleDesc.Count = 1;
     resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
@@ -17,6 +19,11 @@ Texture::Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT 
 	if (type == TextureType::ENV_MAP) {
         resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
         resourceDesc.DepthOrArraySize = 6;
+
+        //todo - may not be necessary
+        if (mipLevels > 1) {
+			resourceDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+        }
 
         CD3DX12_HEAP_PROPERTIES heapDefault(D3D12_HEAP_TYPE_DEFAULT);
         context->getDevice()->CreateCommittedResource(
@@ -26,6 +33,8 @@ Texture::Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT 
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
             nullptr,
             IID_PPV_ARGS(&textureResource));
+
+        makeSrv(context, pipeline, D3D12_SRV_DIMENSION_TEXTURECUBE);
 
         return;
 	}
@@ -67,31 +76,52 @@ Texture::Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT 
     }
 }
 
-Texture::~Texture()
-{
+Texture::~Texture() {
 	releaseResources();
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE Texture::getTextureGpuDescriptorHandle()
-{
+D3D12_GPU_DESCRIPTOR_HANDLE Texture::getTextureGpuDescriptorHandle() {
+	if (!srvCreated) {
+		std::cerr << "Error: Attempted to get SRV handle for texture that has no SRV." << std::endl;
+	}
+
     return textureGpuDescriptorHandle;
 }
 
-void Texture::makeSrv(DXContext* context, RenderPipeline* pipeline)
-{
+void Texture::makeSrv(DXContext* context, RenderPipeline* pipeline, D3D12_SRV_DIMENSION srvDimension) {
+	if (srvCreated) {
+		std::cerr << "Warning: Attempted to create SRV for texture that already has one." << std::endl;
+        return;
+	}
+
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //TODO - may change
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.ViewDimension = srvDimension;
     srvDesc.Texture2D.MipLevels = 1;
 
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
     heapIndex = pipeline->getDescriptorHeap()->allocate(cpuHandle, textureGpuDescriptorHandle);
     context->getDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, cpuHandle);
+
+	srvCreated = true;
 }
 
-void Texture::releaseResources()
-{
+void Texture::generateMipMaps(DXContext* context, RenderPipeline* pipeline) {
+	ID3D12Device6* device = context->getDevice();
+
+	ResourceUploadBatch upload(device);
+
+	upload.Begin();
+
+    upload.GenerateMips(textureResource);
+
+	auto finish = upload.End(context->getCommandQueue());
+
+	finish.wait();
+}
+
+void Texture::releaseResources() {
 	if (textureResource) {
 		textureResource.Release();
 	}

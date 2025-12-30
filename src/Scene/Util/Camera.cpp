@@ -132,12 +132,20 @@ const XMMATRIX Camera::getViewProjMat() {
 	return XMLoadFloat4x4(&viewProjMat);
 }
 
+const XMMATRIX Camera::getViewProjOrientOnly() {
+	XMMATRIX view = XMLoadFloat4x4(&viewMat);
+	view.r[3] = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+
+	XMMATRIX proj = XMLoadFloat4x4(&projMat);
+
+	return XMMatrixMultiply(view, proj);
+}
+
 const XMVECTOR Camera::getPositionVector() {
 	return XMLoadFloat3(&position);
 }
 
-const XMMATRIX Camera::getInvViewProjMat()
-{
+const XMMATRIX Camera::getInvViewProjMat() {
 	return XMMatrixInverse(nullptr, XMLoadFloat4x4(&viewProjMat));
 }
 

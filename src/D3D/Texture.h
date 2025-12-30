@@ -39,12 +39,14 @@ public:
 	Texture(Texture&&) noexcept = default;
 	Texture& operator=(Texture&&) noexcept = default;
 
-	Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT height, std::vector<unsigned char> imageData, TextureType type);
+	Texture(DXContext* context, RenderPipeline* pipeline, UINT width, UINT height, std::vector<unsigned char> imageData, TextureType type, UINT mipLevels = 1);
 	~Texture();
 
 	D3D12_GPU_DESCRIPTOR_HANDLE getTextureGpuDescriptorHandle();
 
-	void makeSrv(DXContext* context, RenderPipeline* pipeline);
+	void makeSrv(DXContext* context, RenderPipeline* pipeline, D3D12_SRV_DIMENSION srvDimension = D3D12_SRV_DIMENSION_TEXTURE2D);
+
+	void generateMipMaps(DXContext* context, RenderPipeline* pipeline);
 
 	TextureType getType() { return type; }
 
@@ -62,6 +64,10 @@ private:
 	ComPointer<ID3D12Resource> textureUploadHeap;
 
 	UINT width, height;
+
+	UINT mipLevels = 1;
+
+	bool srvCreated{ false };
 
 	TextureType type;
 

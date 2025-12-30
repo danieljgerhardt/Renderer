@@ -3,6 +3,9 @@
 #include "ObjectDrawable.h"
 #include "PbrDrawable.h"
 #include "CubemapDrawable.h"
+#include "CubemapDiffuseConvolution.h"
+#include "CubemapGlossyConvolution.h"
+#include "EnvironmentMapDrawable.h"
 
 #include "../D3D/Pipeline/RenderPipeline.h"
 #include "../D3D/Pipeline/ComputePipeline.h"

@@ -2,8 +2,8 @@
 
 #include "Scene/Util/Loader.h"
 
-ResourceHandle ResourceManager::createTexture(RenderPipeline* pipeline, UINT width, UINT height, std::vector<unsigned char> imageData, TextureType type) {
-	std::unique_ptr<Texture> texture = std::make_unique<Texture>(context, pipeline, width, height, imageData, type);
+ResourceHandle ResourceManager::createTexture(RenderPipeline* pipeline, UINT width, UINT height, std::vector<unsigned char> imageData, TextureType type, UINT mipLevels) {
+	std::unique_ptr<Texture> texture = std::make_unique<Texture>(context, pipeline, width, height, imageData, type, mipLevels);
 	UINT id = textureCount++;
 	textures[id] = std::move(texture);
 	return ResourceHandle{ ResourceType::TEXTURE, id };

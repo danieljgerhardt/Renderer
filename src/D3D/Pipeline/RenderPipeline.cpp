@@ -2,14 +2,12 @@
 
 #include "D3D/ResourceManager.h"
 
-RenderPipeline::RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context,
-    CommandListID id, D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flags, bool useDsv)
-	: Pipeline(context, id), vertexShader(vertexShaderName, ShaderType::VertexShader), fragShader(fragShaderName, ShaderType::PixelShader), useDsv(useDsv)
+RenderPipeline::RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context, CommandListID id, DescriptorHeap* dh, DepthMode depthMode)
+	: Pipeline(context, id), vertexShader(vertexShaderName, ShaderType::VertexShader), fragShader(fragShaderName, ShaderType::PixelShader), depthMode(depthMode)
 {
     createRootSignature(context, { &vertexShader, &fragShader });
 
-    ResourceManager& manager = ResourceManager::get(&context);
-    descriptorHeap = manager.getDescriptorHeap(manager.createDescriptorHeap(type, numDescriptors, flags));
+    descriptorHeap = dh;
 
     createPSOD();
 	createPipelineState(context.getDevice());
@@ -144,7 +142,14 @@ void RenderPipeline::createPSOD() {
 
     gfxPsod.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    if (useDsv) {
+    switch (depthMode) {
+	case DepthMode::DISABLED:
+        gfxPsod.DSVFormat = DXGI_FORMAT_UNKNOWN;
+        gfxPsod.DepthStencilState.DepthEnable = FALSE;
+        gfxPsod.DepthStencilState.StencilEnable = FALSE;
+        break;
+
+	case DepthMode::STANDARD:
         gfxPsod.DSVFormat = DXGI_FORMAT_D32_FLOAT;
         gfxPsod.DepthStencilState.DepthEnable = TRUE;
         gfxPsod.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
@@ -160,11 +165,13 @@ void RenderPipeline::createPSOD() {
         gfxPsod.DepthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
         gfxPsod.DepthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
         gfxPsod.DepthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-    }
-    else {
-		gfxPsod.DSVFormat = DXGI_FORMAT_UNKNOWN;
-		gfxPsod.DepthStencilState.DepthEnable = FALSE;
-        gfxPsod.DepthStencilState.StencilEnable = FALSE;
+        break;
+	case DepthMode::ENVIRONMENT_MAP:
+		gfxPsod.DepthStencilState.DepthEnable = TRUE;
+        gfxPsod.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+		gfxPsod.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		gfxPsod.DepthStencilState.StencilEnable = FALSE;
+        break;
     }
 
     gfxPsod.BlendState.AlphaToCoverageEnable = FALSE;

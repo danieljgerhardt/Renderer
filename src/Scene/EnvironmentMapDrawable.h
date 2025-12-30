@@ -7,11 +7,11 @@
 #include "Util/Loader.h"
 #include "Util/Mesh.h"
 
-class PbrDrawable : public Drawable {
+class EnvironmentMapDrawable : public Drawable {
 public:
-	PbrDrawable(DXContext* context, RenderPipeline* pipeline);
+	EnvironmentMapDrawable(DXContext* context, RenderPipeline* pipeline, Texture* envCubeMap);
 
-	void draw(Camera* camera, D3D12_VIEWPORT& vp);
+	void draw(Camera* camera, D3D12_VIEWPORT& vp) override;
 
 	bool drawEveryFrame() override { return true; }
 
@@ -25,14 +25,13 @@ private:
 	DXContext* context;
 	RenderPipeline* renderPipeline;
 
-	std::vector<Mesh*> meshes;
-	std::vector<XMFLOAT4X4> modelMatrices;
+	Mesh* cube;
+
+	Texture* envCubeMap;
 
 	size_t triangleCount{ 0 };
 
 	GltfData gltfData;
-
-	//Texture envMap;
 
 	void construct();
 };

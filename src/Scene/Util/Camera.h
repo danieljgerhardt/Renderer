@@ -28,6 +28,7 @@ public:
 	const XMMATRIX getViewMat();
 	const XMMATRIX getProjMat();
 	const XMMATRIX getViewProjMat();
+	const XMMATRIX getViewProjOrientOnly();
 	const XMVECTOR getPositionVector();
 	const XMFLOAT3 getPosition() { return position; }
 
