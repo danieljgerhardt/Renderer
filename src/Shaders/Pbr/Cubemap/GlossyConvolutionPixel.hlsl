@@ -74,7 +74,7 @@ float4 main(VSOutput psIn) : SV_TARGET
     float3 R = wh;
     float3 V = R;
 
-    const uint SAMPLE_COUNT = 1024u;
+    const uint SAMPLE_COUNT = 512u;
     float3 prefilteredColor = float3(0.f, 0.f, 0.f);
     float totalWeight = 0.f;
 

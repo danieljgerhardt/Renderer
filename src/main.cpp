@@ -65,7 +65,7 @@ int main() {
 
         //create viewport
         D3D12_VIEWPORT vp;
-        window.createViewport(vp, renderPipeline->getCommandList());
+        window.createViewport(vp);
 
 		//draw scene
 		scene.draw(vp);

@@ -9,7 +9,7 @@
 
 class PbrDrawable : public Drawable {
 public:
-	PbrDrawable(DXContext* context, RenderPipeline* pipeline);
+	PbrDrawable(DXContext* context, RenderPipeline* pipeline, Texture* diffuseIrradiance, Texture* glossyIrradiance);
 
 	void draw(Camera* camera, D3D12_VIEWPORT& vp);
 
@@ -32,7 +32,8 @@ private:
 
 	GltfData gltfData;
 
-	//Texture envMap;
+	Texture* diffuseIrradiance;
+	Texture* glossyIrradiance;
 
 	void construct();
 };

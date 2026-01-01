@@ -2,8 +2,8 @@
 
 #include "D3D/ResourceManager.h"
 
-RenderPipeline::RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context, CommandListID id, DescriptorHeap* dh, DepthMode depthMode)
-	: Pipeline(context, id), vertexShader(vertexShaderName, ShaderType::VertexShader), fragShader(fragShaderName, ShaderType::PixelShader), depthMode(depthMode)
+RenderPipeline::RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context, CommandListID id, DescriptorHeap* dh, DepthMode depthMode, DXGI_FORMAT renderTargetFormat)
+	: Pipeline(context, id), vertexShader(vertexShaderName, ShaderType::VertexShader), fragShader(fragShaderName, ShaderType::PixelShader), depthMode(depthMode), renderTargetFormat(renderTargetFormat)
 {
     createRootSignature(context, { &vertexShader, &fragShader });
 
@@ -140,7 +140,7 @@ void RenderPipeline::createPSOD() {
 
     gfxPsod.NumRenderTargets = 1;
 
-    gfxPsod.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+    gfxPsod.RTVFormats[0] = renderTargetFormat;
 
     switch (depthMode) {
 	case DepthMode::DISABLED:
@@ -148,7 +148,6 @@ void RenderPipeline::createPSOD() {
         gfxPsod.DepthStencilState.DepthEnable = FALSE;
         gfxPsod.DepthStencilState.StencilEnable = FALSE;
         break;
-
 	case DepthMode::STANDARD:
         gfxPsod.DSVFormat = DXGI_FORMAT_D32_FLOAT;
         gfxPsod.DepthStencilState.DepthEnable = TRUE;
@@ -167,6 +166,7 @@ void RenderPipeline::createPSOD() {
         gfxPsod.DepthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
         break;
 	case DepthMode::ENVIRONMENT_MAP:
+        gfxPsod.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 		gfxPsod.DepthStencilState.DepthEnable = TRUE;
         gfxPsod.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 		gfxPsod.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;

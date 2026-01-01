@@ -1,6 +1,8 @@
 #include "PbrDrawable.h"
 
-PbrDrawable::PbrDrawable(DXContext* context, RenderPipeline* pipeline) : context(context), renderPipeline(pipeline) {
+PbrDrawable::PbrDrawable(DXContext* context, RenderPipeline* pipeline, Texture* diffuseIrradiance, Texture* glossyIrradiance) 
+    : context(context), renderPipeline(pipeline), diffuseIrradiance(diffuseIrradiance), glossyIrradiance(glossyIrradiance)
+{
     construct();
 }
 
@@ -59,6 +61,8 @@ void PbrDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
 
         cmdList->SetGraphicsRootDescriptorTable(1, m->getTexture(TextureType::DIFFUSE)->getTextureGpuDescriptorHandle());
         cmdList->SetGraphicsRootDescriptorTable(2, m->getTexture(TextureType::METALLIC_ROUGHNESS)->getTextureGpuDescriptorHandle());
+		cmdList->SetGraphicsRootDescriptorTable(3, diffuseIrradiance->getTextureGpuDescriptorHandle());
+		cmdList->SetGraphicsRootDescriptorTable(4, glossyIrradiance->getTextureGpuDescriptorHandle());
 
         cmdList->DrawIndexedInstanced(m->getNumTriangles() * 3, 1, 0, 0, 0);
     }

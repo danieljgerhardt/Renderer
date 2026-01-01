@@ -120,6 +120,8 @@ bool Window::init(DXContext* contextPtr, int w, int h) {
 
     dxContext->getDevice()->CreateDepthStencilView(depthStencilBuffer, &depthStencilDesc, dsvHandle);
 
+	depthStencilBuffer->SetName(L"Depth Stencil Buffer");
+
     //get buffers
     if (!getBuffers()) {
         return false;
@@ -137,11 +139,6 @@ void Window::update() {
 }
 
 void Window::present() {
-	// Transition swap chain from render target to present
-	D3D12_RESOURCE_BARRIER barrier;
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-
     swapChain->Present(1, 0);
 }
 
@@ -229,6 +226,7 @@ bool Window::getBuffers() {
         rtv.Texture2D.MipSlice = 0;
         rtv.Texture2D.PlaneSlice = 0;
         dxContext->getDevice()->CreateRenderTargetView(swapChainBuffers[i], &rtv, rtvHandles[i]);
+		swapChainBuffers[i]->SetName(L"Swap Chain Buffer");
     }
     return true;
 }
@@ -297,8 +295,7 @@ LRESULT Window::OnWindowMessage(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam
     return DefWindowProc(wnd, msg, wParam, lParam);
 }
 
-
-void Window::createViewport(D3D12_VIEWPORT& vp, ID3D12GraphicsCommandList5* cmdList) {
+void Window::createViewport(D3D12_VIEWPORT& vp) {
     vp.TopLeftX = vp.TopLeftY = 0;
     vp.Width = (float)Window::get().getWidth();
     vp.Height = (float)Window::get().getHeight();

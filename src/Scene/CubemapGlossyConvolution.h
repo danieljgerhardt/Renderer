@@ -16,6 +16,8 @@ public:
 
 	size_t getTriangleCount() override;
 
+	Texture* getGlossyConvolution() { return glossyConvolution; }
+
 	void releaseResources() override;
 
 	bool instanced{ false };

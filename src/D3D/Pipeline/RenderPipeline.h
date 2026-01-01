@@ -11,7 +11,7 @@ enum DepthMode {
 class RenderPipeline : public Pipeline {
 public:
 	RenderPipeline() = delete;
-	RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context, CommandListID id, DescriptorHeap* dh, DepthMode depthMode = DISABLED);
+	RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context, CommandListID id, DescriptorHeap* dh, DepthMode depthMode = DISABLED, DXGI_FORMAT renderTargetFormat = DXGI_FORMAT_R8G8B8A8_UNORM);
 
 	Shader& getVertexShader() { return vertexShader; }
 	Shader& getFragmentShader() { return fragShader; }
@@ -31,4 +31,6 @@ protected:
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC gfxPsod{};
 
 	DepthMode depthMode{ DISABLED };
+
+	DXGI_FORMAT renderTargetFormat{ DXGI_FORMAT_R8G8B8A8_UNORM };
 };

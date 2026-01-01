@@ -16,6 +16,8 @@ public:
 
 	size_t getTriangleCount() override;
 
+	Texture* getDiffuseConvolution() { return diffuseConvolution; }
+
 	void releaseResources() override;
 
 	bool instanced{ false };
