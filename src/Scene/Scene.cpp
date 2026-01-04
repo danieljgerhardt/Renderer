@@ -66,8 +66,6 @@ Scene::Scene(Camera* p_camera, DXContext* context)
 			drawable->draw(camera, tempVp);
 		}
 	}
-
-	cubemapPtr->getEnvCubeMap()->makeSrv(context, renderPipelines[2].get(), D3D12_SRV_DIMENSION_TEXTURECUBE);
 }
 
 RenderPipeline* Scene::getRenderPipeline(UINT index) {

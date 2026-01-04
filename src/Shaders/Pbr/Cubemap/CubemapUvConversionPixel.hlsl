@@ -27,7 +27,7 @@ float4 main(VSOutput psIn) : SV_TARGET
 {
     float3 direction = mul((float3x3) ViewMatrix, normalize(psIn.WorldPosition.xyz));
     float2 uv = sampleSphericalMap(normalize(direction));
-    float3 color = envMap.Sample(envMapSampler, uv).rgb;
+    float3 color = envMap.SampleLevel(envMapSampler, uv, 0.0).rgb;
     
     return float4(color, 1.0f);
 }
