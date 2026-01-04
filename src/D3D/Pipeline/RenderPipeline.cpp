@@ -167,6 +167,7 @@ void RenderPipeline::createPSOD() {
         gfxPsod.DepthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
         break;
 	case DepthMode::ENVIRONMENT_MAP:
+        gfxPsod.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 		gfxPsod.DepthStencilState.DepthEnable = TRUE;
         gfxPsod.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 		gfxPsod.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
