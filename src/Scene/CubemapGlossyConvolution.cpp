@@ -81,7 +81,7 @@ void CubemapGlossyConvolution::draw(Camera* camera, D3D12_VIEWPORT& vp) {
 	cmdList->ResourceBarrier(1, &toShaderResource);
 
 	if (!mipMapsGenerated) {
-		glossyConvolution->generateMipMaps(context, renderPipeline);
+		//glossyConvolution->generateMipMaps(context, renderPipeline);
 		mipMapsGenerated = true;
 	}
 }
@@ -96,7 +96,7 @@ void CubemapGlossyConvolution::releaseResources() {
 void CubemapGlossyConvolution::construct() {
 	ResourceManager& rm = ResourceManager::get(context);
 
-	TextureData textureData{ .width = 1024, .height = 1024, .type = TextureType::ENV_MAP };
+	TextureData textureData{ .width = 512, .height = 512, .type = TextureType::ENV_MAP };
 	ResourceHandle diffuseConvolutionHandle = rm.createTexture(renderPipeline, textureData);
 	glossyConvolution = rm.getTexture(diffuseConvolutionHandle);
 

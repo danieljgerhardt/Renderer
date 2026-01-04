@@ -8,10 +8,15 @@ enum DepthMode {
 	ENVIRONMENT_MAP
 };
 
+struct PipelineFormat {
+	DepthMode depthMode{ STANDARD };
+	DXGI_FORMAT renderTargetFormat{ DXGI_FORMAT_R8G8B8A8_UNORM };
+};
+
 class RenderPipeline : public Pipeline {
 public:
 	RenderPipeline() = delete;
-	RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context, CommandListID id, DescriptorHeap* dh, DepthMode depthMode = DISABLED);
+	RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context, CommandListID id, DescriptorHeap* dh, PipelineFormat pipelineFormat);
 
 	Shader& getVertexShader() { return vertexShader; }
 	Shader& getFragmentShader() { return fragShader; }
@@ -30,5 +35,5 @@ protected:
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC gfxPsod{};
 
-	DepthMode depthMode{ DISABLED };
+	PipelineFormat pipelineFormat;
 };

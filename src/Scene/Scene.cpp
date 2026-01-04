@@ -13,28 +13,32 @@ Scene::Scene(Camera* p_camera, DXContext* context)
 	DescriptorHeap* renderHeap = rm.getDescriptorHeap(renderHeapHandle);
 
 	//solid object rendering
+	PipelineFormat standardPipelineFormat{.depthMode = DepthMode::STANDARD, .renderTargetFormat = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM};
 	renderPipelines.push_back(std::make_unique<RenderPipeline>( "VertexShader.cso", "PixelShader.cso", *context, CommandListID::OBJECT_RENDER_SOLID_ID,
-		renderHeap, DepthMode::STANDARD));
+		renderHeap, standardPipelineFormat));
 
 	//pbr rendering
 	renderPipelines.push_back(std::make_unique<RenderPipeline>("PbrVertexShader.cso", "PbrPixelShader.cso", *context, CommandListID::PBR_RENDER_ID,
-		renderHeap, DepthMode::STANDARD));
+		renderHeap, standardPipelineFormat));
 
 	//cubemap uv conversion
+	PipelineFormat cubemapPipelineFormat{ .depthMode = DepthMode::DISABLED, .renderTargetFormat = DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT };
 	renderPipelines.push_back(std::make_unique<RenderPipeline>("CubemapVert.cso", "CubemapUvConversionPixel.cso", *context, CommandListID::CUBEMAP_UV_CONVERSION_ID,
-		renderHeap, DepthMode::DISABLED));
+		renderHeap, cubemapPipelineFormat));
 
 	//diffuse convolution
+	PipelineFormat depthDisabledFormat{ .depthMode = DepthMode::DISABLED, .renderTargetFormat = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM };
 	renderPipelines.push_back(std::make_unique<RenderPipeline>("CubemapVert.cso", "DiffuseConvolutionPixel.cso", *context, CommandListID::CUBEMAP_DIFFUSE_CONVOLUTION_ID,
-		renderHeap, DepthMode::DISABLED));
+		renderHeap, depthDisabledFormat));
 
 	//glossy convolution
 	renderPipelines.push_back(std::make_unique<RenderPipeline>("CubemapVert.cso", "GlossyConvolutionPixel.cso", *context, CommandListID::CUBEMAP_GLOSSY_CONVOLUTION_ID,
-		renderHeap, DepthMode::DISABLED));
+		renderHeap, depthDisabledFormat));
 
 	//render environment map
+	PipelineFormat envMapPipelineFormat{ .depthMode = DepthMode::ENVIRONMENT_MAP, .renderTargetFormat = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM };
 	renderPipelines.push_back(std::make_unique<RenderPipeline>("EnvMapVert.cso", "EnvMapPixel.cso", *context, CommandListID::ENV_MAP_ID,
-		renderHeap, DepthMode::ENVIRONMENT_MAP));
+		renderHeap, envMapPipelineFormat));
 
 	std::unique_ptr<ObjectDrawable> objScene = std::make_unique<ObjectDrawable>(context, renderPipelines[0].get());
 	drawables.push_back(std::move(objScene));

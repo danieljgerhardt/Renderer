@@ -2,8 +2,8 @@
 
 #include "D3D/ResourceManager.h"
 
-RenderPipeline::RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context, CommandListID id, DescriptorHeap* dh, DepthMode depthMode)
-	: Pipeline(context, id), vertexShader(vertexShaderName, ShaderType::VertexShader), fragShader(fragShaderName, ShaderType::PixelShader), depthMode(depthMode)
+RenderPipeline::RenderPipeline(std::string vertexShaderName, std::string fragShaderName, DXContext& context, CommandListID id, DescriptorHeap* dh, PipelineFormat pipelineFormat)
+	: Pipeline(context, id), vertexShader(vertexShaderName, ShaderType::VertexShader), fragShader(fragShaderName, ShaderType::PixelShader), pipelineFormat(pipelineFormat)
 {
     createRootSignature(context, { &vertexShader, &fragShader });
 
@@ -140,9 +140,9 @@ void RenderPipeline::createPSOD() {
 
     gfxPsod.NumRenderTargets = 1;
 
-    gfxPsod.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+    gfxPsod.RTVFormats[0] = pipelineFormat.renderTargetFormat;
 
-    switch (depthMode) {
+    switch (pipelineFormat.depthMode) {
 	case DepthMode::DISABLED:
         gfxPsod.DSVFormat = DXGI_FORMAT_UNKNOWN;
         gfxPsod.DepthStencilState.DepthEnable = FALSE;
