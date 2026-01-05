@@ -41,30 +41,28 @@ Scene::Scene(Camera* p_camera, DXContext* context)
 		renderHeap, envMapPipelineFormat));
 
 	std::unique_ptr<ObjectDrawable> objScene = std::make_unique<ObjectDrawable>(context, renderPipelines[0].get());
-	drawables.push_back(std::move(objScene));
+	perFrameDrawables.push_back(std::move(objScene));
 
 	std::unique_ptr<PbrDrawable> pbrScene = std::make_unique<PbrDrawable>(context, renderPipelines[1].get());
-	drawables.push_back(std::move(pbrScene));
+	perFrameDrawables.push_back(std::move(pbrScene));
 
 	std::unique_ptr<CubemapDrawable> cubemapUvConversionScene = std::make_unique<CubemapDrawable>(context, renderPipelines[2].get());
 	Texture* envCubeMap = cubemapUvConversionScene->getEnvCubeMap();
 	CubemapDrawable* cubemapPtr = cubemapUvConversionScene.get();
-	drawables.push_back(std::move(cubemapUvConversionScene));
+	iblSetupDrawables.push_back(std::move(cubemapUvConversionScene));
 
 	std::unique_ptr<CubemapDiffuseConvolution> cubemapDiffuseConvolutionScene = std::make_unique<CubemapDiffuseConvolution>(context, renderPipelines[3].get(), envCubeMap);
-	drawables.push_back(std::move(cubemapDiffuseConvolutionScene));
+	iblSetupDrawables.push_back(std::move(cubemapDiffuseConvolutionScene));
 
 	std::unique_ptr<CubemapGlossyConvolution> cubemapGlossyConvolutionScene = std::make_unique<CubemapGlossyConvolution>(context, renderPipelines[4].get(), envCubeMap);
-	drawables.push_back(std::move(cubemapGlossyConvolutionScene));
+	iblSetupDrawables.push_back(std::move(cubemapGlossyConvolutionScene));
 
 	std::unique_ptr<EnvironmentMapDrawable> environmentMapScene = std::make_unique<EnvironmentMapDrawable>(context, renderPipelines[5].get(), envCubeMap);
-	drawables.push_back(std::move(environmentMapScene));
+	perFrameDrawables.push_back(std::move(environmentMapScene));
 
-	for (std::unique_ptr<Drawable>& drawable : drawables) {
+	for (std::unique_ptr<Drawable>& drawable : iblSetupDrawables) {
 		D3D12_VIEWPORT tempVp{};
-		if (!drawable->drawEveryFrame()) {
-			drawable->draw(camera, tempVp);
-		}
+		drawable->draw(camera, tempVp);
 	}
 }
 
@@ -77,28 +75,30 @@ void Scene::compute() {
 }
 
 void Scene::draw(D3D12_VIEWPORT& vp) {
-	for (std::unique_ptr<Drawable>& drawable : drawables) {
-		if (!drawable->drawEveryFrame()) {
-			continue;
-		}
+	for (std::unique_ptr<Drawable>& drawable : perFrameDrawables) {
 		drawable->draw(camera, vp);
 	}
 }
 
 size_t Scene::getTriangleCount() {
 	size_t triangleCount = 0;
-	for (std::unique_ptr<Drawable>& drawable : drawables) {
+	for (std::unique_ptr<Drawable>& drawable : perFrameDrawables) {
 		triangleCount += drawable->getTriangleCount();
 	}
 	return triangleCount;
 }
 
 void Scene::releaseResources() {
-	for (std::unique_ptr<Drawable>& drawable : drawables) {
+	for (std::unique_ptr<Drawable>& drawable : iblSetupDrawables) {
 		drawable->releaseResources();
 		drawable.reset();
 	}
-	drawables.clear();
+	for (std::unique_ptr<Drawable>& drawable : perFrameDrawables) {
+		drawable->releaseResources();
+		drawable.reset();
+	}
+	iblSetupDrawables.clear();
+	perFrameDrawables.clear();
 	for (std::unique_ptr<RenderPipeline>& rp : renderPipelines) {
 		rp->releaseResources();
 		rp.reset();

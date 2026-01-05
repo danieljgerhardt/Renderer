@@ -92,7 +92,7 @@ float4 main(VSOutput psIn) : SV_TARGET
             float HdotV = max(dot(H, V), 0.f);
             float pdf = D * NdotH / (4.f * HdotV) + 0.0001f;
 
-            float resolution = 512.f;
+            float resolution = 1024.f;
             float saTexel = 4.f * PI / (6.f * resolution * resolution);
             float saSample = 1.f / (float(SAMPLE_COUNT) * pdf + 0.0001f);
 

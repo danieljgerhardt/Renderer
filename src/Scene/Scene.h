@@ -30,7 +30,9 @@ private:
 	Camera* camera;
 
 	std::vector<std::unique_ptr<RenderPipeline>> renderPipelines;
-	std::vector<std::unique_ptr<Drawable>> drawables;
+
+	std::vector<std::unique_ptr<Drawable>> iblSetupDrawables;
+	std::vector<std::unique_ptr<Drawable>> perFrameDrawables;
 
 	RenderPipeline* currentRP;
 	ComputePipeline* currentCP;
