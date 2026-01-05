@@ -52,9 +52,11 @@ Scene::Scene(Camera* p_camera, DXContext* context)
 	iblSetupDrawables.push_back(std::move(cubemapUvConversionScene));
 
 	std::unique_ptr<CubemapDiffuseConvolution> cubemapDiffuseConvolutionScene = std::make_unique<CubemapDiffuseConvolution>(context, renderPipelines[3].get(), envCubeMap);
+	Texture* diffuseConvolution = cubemapDiffuseConvolutionScene->getDiffuseConvolution();
 	iblSetupDrawables.push_back(std::move(cubemapDiffuseConvolutionScene));
 
 	std::unique_ptr<CubemapGlossyConvolution> cubemapGlossyConvolutionScene = std::make_unique<CubemapGlossyConvolution>(context, renderPipelines[4].get(), envCubeMap);
+	Texture* glossyConvolution = cubemapGlossyConvolutionScene->getGlossyConvolution();
 	iblSetupDrawables.push_back(std::move(cubemapGlossyConvolutionScene));
 
 	std::unique_ptr<EnvironmentMapDrawable> environmentMapScene = std::make_unique<EnvironmentMapDrawable>(context, renderPipelines[5].get(), envCubeMap);
@@ -64,6 +66,10 @@ Scene::Scene(Camera* p_camera, DXContext* context)
 		D3D12_VIEWPORT tempVp{};
 		drawable->draw(camera, tempVp);
 	}
+
+	//pass ibl textures to pbr drawable
+	PbrDrawable* pbrDrawablePtr = static_cast<PbrDrawable*>(perFrameDrawables[1].get());
+	pbrDrawablePtr->setIblTextures(diffuseConvolution, glossyConvolution);
 }
 
 RenderPipeline* Scene::getRenderPipeline(UINT index) {

@@ -10,8 +10,8 @@ void PbrDrawable::construct() {
 
     XMFLOAT4X4 avocadoModelMatrix;
     XMStoreFloat4x4(&avocadoModelMatrix, XMMatrixMultiply(
-        XMMatrixScaling(10.f, 10.f, 10.f),
-        XMMatrixTranslation(0.f, 0.f, 0.f)
+        XMMatrixScaling(1000.f, 1000.f, 1000.f),
+        XMMatrixTranslation(-100.f, 0.f, 30.f)
     ));
     modelMatrices.push_back(avocadoModelMatrix);
 
@@ -60,10 +60,18 @@ void PbrDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
         cmdList->SetGraphicsRootDescriptorTable(1, m->getTexture(TextureType::DIFFUSE)->getTextureGpuDescriptorHandle());
         cmdList->SetGraphicsRootDescriptorTable(2, m->getTexture(TextureType::METALLIC_ROUGHNESS)->getTextureGpuDescriptorHandle());
 
+		cmdList->SetGraphicsRootDescriptorTable(3, diffuseConvolution->getTextureGpuDescriptorHandle());
+		cmdList->SetGraphicsRootDescriptorTable(4, glossyConvolution->getTextureGpuDescriptorHandle());
+
         cmdList->DrawIndexedInstanced(m->getNumTriangles() * 3, 1, 0, 0, 0);
     }
     context->executeCommandList(renderPipeline->getCommandListID());
     context->resetCommandList(renderPipeline->getCommandListID());
+}
+
+void PbrDrawable::setIblTextures(Texture* diffuseConvolution, Texture* glossyConvolution) {
+	this->diffuseConvolution = diffuseConvolution;
+	this->glossyConvolution = glossyConvolution;
 }
 
 size_t PbrDrawable::getTriangleCount() {

@@ -15,6 +15,8 @@ public:
 
 	bool drawEveryFrame() override { return true; }
 
+	void setIblTextures(Texture* diffuseConvolution, Texture* glossyConvolution);
+
 	size_t getTriangleCount() override;
 
 	void releaseResources() override;
@@ -32,7 +34,8 @@ private:
 
 	GltfData gltfData;
 
-	//Texture envMap;
+	Texture* diffuseConvolution;
+	Texture* glossyConvolution;
 
 	void construct();
 };

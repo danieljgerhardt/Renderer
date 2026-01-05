@@ -14,6 +14,8 @@ public:
 
 	bool drawEveryFrame() override { return false; }
 
+	Texture* getGlossyConvolution() { return glossyConvolution; }
+
 	size_t getTriangleCount() override;
 
 	void releaseResources() override;

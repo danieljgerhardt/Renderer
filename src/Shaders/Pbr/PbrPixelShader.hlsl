@@ -1,7 +1,11 @@
 
 Texture2D diffuseTexture : register(t0);
 Texture2D metallicRoughness : register(t1);
-Texture2D normalTexture : register(t2);
+//Texture2D normalTexture : register(t2);
+
+TextureCube diffuseIrradiance : register(t2);
+TextureCube glossyIrradiance : register(t3);
+Texture2D brdfLookup : register(t4);
 
 SamplerState texSampler : register(s0);
 
@@ -19,16 +23,6 @@ struct VSOutput
     float3 WorldPos : POSITION;
     float3 Normal : NORMAL;
     float2 UV : TEXCOORD;
-};
-
-static const float3 light_pos[4] =
-{
-    float3(-10, 10, 10), float3(10, 10, 10), float3(-10, -10, 10), float3(10, -10, 10)
-};
-
-static const float3 light_col[4] =
-{
-    float3(300.f, 300.f, 300.f), float3(300.f, 300.f, 300.f), float3(300.f, 300.f, 300.f), float3(300.f, 300.f, 300.f)
 };
 
 static const float PI = 3.14159f;
@@ -83,9 +77,6 @@ float3 gammaCorrect(float3 Lo)
 
 float4 main(VSOutput vsOut) : SV_Target
 {
-    //float3 texColor = diffuseTexture.SampleLevel(texSampler, vsOut.UV, 0.f).rgb;
-    //return float4(texColor, 1.0);
-    
     float3 pos = vsOut.WorldPos.xyz;
     float3 nor = vsOut.Normal;
     float3 metalRough = metallicRoughness.SampleLevel(texSampler, vsOut.UV, 0.f).rgb;
@@ -100,33 +91,29 @@ float4 main(VSOutput vsOut) : SV_Target
     float3 Lo = float3(0.f, 0.f, 0.f);
 
     float3 wo = normalize(cameraPos.xyz - pos);
+    float3 wh = nor;
+    float3 wi = reflect(-wo, wh);
     
-    for (int i = 0; i < 4; i++)
-    {
-        float3 wi = normalize(light_pos[i] - pos);
-        float3 wh = normalize((wo + wi) * 0.5f);
-        float3 diff = light_pos[i] - pos;
-        float attenuation = 1.f / dot(diff, diff);
-        float3 radiance = light_col[i] * attenuation;
-        float3 R = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
-        float3 F = fresnel(max(dot(nor, wo), 0.f), R, roughness);
-        float D = trowbridgeReitz(wh, nor, roughness);
-        float G = smithSchlickGGX(wo, wi, nor, roughness);
+    float3 baseReflectivty = lerp(float3(0.04f, 0.04f, 0.04f), albedo, metallic);
 
-        float3 f_cook_torrance = D * G * F / (4.f * dot(nor, wo) * dot(nor, wi));
-        float3 ks = F;
-        float3 kd = float3(1.f, 1.f, 1.f) - ks;
-        kd *= (1.f - metallic);
-        float3 f_lambert = albedo * INV_PI;
-        float3 f = kd * f_lambert + ks * f_cook_torrance;
-        Lo += f * radiance * abs(dot(wi, nor));
-    }
+    float3 kS = fresnel(max(dot(wh, wo), 0.f), baseReflectivty, roughness);
+    float3 kD = (1.f - kS);
+    float3 irradiance = diffuseIrradiance.SampleLevel(texSampler, nor, 0.f).rgb;
+    float3 diffuse = irradiance * albedo;
+    
+    //const float MAX_REFLECTION_LOD = 4.0;
+    
+    //temp
+    const float MAX_REFLECTION_LOD = 0.0;
+    
+    float3 prefilteredColor = glossyIrradiance.SampleLevel(texSampler, wi, roughness * MAX_REFLECTION_LOD).rgb;
+    float2 brdf = brdfLookup.SampleLevel(texSampler, float2(max(dot(wh, wo), 0.f), roughness), 0.f).rg;
+    float3 specular = prefilteredColor * (baseReflectivty * brdf.x + brdf.y);
+    float3 ambient = (kD * diffuse + specular) * ambientOccl;
+    float3 color = ambient + Lo;
 
-    float3 ambient = 0.03f * ambientOccl * albedo;
-    Lo += ambient;
+    color = reinhard(color);
+    color = gammaCorrect(color);
 
-    Lo = reinhard(Lo);
-    Lo = gammaCorrect(Lo);
-
-    return float4(Lo, 1.f);
+    return float4(color, 1.f);
 }

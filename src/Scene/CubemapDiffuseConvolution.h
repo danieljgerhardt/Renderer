@@ -14,6 +14,8 @@ public:
 
 	bool drawEveryFrame() override { return false; }
 
+	Texture* getDiffuseConvolution() { return diffuseConvolution; }
+
 	size_t getTriangleCount() override;
 
 	void releaseResources() override;
