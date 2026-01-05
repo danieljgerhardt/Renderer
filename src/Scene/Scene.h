@@ -2,6 +2,11 @@
 
 #include "ObjectDrawable.h"
 #include "PbrDrawable.h"
+#include "CubemapDrawable.h"
+#include "CubemapDiffuseConvolution.h"
+#include "CubemapGlossyConvolution.h"
+#include "EnvironmentMapDrawable.h"
+
 #include "../D3D/Pipeline/RenderPipeline.h"
 #include "../D3D/Pipeline/ComputePipeline.h"
 #include "../D3D/Pipeline/MeshPipeline.h"
@@ -25,7 +30,9 @@ private:
 	Camera* camera;
 
 	std::vector<std::unique_ptr<RenderPipeline>> renderPipelines;
-	std::vector<std::unique_ptr<Drawable>> drawables;
+
+	std::vector<std::unique_ptr<Drawable>> iblSetupDrawables;
+	std::vector<std::unique_ptr<Drawable>> perFrameDrawables;
 
 	RenderPipeline* currentRP;
 	ComputePipeline* currentCP;

@@ -6,11 +6,11 @@ PbrDrawable::PbrDrawable(DXContext* context, RenderPipeline* pipeline) : context
 
 void PbrDrawable::construct() {
     std::vector<std::string> inputStrings;
-    inputStrings.push_back("objs\\Cube\\Cube.gltf");
+    inputStrings.push_back("objs\\Avocado\\Avocado.gltf");
 
     XMFLOAT4X4 avocadoModelMatrix;
     XMStoreFloat4x4(&avocadoModelMatrix, XMMatrixMultiply(
-        XMMatrixScaling(1.f, 1.f, 1.f),
+        XMMatrixScaling(10.f, 10.f, 10.f),
         XMMatrixTranslation(0.f, 0.f, 0.f)
     ));
     modelMatrices.push_back(avocadoModelMatrix);

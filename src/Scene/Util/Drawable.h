@@ -13,6 +13,8 @@ public:
 
 	virtual void draw(Camera* camera, D3D12_VIEWPORT& vp) = 0;
 
+	virtual bool drawEveryFrame() = 0;
+
 	virtual void releaseResources() = 0;
 
 	virtual size_t getTriangleCount() = 0;

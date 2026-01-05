@@ -95,12 +95,11 @@ void Loader::loadMeshFromObj(std::string fileLocation, MeshData& meshData)
     file.close();
 }
 
-const float* GetFloatAttrib(
+static const float* getFloatAttrib(
     const tinygltf::Accessor& acc,
     const tinygltf::Model& model,
     size_t index,
-    size_t components)
-{
+    size_t components) {
     const tinygltf::BufferView& view = model.bufferViews[acc.bufferView];
     const tinygltf::Buffer& buffer = model.buffers[view.buffer];
 
@@ -149,9 +148,9 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
 
             for (size_t i = 0; i < posAcc.count; i++)
             {
-                const float* pos = GetFloatAttrib(posAcc, model, i, 3);
-                const float* nor = GetFloatAttrib(norAcc, model, i, 3);
-                const float* uv = GetFloatAttrib(uvAcc, model, i, 2);
+                const float* pos = getFloatAttrib(posAcc, model, i, 3);
+                const float* nor = getFloatAttrib(norAcc, model, i, 3);
+                const float* uv = getFloatAttrib(uvAcc, model, i, 2);
 
                 Vertex v{};
                 v.pos = { pos[0], pos[1], pos[2] };
@@ -193,7 +192,7 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
         if (material.values.find("baseColorTexture") != material.values.end()) {
             int textureIndex = material.values.at("baseColorTexture").TextureIndex();
             tinygltf::Image image = model.images[model.textures[textureIndex].source];
-            TextureData newTextureData{ UINT(image.width), UINT(image.height), image.image, TextureType::DIFFUSE };
+            TextureData newTextureData{ .width = UINT(image.width), .height = UINT(image.height), .imageData = image.image, .type = TextureType::DIFFUSE };
             gltfConstructionData.textureDataVector.push_back(newTextureData);
         }
 
@@ -202,7 +201,7 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
             int textureIndex = material.additionalValues.at("normalTexture").TextureIndex();
             int imageIndex = model.textures[textureIndex].source;
             tinygltf::Image image = model.images[model.textures[textureIndex].source];
-            TextureData newTextureData{ UINT(image.width), UINT(image.height), image.image, TextureType::NORMAL };
+            TextureData newTextureData{ .width = UINT(image.width), .height = UINT(image.height), .imageData = image.image, .type = TextureType::NORMAL };
             gltfConstructionData.textureDataVector.push_back(newTextureData);
         }
 
@@ -210,7 +209,7 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
         if (material.values.find("metallicRoughnessTexture") != material.values.end()) {
             int textureIndex = material.values.at("metallicRoughnessTexture").TextureIndex();
             tinygltf::Image image = model.images[model.textures[textureIndex].source];
-            TextureData newTextureData{ UINT(image.width), UINT(image.height), image.image, TextureType::METALLIC_ROUGHNESS };
+            TextureData newTextureData{ .width = UINT(image.width), .height = UINT(image.height), .imageData = image.image, .type = TextureType::METALLIC_ROUGHNESS };
             gltfConstructionData.textureDataVector.push_back(newTextureData);
         }
 
@@ -218,11 +217,11 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
         if (material.additionalValues.find("emissiveTexture") != material.additionalValues.end()) {
             int textureIndex = material.additionalValues.at("emissiveTexture").TextureIndex();
             tinygltf::Image image = model.images[model.textures[textureIndex].source];
-            TextureData newTextureData{ UINT(image.width), UINT(image.height), image.image, TextureType::EMISSIVE };
+            TextureData newTextureData{ .width = UINT(image.width), .height = UINT(image.height), .imageData = image.image, .type = TextureType::EMISSIVE };
             gltfConstructionData.textureDataVector.push_back(newTextureData);
         }
 
-        //determine which mesh the material is for
+        //TODO - determine which mesh the material is for
 
     }
 }
@@ -246,7 +245,7 @@ GltfData Loader::createMeshFromGltf(std::string fileLocation, DXContext* context
 	newTextures.reserve(constructionData.textureDataVector.size());
     for (TextureData& textureData : constructionData.textureDataVector) {
 		newTextures.emplace_back(ResourceManager::get(context).getTexture(
-			ResourceManager::get(context).createTexture(pipeline, textureData.width, textureData.height, textureData.imageData, textureData.type)
+			ResourceManager::get(context).createTexture(pipeline, textureData)
 		));
         //TODO - will not work when multiple meshes are loaded from a single gltf
 		newMeshes[0]->assignTexture(newTextures.back());
@@ -258,13 +257,60 @@ GltfData Loader::createMeshFromGltf(std::string fileLocation, DXContext* context
 Texture Loader::createTextureFromFile(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, TextureType type)
 {
 	int width, height, channels;
-	unsigned char* data = stbi_load(fileLocation.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-    
-    //TODO - resize may need to incorporate channels + depth
-    std::vector<unsigned char> imageData;
-	imageData.resize(width * height * 4);
-	std::copy(data, data + (width * height * 4), imageData.begin());
-    stbi_image_free(data);
 
-	return Texture(context, pipeline, UINT(width), UINT(height), imageData, type);
+    if (stbi_is_hdr(fileLocation.c_str()))
+    {
+        float* data = stbi_loadf(fileLocation.c_str(), &width, &height, &channels, 3);
+        if (!data)
+            throw std::runtime_error("Failed to load HDR image");
+
+        std::vector<float> imageData;
+        imageData.resize(width * height * 4);
+
+        for (int i = 0; i < width * height; ++i)
+        {
+            imageData[i * 4 + 0] = data[i * 3 + 0];
+            imageData[i * 4 + 1] = data[i * 3 + 1];
+            imageData[i * 4 + 2] = data[i * 3 + 2];
+            imageData[i * 4 + 3] = 1.0f;
+        }
+
+        stbi_image_free(data);
+
+        TextureData texData;
+		texData.width = UINT(width);
+		texData.height = UINT(height);
+		texData.imageDataFloat = std::move(imageData);
+		texData.format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		texData.type = type;
+
+        return Texture(
+            context,
+            pipeline,
+            texData
+        );
+    }
+    else
+    {
+        // LDR path (your existing code)
+        unsigned char* data = stbi_load(fileLocation.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+
+        std::vector<unsigned char> imageData(width * height * 4);
+        std::copy(data, data + (width * height * 4), imageData.begin());
+
+        stbi_image_free(data);
+
+        TextureData texData;
+		texData.width = UINT(width);
+		texData.height = UINT(height);
+		texData.imageData = std::move(imageData);
+		texData.format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		texData.type = type;
+
+        return Texture(
+            context,
+            pipeline,
+            texData
+        );
+    }
 }

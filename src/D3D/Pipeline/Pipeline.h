@@ -36,4 +36,6 @@ protected:
 	CommandListID cmdID;
 
 	ID3D12GraphicsCommandList6* cmdList;
+
+	DXContext& context;
 };

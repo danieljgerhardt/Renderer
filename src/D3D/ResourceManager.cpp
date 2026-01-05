@@ -1,7 +1,17 @@
 #include "ResourceManager.h"
 
-ResourceHandle ResourceManager::createTexture(RenderPipeline* pipeline, UINT width, UINT height, std::vector<unsigned char> imageData, TextureType type) {
-	std::unique_ptr<Texture> texture = std::make_unique<Texture>(context, pipeline, width, height, imageData, type);
+#include "Scene/Util/Loader.h"
+
+ResourceHandle ResourceManager::createTexture(RenderPipeline* pipeline, TextureData textureData) {
+	std::unique_ptr<Texture> texture = std::make_unique<Texture>(context, pipeline, textureData);
+	UINT id = textureCount++;
+	textures[id] = std::move(texture);
+	return ResourceHandle{ ResourceType::TEXTURE, id };
+}
+
+ResourceHandle ResourceManager::createTextureFromFile(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, TextureType type) {
+	Texture newTex = Loader::createTextureFromFile(fileLocation, context, cmdList, pipeline, type);
+	std::unique_ptr<Texture> texture = std::make_unique<Texture>(std::move(newTex));
 	UINT id = textureCount++;
 	textures[id] = std::move(texture);
 	return ResourceHandle{ ResourceType::TEXTURE, id };
