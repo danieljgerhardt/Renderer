@@ -1,7 +1,12 @@
 
 Texture2D envMap : register(t0);
 
-SamplerState envMapSampler : register(s0);
+SamplerState sampler1 : register(s0);
+SamplerState sampler2 : register(s1);
+SamplerState sampler3 : register(s3);
+SamplerState sampler4 : register(s4);
+SamplerState sampler5 : register(s5);
+SamplerState sampler6 : register(s6);
 
 struct VSOutput
 {
@@ -27,7 +32,7 @@ float4 main(VSOutput psIn) : SV_TARGET
 {
     float3 direction = mul((float3x3) ViewMatrix, normalize(psIn.WorldPosition.xyz));
     float2 uv = sampleSphericalMap(normalize(direction));
-    float3 color = envMap.SampleLevel(envMapSampler, uv, 0.0).rgb;
+    float3 color = envMap.SampleLevel(sampler3, uv, 0.0).rgb;
     
     return float4(color, 1.0f);
 }
