@@ -4,8 +4,8 @@
 
 #include "Scene/Util/CubeMapGeometry.h"
 
-CubemapGlossyConvolution::CubemapGlossyConvolution(DXContext* context, RenderPipeline* pipeline, Texture* envCubeMap)
-	: context(context), renderPipeline(pipeline), envCubeMap(envCubeMap) {
+CubemapGlossyConvolution::CubemapGlossyConvolution(DXContext* context, RenderPipeline* renderPipeline, ComputePipeline* computePipeline, Texture* envCubeMap)
+	: context(context), renderPipeline(renderPipeline), computePipeline(computePipeline), envCubeMap(envCubeMap) {
 	construct();
 
 	//TODO - should only draw once here
@@ -64,7 +64,7 @@ void CubemapGlossyConvolution::draw(Camera* camera, D3D12_VIEWPORT& vp) {
 		DirectX::XMMATRIX viewMat = viewMatrices[i];
 		cmdList->SetGraphicsRoot32BitConstants(0, 16, &viewMat, 0);
 
-		cmdList->SetGraphicsRootDescriptorTable(1, envCubeMap->getTextureGpuDescriptorHandle());
+		cmdList->SetGraphicsRootDescriptorTable(1, envCubeMap->getSrvGpuDescriptorHandle());
 
 		cmdList->DrawIndexedInstanced(12 * 3, 1, 0, 0, 0);
 	}
@@ -80,10 +80,8 @@ void CubemapGlossyConvolution::draw(Camera* camera, D3D12_VIEWPORT& vp) {
 
 	cmdList->ResourceBarrier(1, &toShaderResource);
 
-	if (!mipMapsGenerated) {
-		//glossyConvolution->generateMipMaps(context, renderPipeline);
-		mipMapsGenerated = true;
-	}
+	glossyConvolution->generateMipMaps(context, computePipeline);
+	mipMapsGenerated = true;
 }
 
 size_t CubemapGlossyConvolution::getTriangleCount() {
@@ -96,7 +94,7 @@ void CubemapGlossyConvolution::releaseResources() {
 void CubemapGlossyConvolution::construct() {
 	ResourceManager& rm = ResourceManager::get(context);
 
-	TextureData textureData{ .width = 1024, .height = 1024, .type = TextureType::ENV_MAP };
+	TextureData textureData{ .width = 1024, .height = 1024, .type = TextureType::ENV_MAP, .mipLevels = 4 };
 	ResourceHandle diffuseConvolutionHandle = rm.createTexture(renderPipeline, textureData);
 	glossyConvolution = rm.getTexture(diffuseConvolutionHandle);
 

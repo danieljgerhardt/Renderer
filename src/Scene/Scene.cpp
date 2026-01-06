@@ -40,6 +40,10 @@ Scene::Scene(Camera* p_camera, DXContext* context)
 	renderPipelines.push_back(std::make_unique<RenderPipeline>("EnvMapVert.cso", "EnvMapPixel.cso", *context, CommandListID::ENV_MAP_ID,
 		renderHeap, envMapPipelineFormat));
 
+	//compute pipeline for mipmap generation
+	computePipelines.push_back(std::make_unique<ComputePipeline>("GenerateMips.cso", *context, CommandListID::MIPMAP_GENERATION_ID,
+		renderHeap));
+
 	std::unique_ptr<ObjectDrawable> objScene = std::make_unique<ObjectDrawable>(context, renderPipelines[0].get());
 	perFrameDrawables.push_back(std::move(objScene));
 
@@ -55,7 +59,7 @@ Scene::Scene(Camera* p_camera, DXContext* context)
 	Texture* diffuseConvolution = cubemapDiffuseConvolutionScene->getDiffuseConvolution();
 	iblSetupDrawables.push_back(std::move(cubemapDiffuseConvolutionScene));
 
-	std::unique_ptr<CubemapGlossyConvolution> cubemapGlossyConvolutionScene = std::make_unique<CubemapGlossyConvolution>(context, renderPipelines[4].get(), envCubeMap);
+	std::unique_ptr<CubemapGlossyConvolution> cubemapGlossyConvolutionScene = std::make_unique<CubemapGlossyConvolution>(context, renderPipelines[4].get(), computePipelines[0].get(), envCubeMap);
 	Texture* glossyConvolution = cubemapGlossyConvolutionScene->getGlossyConvolution();
 	iblSetupDrawables.push_back(std::move(cubemapGlossyConvolutionScene));
 

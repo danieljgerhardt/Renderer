@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <array>
 
-#define NUM_CMDLISTS 6
+#define NUM_CMDLISTS 7
 enum CommandListID {
     OBJECT_RENDER_SOLID_ID,
     PBR_RENDER_ID,
@@ -12,6 +12,7 @@ enum CommandListID {
 	CUBEMAP_DIFFUSE_CONVOLUTION_ID,
     CUBEMAP_GLOSSY_CONVOLUTION_ID,
 	ENV_MAP_ID,
+	MIPMAP_GENERATION_ID
 };
 
 class DXContext

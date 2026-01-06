@@ -53,7 +53,7 @@ private:
             D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressU
             D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressV
             D3D12_TEXTURE_ADDRESS_MODE_CLAMP); // addressW
-
+        
         const CD3DX12_STATIC_SAMPLER_DESC anisotropicWrap(
             4, // shaderRegister
             D3D12_FILTER_ANISOTROPIC, // filter
