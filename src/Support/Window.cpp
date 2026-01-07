@@ -17,7 +17,7 @@ bool Window::init(DXContext* contextPtr, int w, int h) {
     wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     wcex.hbrBackground = nullptr;
     wcex.lpszMenuName = nullptr;
-    wcex.lpszClassName = L"BreakpointWndCls";
+    wcex.lpszClassName = L"RendererWndCls";
     wcex.hIconSm = LoadIconW(nullptr, IDI_APPLICATION);
     wndClass = RegisterClassExW(&wcex);
     if (wndClass == 0) {
@@ -25,18 +25,25 @@ bool Window::init(DXContext* contextPtr, int w, int h) {
     }
 
     POINT pos{ 0, 0 };
-    GetCursorPos(&pos);
+    //currently commented out to force window to start on primary window
+    //GetCursorPos(&pos);
     HMONITOR monitor = MonitorFromPoint(pos, MONITOR_DEFAULTTOPRIMARY);
     MONITORINFO monitorInfo{};
     monitorInfo.cbSize = sizeof(monitorInfo);
     GetMonitorInfoW(monitor, &monitorInfo);
 
+    //get offset in middle of monitor
+	POINT winPosOffset = {
+		(monitorInfo.rcWork.right - monitorInfo.rcWork.left - (LONG)width) / 2,
+		(monitorInfo.rcWork.bottom - monitorInfo.rcWork.top - (LONG)height) / 2
+	};
+
     window = CreateWindowExW(WS_EX_OVERLAPPEDWINDOW | WS_EX_APPWINDOW,
         (LPCWSTR)wndClass,
-        L"Breakpoint",
+        L"Renderer",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-        monitorInfo.rcWork.left + 0,
-        monitorInfo.rcWork.top + 0,
+        monitorInfo.rcWork.left + winPosOffset.x,
+        monitorInfo.rcWork.top + winPosOffset.y,
         width,
         height,
         nullptr,

@@ -71,6 +71,7 @@ int main() {
 		scene.draw(vp);
 
         //render imgui
+        Window::get().setCmdListRenderTarget(renderPipeline->getCommandList());
 		imguiManager.render(renderPipeline->getCommandList(), imguiInfo);
         context.executeCommandList(renderPipeline->getCommandListID());
         context.resetCommandList(renderPipeline->getCommandListID());

@@ -151,7 +151,7 @@ void Texture::makeUav(DXContext* context, RenderPipeline* pipeline, UINT mipSlic
 
 void Texture::generateMipMaps(DXContext* context, ComputePipeline* pipeline) {
     if (mipLevels <= 1) {
-        std::cerr << "Warning: Attempted to generate mipmaps for texture with only 1 mip level." << std::endl;
+        std::cerr << "Attempted to generate mipmaps for texture with only 1 mip level." << std::endl;
         return;
     }
 
@@ -193,10 +193,8 @@ void Texture::generateMipMaps(DXContext* context, ComputePipeline* pipeline) {
             0
         );
 
-        // Set SRV for this specific face
         pipeline->getCommandList()->SetComputeRootDescriptorTable(1, srvGpuDescriptorHandle);
 
-        // Set UAVs for this specific face
         pipeline->getCommandList()->SetComputeRootDescriptorTable(2, getUavGpuDescriptorHandle(srcMip + 1));
 
         UINT dispatchWidth = std::max(1u, srcWidth >> 1);
