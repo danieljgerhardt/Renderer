@@ -43,6 +43,9 @@ int main() {
     Scene scene{camera.get(), &context};
 	imguiInfo.triangleCount = scene.getTriangleCount();
 
+    //create viewport
+    D3D12_VIEWPORT windowViewport = window.getWindowViewport();
+
     while (!window.getShouldClose()) {
         //update window
         window.update();
@@ -51,6 +54,7 @@ int main() {
             context.flush(FRAME_COUNT);
             window.resize();
             camera->updateAspect((float)window.getWidth() / (float)window.getHeight());
+            windowViewport = window.getWindowViewport();
         }
 
         DirectX::Keyboard::State kState = keyboard->GetState();
@@ -63,12 +67,8 @@ int main() {
         //begin frame
         window.beginFrame(renderPipeline->getCommandList());
 
-        //create viewport
-        D3D12_VIEWPORT vp;
-        window.createViewport(vp, renderPipeline->getCommandList());
-
 		//draw scene
-		scene.draw(vp);
+		scene.draw(windowViewport);
 
         //render imgui
         Window::get().setCmdListRenderTarget(renderPipeline->getCommandList());

@@ -305,12 +305,14 @@ LRESULT Window::OnWindowMessage(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam
 }
 
 
-void Window::createViewport(D3D12_VIEWPORT& vp, ID3D12GraphicsCommandList5* cmdList) {
+D3D12_VIEWPORT Window::getWindowViewport() {
+    D3D12_VIEWPORT vp;
     vp.TopLeftX = vp.TopLeftY = 0;
     vp.Width = (float)Window::get().getWidth();
     vp.Height = (float)Window::get().getHeight();
     vp.MinDepth = 0.f;
     vp.MaxDepth = 1.f;
+	return vp;
 }
 
 void Window::setViewport(D3D12_VIEWPORT& vp, ID3D12GraphicsCommandList5* cmdList) {
