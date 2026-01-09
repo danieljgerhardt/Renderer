@@ -148,182 +148,253 @@ void Texture::makeUav(DXContext* context, RenderPipeline* pipeline, D3D12_UAV_DI
 
 
 void Texture::generateMipMaps(DXContext* context, ComputePipeline* computePipeline, RenderPipeline* renderPipeline) {
-    if (mipLevels <= 1) {
-        std::cerr << "Attempted to generate mipmaps for texture with only 1 mip level." << std::endl;
+    if (mipLevels <= 1)
         return;
-    }
+
+    ID3D12Device* device = context->getDevice();
+    ID3D12GraphicsCommandList* cmd = renderPipeline->getCommandList();
+    const UINT arraySize = 6;
+    const size_t bpp = DirectX::BitsPerPixel(format) / 8;
 
     D3D12_RESOURCE_DESC desc = textureResource->GetDesc();
-    const UINT arraySize = 6;
+    std::vector<ComPointer<ID3D12Resource>> tempResources;
 
-    // Step 1: Read back all 6 array slices from base mip level
-    DirectX::ScratchImage baseImage;
-    baseImage.Initialize2D(format, width, height, arraySize, 1);
-
-    for (UINT arraySlice = 0; arraySlice < arraySize; arraySlice++) {
-        UINT subresource = D3D12CalcSubresource(0, arraySlice, 0, mipLevels, arraySize);
-
-        D3D12_PLACED_SUBRESOURCE_FOOTPRINT layout;
-        UINT numRows;
-        UINT64 rowSizeInBytes;
-        UINT64 totalBytes;
-
-        context->getDevice()->GetCopyableFootprints(&desc, subresource, 1, 0, &layout, &numRows, &rowSizeInBytes, &totalBytes);
-
-        // Create readback buffer
-        CD3DX12_HEAP_PROPERTIES readbackHeap(D3D12_HEAP_TYPE_READBACK);
-        CD3DX12_RESOURCE_DESC readbackDesc = CD3DX12_RESOURCE_DESC::Buffer(totalBytes);
-
-        ComPointer<ID3D12Resource> readbackBuffer;
-        context->getDevice()->CreateCommittedResource(
-            &readbackHeap,
-            D3D12_HEAP_FLAG_NONE,
-            &readbackDesc,
-            D3D12_RESOURCE_STATE_COPY_DEST,
-            nullptr,
-            IID_PPV_ARGS(&readbackBuffer)
-        );
-
-        // Transition texture to copy source
-        CD3DX12_RESOURCE_BARRIER toCopySrc = CD3DX12_RESOURCE_BARRIER::Transition(
-            textureResource.Get(),
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-            D3D12_RESOURCE_STATE_COPY_SOURCE,
-            subresource
-        );
-        renderPipeline->getCommandList()->ResourceBarrier(1, &toCopySrc);
-
-        // Copy from GPU to readback buffer
-        CD3DX12_TEXTURE_COPY_LOCATION dst(readbackBuffer.Get(), layout);
-        CD3DX12_TEXTURE_COPY_LOCATION src(textureResource.Get(), subresource);
-        renderPipeline->getCommandList()->CopyTextureRegion(&dst, 0, 0, 0, &src, nullptr);
-
-        // Transition back
-        CD3DX12_RESOURCE_BARRIER toShaderResource = CD3DX12_RESOURCE_BARRIER::Transition(
-            textureResource.Get(),
-            D3D12_RESOURCE_STATE_COPY_SOURCE,
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-            subresource
-        );
-        renderPipeline->getCommandList()->ResourceBarrier(1, &toShaderResource);
-
-        // Execute and wait for GPU to finish
-        context->executeCommandList(renderPipeline->getCommandListID());
-        context->resetCommandList(renderPipeline->getCommandListID());
-        context->signalAndWait();
-
-        // Map and read data
-        void* pData;
-        readbackBuffer->Map(0, nullptr, &pData);
-
-        // Copy data to DirectXTex image for this array slice
-        const DirectX::Image* baseImg = baseImage.GetImage(0, arraySlice, 0);
-        uint8_t* srcPixels = static_cast<uint8_t*>(pData);
-        uint8_t* dstPixels = baseImg->pixels;
-
-        // Calculate actual bytes to copy per row (minimum of source and dest pitch)
-        UINT bytesPerPixel = DirectX::BitsPerPixel(format) / 8;
-        UINT actualRowBytes = width * bytesPerPixel;
-
-        for (UINT row = 0; row < height; row++) {
-            memcpy(dstPixels + row * baseImg->rowPitch, srcPixels + row * layout.Footprint.RowPitch, actualRowBytes);
-        }
-
-        readbackBuffer->Unmap(0, nullptr);
-    }
-
-    // Step 2: Generate mipmaps for entire array in one call
-    DirectX::ScratchImage mipChain;
-    HRESULT hr = DirectX::GenerateMipMaps(
-        baseImage.GetImages(),
-        baseImage.GetImageCount(),
-        baseImage.GetMetadata(),
-        DirectX::TEX_FILTER_DEFAULT,
-        mipLevels,
-        mipChain
-    );
-
-    if (FAILED(hr)) {
-        std::cerr << "Failed to generate mipmaps" << std::endl;
-        return;
-    }
-
-    // Step 3: Upload each mip level for each array slice back to GPU
-    for (UINT arraySlice = 0; arraySlice < arraySize; arraySlice++) {
-        for (UINT mip = 1; mip < mipLevels; mip++) {
-            const DirectX::Image* mipImg = mipChain.GetImage(mip, arraySlice, 0);
-
-            UINT mipWidth = std::max(1u, width >> mip);
-            UINT mipHeight = std::max(1u, height >> mip);
-
-            // Get footprint for this mip
-            D3D12_PLACED_SUBRESOURCE_FOOTPRINT mipLayout;
-            UINT numRows;
-            UINT64 rowSizeInBytes;
-            UINT64 totalBytes;
-            UINT mipSubresource = D3D12CalcSubresource(mip, arraySlice, 0, mipLevels, arraySize);
-            context->getDevice()->GetCopyableFootprints(&desc, mipSubresource, 1, 0, &mipLayout, &numRows, &rowSizeInBytes, &totalBytes);
-
-            // Create upload buffer
-            CD3DX12_HEAP_PROPERTIES uploadHeap(D3D12_HEAP_TYPE_UPLOAD);
-            CD3DX12_RESOURCE_DESC uploadDesc = CD3DX12_RESOURCE_DESC::Buffer(totalBytes);
-
-            ComPointer<ID3D12Resource> uploadBuffer;
-            context->getDevice()->CreateCommittedResource(
-                &uploadHeap,
-                D3D12_HEAP_FLAG_NONE,
-                &uploadDesc,
-                D3D12_RESOURCE_STATE_GENERIC_READ,
-                nullptr,
-                IID_PPV_ARGS(&uploadBuffer)
-            );
-
-            // Map and copy data
-            void* pUploadData;
-            uploadBuffer->Map(0, nullptr, &pUploadData);
-
-            uint8_t* uploadSrc = mipImg->pixels;
-            uint8_t* uploadDst = static_cast<uint8_t*>(pUploadData);
-
-            // Calculate actual row size in bytes for this mip level
-            UINT bytesPerPixel = DirectX::BitsPerPixel(format) / 8;
-            UINT actualRowSize = mipWidth * bytesPerPixel;
-
-            for (UINT row = 0; row < mipHeight; row++) {
-                memcpy(uploadDst + row * mipLayout.Footprint.RowPitch, uploadSrc + row * mipImg->rowPitch, actualRowSize);
+    auto checkImageData = [](const DirectX::Image* img, const char* phase, UINT slice, UINT mip = 0)
+        {
+            if (!img || !img->pixels)
+            {
+                printf("[%s] Slice %u Mip %u: img or pixels is null\n", phase, slice, mip);
+                return false;
             }
 
-            uploadBuffer->Unmap(0, nullptr);
+            const uint8_t* p = img->pixels;
+            bool hasNonZero = false;
+            for (size_t row = 0; row < img->height; ++row)
+            {
+                for (size_t i = 0; i < img->rowPitch; ++i)
+                {
+                    if (p[row * img->rowPitch + i] != 0)
+                    {
+                        hasNonZero = true;
+                        break;
+                    }
+                }
+                if (hasNonZero) break;
+            }
 
-            // Transition to copy dest
-            CD3DX12_RESOURCE_BARRIER toCopyDest = CD3DX12_RESOURCE_BARRIER::Transition(
-                textureResource.Get(),
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_COPY_DEST,
-                mipSubresource
-            );
-            renderPipeline->getCommandList()->ResourceBarrier(1, &toCopyDest);
+            if (!hasNonZero)
+                printf("[%s] Slice %u Mip %u: all zero!\n", phase, slice, mip);
+            else
+                printf("[%s] Slice %u Mip %u: has data\n", phase, slice, mip);
 
-            // Copy from upload buffer to texture
-            CD3DX12_TEXTURE_COPY_LOCATION uploadLoc(uploadBuffer.Get(), mipLayout);
-            CD3DX12_TEXTURE_COPY_LOCATION texLoc(textureResource.Get(), mipSubresource);
-            renderPipeline->getCommandList()->CopyTextureRegion(&texLoc, 0, 0, 0, &uploadLoc, nullptr);
+            return hasNonZero;
+        };
 
-            // Transition back to shader resource
-            CD3DX12_RESOURCE_BARRIER backToShaderResource = CD3DX12_RESOURCE_BARRIER::Transition(
-                textureResource.Get(),
-                D3D12_RESOURCE_STATE_COPY_DEST,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                mipSubresource
-            );
-            renderPipeline->getCommandList()->ResourceBarrier(1, &backToShaderResource);
+    // ============================================================
+    // PHASE 1: READ BACK BASE MIP
+    // ============================================================
 
-            // Execute and wait
-            context->executeCommandList(renderPipeline->getCommandListID());
-            context->resetCommandList(renderPipeline->getCommandListID());
-            context->signalAndWait();
+    std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> footprints(arraySize);
+    std::vector<UINT> numRows(arraySize);
+    std::vector<UINT64> rowSize(arraySize);
+
+    CD3DX12_RESOURCE_BARRIER toCopySrc = CD3DX12_RESOURCE_BARRIER::Transition(
+        textureResource.Get(),
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+        D3D12_RESOURCE_STATE_COPY_SOURCE,
+        D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+
+    cmd->ResourceBarrier(1, &toCopySrc);
+
+    for (UINT slice = 0; slice < arraySize; ++slice)
+    {
+        UINT sub = D3D12CalcSubresource(0, slice, 0, mipLevels, arraySize);
+
+        UINT64 totalBytes;
+        device->GetCopyableFootprints(&desc, sub, 1, 0,
+            &footprints[slice], &numRows[slice], &rowSize[slice], &totalBytes);
+
+        ComPointer<ID3D12Resource> readback;
+        CD3DX12_HEAP_PROPERTIES heapReadback(D3D12_HEAP_TYPE_READBACK);
+        CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(totalBytes);
+        device->CreateCommittedResource(&heapReadback, D3D12_HEAP_FLAG_NONE,
+            &bufferDesc, D3D12_RESOURCE_STATE_COPY_DEST,
+            nullptr, IID_PPV_ARGS(&readback));
+        tempResources.push_back(readback);
+
+        CD3DX12_TEXTURE_COPY_LOCATION dst(readback.Get(), footprints[slice]);
+        CD3DX12_TEXTURE_COPY_LOCATION src(textureResource.Get(), sub);
+        cmd->CopyTextureRegion(&dst, 0, 0, 0, &src, nullptr);
+    }
+
+    CD3DX12_RESOURCE_BARRIER toSRV = CD3DX12_RESOURCE_BARRIER::Transition(
+        textureResource.Get(),
+        D3D12_RESOURCE_STATE_COPY_SOURCE,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+        D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+
+    cmd->ResourceBarrier(1, &toSRV);
+    context->executeCommandList(renderPipeline->getCommandListID());
+    context->signalAndWait();
+    context->resetCommandList(renderPipeline->getCommandListID());
+
+    // ============================================================
+    // PHASE 1B: REPACK INTO TIGHT CPU IMAGES
+    // ============================================================
+
+    std::vector<DirectX::ScratchImage> tightImages(arraySize);
+
+    for (UINT slice = 0; slice < arraySize; ++slice)
+    {
+        tightImages[slice].Initialize2D(format, width, height, 1, 1);
+
+        void* mapped = nullptr;
+        tempResources[slice]->Map(0, nullptr, &mapped);
+
+        const DirectX::Image* dst = tightImages[slice].GetImage(0, 0, 0);
+        const uint8_t* src = static_cast<uint8_t*>(mapped);
+
+        // FIXED: Use dst->rowPitch instead of calculating manually
+        for (UINT row = 0; row < height; ++row)
+        {
+            memcpy(dst->pixels + row * dst->rowPitch,  // Use dst->rowPitch
+                src + row * footprints[slice].Footprint.RowPitch,
+                width * bpp);  // Copy width * bpp bytes per row
+        }
+
+        tempResources[slice]->Unmap(0, nullptr);
+
+        // Check Phase 1B
+        checkImageData(dst, "Phase1B_Tight", slice, 0);
+    }
+
+    // ============================================================
+// PHASE 2: GENERATE MIPS (CPU)
+// ============================================================
+
+    std::vector<DirectX::ScratchImage> mipChains(arraySize);
+
+    for (UINT slice = 0; slice < arraySize; ++slice)
+    {
+        const DirectX::Image* baseImg = tightImages[slice].GetImage(0, 0, 0);
+
+        DirectX::ScratchImage mipChain;
+
+        // Try with explicit flags
+        HRESULT hr = DirectX::GenerateMipMaps(
+            *baseImg,
+            DirectX::TEX_FILTER_SEPARATE_ALPHA | DirectX::TEX_FILTER_FORCE_NON_WIC,
+            0,  // 0 = full chain
+            mipChain
+        );
+
+        if (FAILED(hr))
+        {
+            printf("[Phase2_MipGen] Slice %u: GenerateMipMaps FAILED with HRESULT: 0x%08X\n", slice, hr);
+            continue;
+        }
+
+        printf("[Phase2_MipGen] Slice %u: GenerateMipMaps succeeded\n", slice);
+
+        mipChains[slice] = std::move(mipChain);
+
+        // Verification
+        const DirectX::TexMetadata& meta = mipChains[slice].GetMetadata();
+        printf("[Phase2_Debug] Slice %u - Generated %zu mip levels\n", slice, meta.mipLevels);
+
+        for (UINT mip = 0; mip < meta.mipLevels; ++mip)
+        {
+            const DirectX::Image* img = mipChains[slice].GetImage(mip, 0, 0);
+            bool hasData = false;
+            if (img && img->pixels)
+            {
+                printf("[Phase2_Debug] Mip %u - width: %zu, height: %zu, rowPitch: %zu\n",
+                    mip, img->width, img->height, img->rowPitch);
+
+                for (UINT row = 0; row < img->height && !hasData; ++row)
+                {
+                    for (UINT i = 0; i < img->rowPitch; ++i)
+                    {
+                        if (img->pixels[row * img->rowPitch + i] != 0)
+                        {
+                            hasData = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            printf("[Phase2_MipGen] Slice %u Mip %u: %s\n",
+                slice, mip, hasData ? "has data" : "all zero!");
         }
     }
+
+    // ============================================================
+    // PHASE 3: UPLOAD MIP LEVELS
+    // ============================================================
+
+    CD3DX12_RESOURCE_BARRIER toCopyDst = CD3DX12_RESOURCE_BARRIER::Transition(
+        textureResource.Get(),
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+        D3D12_RESOURCE_STATE_COPY_DEST,
+        D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+    cmd->ResourceBarrier(1, &toCopyDst);
+
+    for (UINT slice = 0; slice < arraySize; ++slice)
+    {
+        for (UINT mip = 1; mip < mipLevels; ++mip)
+        {
+            UINT sub = D3D12CalcSubresource(mip, slice, 0, mipLevels, arraySize);
+            const DirectX::Image* img = mipChains[slice].GetImage(mip, 0, 0);
+
+            // Mip-specific resource desc
+            D3D12_RESOURCE_DESC mipDesc = desc;
+            mipDesc.Width = std::max<UINT>(1, desc.Width >> mip);
+            mipDesc.Height = std::max<UINT>(1, desc.Height >> mip);
+            mipDesc.MipLevels = 1;
+
+            D3D12_PLACED_SUBRESOURCE_FOOTPRINT fp;
+            UINT rows;
+            UINT64 rowBytes, total;
+            device->GetCopyableFootprints(&mipDesc, 0, 1, 0, &fp, &rows, &rowBytes, &total);
+
+            ComPointer<ID3D12Resource> upload;
+            CD3DX12_HEAP_PROPERTIES heapUpload(D3D12_HEAP_TYPE_UPLOAD);
+            CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(total);
+            device->CreateCommittedResource(&heapUpload, D3D12_HEAP_FLAG_NONE,
+                &bufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
+                nullptr, IID_PPV_ARGS(&upload));
+            tempResources.push_back(upload);
+
+            void* mapped;
+            upload->Map(0, nullptr, &mapped);
+
+            for (UINT row = 0; row < rows; ++row)
+            {
+                memcpy(static_cast<uint8_t*>(mapped) + row * fp.Footprint.RowPitch,
+                    img->pixels + row * img->rowPitch,
+                    static_cast<size_t>(rowBytes));
+            }
+
+            upload->Unmap(0, nullptr);
+
+            CD3DX12_TEXTURE_COPY_LOCATION dst(textureResource.Get(), sub);
+            CD3DX12_TEXTURE_COPY_LOCATION src(upload.Get(), fp);
+            cmd->CopyTextureRegion(&dst, 0, 0, 0, &src, nullptr);
+        }
+    }
+
+    CD3DX12_RESOURCE_BARRIER toSRV2 = CD3DX12_RESOURCE_BARRIER::Transition(
+        textureResource.Get(),
+        D3D12_RESOURCE_STATE_COPY_DEST,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+        D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+    cmd->ResourceBarrier(1, &toSRV2);
+
+    context->executeCommandList(renderPipeline->getCommandListID());
+    context->signalAndWait();
+    context->resetCommandList(renderPipeline->getCommandListID());
+
+    tempResources.clear();
 }
 
 void Texture::releaseResources() {
