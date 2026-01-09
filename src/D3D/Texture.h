@@ -50,12 +50,12 @@ public:
 	~Texture();
 
 	D3D12_GPU_DESCRIPTOR_HANDLE getSrvGpuDescriptorHandle();
-	D3D12_GPU_DESCRIPTOR_HANDLE getUavGpuDescriptorHandle(UINT mipSlice);
+	D3D12_GPU_DESCRIPTOR_HANDLE getUavGpuDescriptorHandle();
 
 	void makeSrv(DXContext* context, RenderPipeline* pipeline, D3D12_SRV_DIMENSION srvDimension = D3D12_SRV_DIMENSION_TEXTURE2D);
-	void makeUav(DXContext* context, RenderPipeline* pipeline, UINT mipSlice, D3D12_UAV_DIMENSION uavDimension = D3D12_UAV_DIMENSION_TEXTURE2D);
+	void makeUav(DXContext* context, RenderPipeline* pipeline, D3D12_UAV_DIMENSION uavDimension = D3D12_UAV_DIMENSION_TEXTURE2D);
 
-	void generateMipMaps(DXContext* context, ComputePipeline* pipeline);
+	void generateMipMaps(DXContext* context, ComputePipeline* computePipeline, RenderPipeline* renderPipeline);
 
 	TextureType getType() { return type; }
 
@@ -85,9 +85,7 @@ private:
 	UINT heapIndex{};
 
 	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuDescriptorHandle{};
-
-	//for mips
-	std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> uavMipGpuDescriptorHandles{};
+	D3D12_GPU_DESCRIPTOR_HANDLE uavGpuDescriptorHandle{};
 
 	D3D12_RESOURCE_DESC resourceDesc;
 };

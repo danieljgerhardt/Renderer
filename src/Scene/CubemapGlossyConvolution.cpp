@@ -80,7 +80,7 @@ void CubemapGlossyConvolution::draw(Camera* camera, D3D12_VIEWPORT& vp) {
 
 	cmdList->ResourceBarrier(1, &toShaderResource);
 
-	glossyConvolution->generateMipMaps(context, computePipeline);
+	glossyConvolution->generateMipMaps(context, computePipeline, renderPipeline);
 	mipMapsGenerated = true;
 }
 

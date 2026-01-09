@@ -49,11 +49,14 @@ int main() {
     while (!window.getShouldClose()) {
         //update window
         window.update();
+
         if (window.getShouldResize()) {
             //flush pending buffer operations in swapchain
             context.flush(FRAME_COUNT);
             window.resize();
+
             camera->updateAspect((float)window.getWidth() / (float)window.getHeight());
+
             windowViewport = window.getWindowViewport();
         }
 
