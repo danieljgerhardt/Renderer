@@ -14,8 +14,8 @@ Scene::Scene(Camera* p_camera, DXContext* context)
 
 	//solid object rendering
 	PipelineFormat standardPipelineFormat{.depthMode = DepthMode::STANDARD, .renderTargetFormat = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM};
-	renderPipelines.push_back(std::make_unique<RenderPipeline>( "VertexShader.cso", "PixelShader.cso", *context, CommandListID::OBJECT_RENDER_SOLID_ID,
-		renderHeap, standardPipelineFormat));
+	/*renderPipelines.push_back(std::make_unique<RenderPipeline>("VertexShader.cso", "PixelShader.cso", *context, CommandListID::OBJECT_RENDER_SOLID_ID,
+		renderHeap, standardPipelineFormat));*/
 
 	//pbr rendering
 	renderPipelines.push_back(std::make_unique<RenderPipeline>("PbrVertexShader.cso", "PbrPixelShader.cso", *context, CommandListID::PBR_RENDER_ID,
@@ -44,26 +44,26 @@ Scene::Scene(Camera* p_camera, DXContext* context)
 	computePipelines.push_back(std::make_unique<ComputePipeline>("GenerateMips.cso", *context, CommandListID::MIPMAP_GENERATION_ID,
 		renderHeap));
 
-	std::unique_ptr<ObjectDrawable> objScene = std::make_unique<ObjectDrawable>(context, renderPipelines[0].get());
-	perFrameDrawables.push_back(std::move(objScene));
+	/*std::unique_ptr<ObjectDrawable> objScene = std::make_unique<ObjectDrawable>(context, renderPipelines[0].get());
+	perFrameDrawables.push_back(std::move(objScene));*/
 
-	std::unique_ptr<PbrDrawable> pbrScene = std::make_unique<PbrDrawable>(context, renderPipelines[1].get());
+	std::unique_ptr<PbrDrawable> pbrScene = std::make_unique<PbrDrawable>(context, renderPipelines[0].get());
 	perFrameDrawables.push_back(std::move(pbrScene));
 
-	std::unique_ptr<CubemapDrawable> cubemapUvConversionScene = std::make_unique<CubemapDrawable>(context, renderPipelines[2].get());
+	std::unique_ptr<CubemapDrawable> cubemapUvConversionScene = std::make_unique<CubemapDrawable>(context, renderPipelines[1].get());
 	Texture* envCubeMap = cubemapUvConversionScene->getEnvCubeMap();
 	CubemapDrawable* cubemapPtr = cubemapUvConversionScene.get();
 	iblSetupDrawables.push_back(std::move(cubemapUvConversionScene));
 
-	std::unique_ptr<CubemapDiffuseConvolution> cubemapDiffuseConvolutionScene = std::make_unique<CubemapDiffuseConvolution>(context, renderPipelines[3].get(), envCubeMap);
+	std::unique_ptr<CubemapDiffuseConvolution> cubemapDiffuseConvolutionScene = std::make_unique<CubemapDiffuseConvolution>(context, renderPipelines[2].get(), envCubeMap);
 	Texture* diffuseConvolution = cubemapDiffuseConvolutionScene->getDiffuseConvolution();
 	iblSetupDrawables.push_back(std::move(cubemapDiffuseConvolutionScene));
 
-	std::unique_ptr<CubemapGlossyConvolution> cubemapGlossyConvolutionScene = std::make_unique<CubemapGlossyConvolution>(context, renderPipelines[4].get(), computePipelines[0].get(), envCubeMap);
+	std::unique_ptr<CubemapGlossyConvolution> cubemapGlossyConvolutionScene = std::make_unique<CubemapGlossyConvolution>(context, renderPipelines[3].get(), computePipelines[0].get(), envCubeMap);
 	Texture* glossyConvolution = cubemapGlossyConvolutionScene->getGlossyConvolution();
 	iblSetupDrawables.push_back(std::move(cubemapGlossyConvolutionScene));
 
-	std::unique_ptr<EnvironmentMapDrawable> environmentMapScene = std::make_unique<EnvironmentMapDrawable>(context, renderPipelines[5].get(), envCubeMap);
+	std::unique_ptr<EnvironmentMapDrawable> environmentMapScene = std::make_unique<EnvironmentMapDrawable>(context, renderPipelines[4].get(), envCubeMap);
 	perFrameDrawables.push_back(std::move(environmentMapScene));
 
 	for (std::unique_ptr<Drawable>& drawable : iblSetupDrawables) {
@@ -72,7 +72,7 @@ Scene::Scene(Camera* p_camera, DXContext* context)
 	}
 
 	//pass ibl textures to pbr drawable
-	PbrDrawable* pbrDrawablePtr = static_cast<PbrDrawable*>(perFrameDrawables[1].get());
+	PbrDrawable* pbrDrawablePtr = static_cast<PbrDrawable*>(perFrameDrawables[0].get());
 	pbrDrawablePtr->setIblTextures(diffuseConvolution, glossyConvolution);
 }
 

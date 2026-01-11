@@ -55,7 +55,7 @@ public:
 	void makeSrv(DXContext* context, RenderPipeline* pipeline, D3D12_SRV_DIMENSION srvDimension = D3D12_SRV_DIMENSION_TEXTURE2D);
 	void makeUav(DXContext* context, RenderPipeline* pipeline, D3D12_UAV_DIMENSION uavDimension = D3D12_UAV_DIMENSION_TEXTURE2D);
 
-	void generateMipMaps(DXContext* context, ComputePipeline* computePipeline, RenderPipeline* renderPipeline);
+	void generateMipMaps(DXContext* context, RenderPipeline* renderPipeline);
 
 	TextureType getType() { return type; }
 

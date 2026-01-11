@@ -93,7 +93,7 @@ void CubemapDrawable::construct() {
 	ResourceHandle envMapHandle = rm.createTextureFromFile("textures\\environments\\Tropical_Beach_3k.hdr", context, renderPipeline->getCommandList(), renderPipeline, TextureType::DIFFUSE);
 	envMap = rm.getTexture(envMapHandle);
 
-	TextureData textureData{ .width = 1024, .height = 1024, .type = TextureType::ENV_MAP, .format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT };
+	TextureData textureData{ .width = 512, .height = 512, .type = TextureType::ENV_MAP, .format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT };
 	ResourceHandle envCubeMapHandle = rm.createTexture(renderPipeline, textureData);
 	envCubeMap = rm.getTexture(envCubeMapHandle);
 
