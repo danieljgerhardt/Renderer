@@ -2,15 +2,12 @@
 
 #include "D3D/ResourceManager.h"
 
-ComputePipeline::ComputePipeline(const std::string shaderFilePath, DXContext& context,
-	CommandListID cmdID, D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flags)
+ComputePipeline::ComputePipeline(const std::string shaderFilePath, DXContext& context, CommandListID cmdID, DescriptorHeap* descriptorHeap)
 	: Pipeline(context, cmdID),
 	computeShader(shaderFilePath, ShaderType::ComputeShader)
 {
+	this->descriptorHeap = descriptorHeap;
 	createRootSignature(context, { &computeShader });
-
-    ResourceManager& manager = ResourceManager::get(&context);
-    descriptorHeap = manager.getDescriptorHeap(manager.createDescriptorHeap(type, numDescriptors, flags));
 
 	createPSOD();
 	createPipelineState(context.getDevice());

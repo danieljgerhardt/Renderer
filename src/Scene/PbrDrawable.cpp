@@ -7,6 +7,7 @@ PbrDrawable::PbrDrawable(DXContext* context, RenderPipeline* pipeline) : context
 void PbrDrawable::construct() {
     std::vector<std::string> inputStrings;
     inputStrings.push_back("objs\\Avocado\\Avocado.gltf");
+	inputStrings.push_back("objs\\Helmet\\DamagedHelmet.gltf");
 
     XMFLOAT4X4 avocadoModelMatrix;
     XMStoreFloat4x4(&avocadoModelMatrix, XMMatrixMultiply(
@@ -14,6 +15,13 @@ void PbrDrawable::construct() {
         XMMatrixTranslation(-100.f, 0.f, 30.f)
     ));
     modelMatrices.push_back(avocadoModelMatrix);
+
+	XMFLOAT4X4 helmetModelMatrix;
+	XMStoreFloat4x4(&helmetModelMatrix, XMMatrixMultiply(
+		XMMatrixScaling(10.f, 10.f, 10.f),
+		XMMatrixTranslation(100.f, 0.f, -50.f)
+	));
+	modelMatrices.push_back(helmetModelMatrix);
 
     std::string& string = inputStrings.front();
     DirectX::XMFLOAT4X4& m = modelMatrices.front();
@@ -57,11 +65,11 @@ void PbrDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
         cmdList->SetGraphicsRoot32BitConstants(0, 16, m->getModelMatrix(), 32);
 		cmdList->SetGraphicsRoot32BitConstants(0, 4, &pos, 48);
 
-        cmdList->SetGraphicsRootDescriptorTable(1, m->getTexture(TextureType::DIFFUSE)->getTextureGpuDescriptorHandle());
-        cmdList->SetGraphicsRootDescriptorTable(2, m->getTexture(TextureType::METALLIC_ROUGHNESS)->getTextureGpuDescriptorHandle());
+        cmdList->SetGraphicsRootDescriptorTable(1, m->getTexture(TextureType::DIFFUSE)->getSrvGpuDescriptorHandle());
+        cmdList->SetGraphicsRootDescriptorTable(2, m->getTexture(TextureType::METALLIC_ROUGHNESS)->getSrvGpuDescriptorHandle());
 
-		cmdList->SetGraphicsRootDescriptorTable(3, diffuseConvolution->getTextureGpuDescriptorHandle());
-		cmdList->SetGraphicsRootDescriptorTable(4, glossyConvolution->getTextureGpuDescriptorHandle());
+		cmdList->SetGraphicsRootDescriptorTable(3, diffuseConvolution->getSrvGpuDescriptorHandle());
+		cmdList->SetGraphicsRootDescriptorTable(4, glossyConvolution->getSrvGpuDescriptorHandle());
 
         cmdList->DrawIndexedInstanced(m->getNumTriangles() * 3, 1, 0, 0, 0);
     }

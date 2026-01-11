@@ -64,7 +64,7 @@ void CubemapDiffuseConvolution::draw(Camera* camera, D3D12_VIEWPORT& vp) {
 		DirectX::XMMATRIX viewMat = viewMatrices[i];
 		cmdList->SetGraphicsRoot32BitConstants(0, 16, &viewMat, 0);
 
-		cmdList->SetGraphicsRootDescriptorTable(1, envCubeMap->getTextureGpuDescriptorHandle());
+		cmdList->SetGraphicsRootDescriptorTable(1, envCubeMap->getSrvGpuDescriptorHandle());
 
 		cmdList->DrawIndexedInstanced(12 * 3, 1, 0, 0, 0);
 	}
@@ -91,7 +91,7 @@ void CubemapDiffuseConvolution::releaseResources() {
 void CubemapDiffuseConvolution::construct() {
 	ResourceManager& rm = ResourceManager::get(context);
 
-	TextureData textureData{ .width = 1024, .height = 1024, .type = TextureType::ENV_MAP };
+	TextureData textureData{ .width = 512, .height = 512, .type = TextureType::ENV_MAP };
 	ResourceHandle diffuseConvolutionHandle = rm.createTexture(renderPipeline, textureData);
 	diffuseConvolution = rm.getTexture(diffuseConvolutionHandle);
 

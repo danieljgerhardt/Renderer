@@ -11,8 +11,7 @@ class ComputePipeline : public Pipeline
 {
 public: 
 	ComputePipeline() = delete;
-	ComputePipeline(const std::string shaderFilePath, DXContext& context, CommandListID cmdID,
-		D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flags);
+	ComputePipeline(const std::string shaderFilePath, DXContext& context, CommandListID cmdID, DescriptorHeap* descriptorHeap);
 
 	Shader& getComputeShader() { return computeShader; }
 	void createPSOD() override;

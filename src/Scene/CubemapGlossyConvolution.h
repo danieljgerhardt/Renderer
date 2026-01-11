@@ -4,11 +4,12 @@
 #include "D3D/Texture.h"
 #include "D3D/Buffer/VertexBuffer.h"
 #include "D3D/Buffer/IndexBuffer.h"
+#include "D3D/Pipeline/ComputePipeline.h"
 
 class CubemapGlossyConvolution : public Drawable
 {
 public:
-	CubemapGlossyConvolution(DXContext* context, RenderPipeline* pipeline, Texture* envCubeMap);
+	CubemapGlossyConvolution(DXContext* context, RenderPipeline* renderPipeline, ComputePipeline* computePipeline, Texture* envCubeMap);
 
 	void draw(Camera* camera, D3D12_VIEWPORT& vp);
 
@@ -25,6 +26,7 @@ public:
 private:
 	DXContext* context;
 	RenderPipeline* renderPipeline;
+	ComputePipeline* computePipeline;
 
 	Texture* envCubeMap;
 	Texture* glossyConvolution;

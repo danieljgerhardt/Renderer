@@ -3,6 +3,7 @@
 #include "DXContext.h"
 
 #include "D3D/Pipeline/RenderPipeline.h"
+#include "D3D/Pipeline/ComputePipeline.h"
 #include "D3D/Buffer/StructuredBuffer.h"
 
 //https://github.com/microsoft/DirectXTK12/wiki/Textures
@@ -48,11 +49,13 @@ public:
 	Texture(DXContext* context, RenderPipeline* pipeline, TextureData textureData);
 	~Texture();
 
-	D3D12_GPU_DESCRIPTOR_HANDLE getTextureGpuDescriptorHandle();
+	D3D12_GPU_DESCRIPTOR_HANDLE getSrvGpuDescriptorHandle();
+	D3D12_GPU_DESCRIPTOR_HANDLE getUavGpuDescriptorHandle();
 
 	void makeSrv(DXContext* context, RenderPipeline* pipeline, D3D12_SRV_DIMENSION srvDimension = D3D12_SRV_DIMENSION_TEXTURE2D);
+	void makeUav(DXContext* context, RenderPipeline* pipeline, D3D12_UAV_DIMENSION uavDimension = D3D12_UAV_DIMENSION_TEXTURE2D);
 
-	void generateMipMaps(DXContext* context, RenderPipeline* pipeline);
+	void generateMipMaps(DXContext* context, RenderPipeline* renderPipeline);
 
 	TextureType getType() { return type; }
 
@@ -81,7 +84,8 @@ private:
 
 	UINT heapIndex{};
 
-	D3D12_GPU_DESCRIPTOR_HANDLE textureGpuDescriptorHandle{};
+	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuDescriptorHandle{};
+	D3D12_GPU_DESCRIPTOR_HANDLE uavGpuDescriptorHandle{};
 
 	D3D12_RESOURCE_DESC resourceDesc;
 };

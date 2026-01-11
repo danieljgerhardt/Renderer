@@ -63,7 +63,7 @@ void CubemapDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
 		DirectX::XMMATRIX viewMat = viewMatrices[i];
 		cmdList->SetGraphicsRoot32BitConstants(0, 16, &viewMat, 0);
 
-		cmdList->SetGraphicsRootDescriptorTable(1, envMap->getTextureGpuDescriptorHandle());
+		cmdList->SetGraphicsRootDescriptorTable(1, envMap->getSrvGpuDescriptorHandle());
 
 		cmdList->DrawIndexedInstanced(12 * 3, 1, 0, 0, 0);
 	}
@@ -90,10 +90,10 @@ void CubemapDrawable::releaseResources() {
 void CubemapDrawable::construct() {
 	ResourceManager& rm = ResourceManager::get(context);
 
-	ResourceHandle envMapHandle = rm.createTextureFromFile("textures\\environments\\Frozen_Waterfall_Ref.hdr", context, renderPipeline->getCommandList(), renderPipeline, TextureType::DIFFUSE);
+	ResourceHandle envMapHandle = rm.createTextureFromFile("textures\\environments\\Tropical_Beach_3k.hdr", context, renderPipeline->getCommandList(), renderPipeline, TextureType::DIFFUSE);
 	envMap = rm.getTexture(envMapHandle);
 
-	TextureData textureData{ .width = 1024, .height = 1024, .type = TextureType::ENV_MAP, .format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT };
+	TextureData textureData{ .width = 512, .height = 512, .type = TextureType::ENV_MAP, .format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT };
 	ResourceHandle envCubeMapHandle = rm.createTexture(renderPipeline, textureData);
 	envCubeMap = rm.getTexture(envCubeMapHandle);
 

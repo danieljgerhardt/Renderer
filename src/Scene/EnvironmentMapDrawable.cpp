@@ -38,7 +38,7 @@ void EnvironmentMapDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
 	XMMATRIX viewProj = camera->getViewProjOrientOnly();
     cmdList->SetGraphicsRoot32BitConstants(0, 16, &viewProj, 0);
 
-    cmdList->SetGraphicsRootDescriptorTable(1, envCubeMap->getTextureGpuDescriptorHandle());
+    cmdList->SetGraphicsRootDescriptorTable(1, envCubeMap->getSrvGpuDescriptorHandle());
 
     cmdList->DrawIndexedInstanced(UINT(triangleCount) * 3, 1, 0, 0, 0);
 
