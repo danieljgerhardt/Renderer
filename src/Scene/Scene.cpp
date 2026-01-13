@@ -71,9 +71,13 @@ Scene::Scene(Camera* p_camera, DXContext* context)
 		drawable->draw(camera, tempVp);
 	}
 
+	//create brdf lookup texture
+	ResourceHandle brdfHandle = rm.createTextureFromFile("textures\\brdfLUT.png", context, renderPipelines[0]->getCommandList(), renderPipelines[0].get(), TextureType::BRDF_LUT);
+	Texture* brdfLut = rm.getTexture(brdfHandle);
+
 	//pass ibl textures to pbr drawable
 	PbrDrawable* pbrDrawablePtr = static_cast<PbrDrawable*>(perFrameDrawables[0].get());
-	pbrDrawablePtr->setIblTextures(diffuseConvolution, glossyConvolution);
+	pbrDrawablePtr->setIblTextures(diffuseConvolution, glossyConvolution, brdfLut);
 }
 
 RenderPipeline* Scene::getRenderPipeline(UINT index) {

@@ -12,15 +12,16 @@ void PbrDrawable::construct() {
     XMFLOAT4X4 avocadoModelMatrix;
     XMStoreFloat4x4(&avocadoModelMatrix, XMMatrixMultiply(
         XMMatrixScaling(1000.f, 1000.f, 1000.f),
-        XMMatrixTranslation(-100.f, 0.f, 30.f)
+        XMMatrixTranslation(-0.f, 0.f, 50.f)
     ));
     modelMatrices.push_back(avocadoModelMatrix);
 
 	XMFLOAT4X4 helmetModelMatrix;
 	XMStoreFloat4x4(&helmetModelMatrix, XMMatrixMultiply(
 		XMMatrixScaling(10.f, 10.f, 10.f),
-		XMMatrixTranslation(100.f, 0.f, -50.f)
+		XMMatrixTranslation(30.f, 20.f, 20.f)
 	));
+	XMStoreFloat4x4(&helmetModelMatrix, XMMatrixMultiply(XMMatrixRotationRollPitchYaw(90.f, 135.f, 0.f), XMLoadFloat4x4(&helmetModelMatrix)));
 	modelMatrices.push_back(helmetModelMatrix);
 
     std::string& string = inputStrings.front();
@@ -70,6 +71,7 @@ void PbrDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
 
 		cmdList->SetGraphicsRootDescriptorTable(3, diffuseConvolution->getSrvGpuDescriptorHandle());
 		cmdList->SetGraphicsRootDescriptorTable(4, glossyConvolution->getSrvGpuDescriptorHandle());
+		cmdList->SetGraphicsRootDescriptorTable(5, brdfLut->getSrvGpuDescriptorHandle());
 
         cmdList->DrawIndexedInstanced(m->getNumTriangles() * 3, 1, 0, 0, 0);
     }
@@ -77,9 +79,10 @@ void PbrDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
     context->resetCommandList(renderPipeline->getCommandListID());
 }
 
-void PbrDrawable::setIblTextures(Texture* diffuseConvolution, Texture* glossyConvolution) {
+void PbrDrawable::setIblTextures(Texture* diffuseConvolution, Texture* glossyConvolution, Texture* brdfLut) {
 	this->diffuseConvolution = diffuseConvolution;
 	this->glossyConvolution = glossyConvolution;
+	this->brdfLut = brdfLut;
 }
 
 size_t PbrDrawable::getTriangleCount() {

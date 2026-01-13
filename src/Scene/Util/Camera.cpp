@@ -59,7 +59,6 @@ void Camera::rotate() {
 	XMVECTOR newUp = XMVector3Cross(newForward, newRight);
 	newUp = XMVector3Normalize(newUp);
 
-	// Store the updated vectors back into the class member variables
 	XMStoreFloat3(&right, newRight);
 	XMStoreFloat3(&up, newUp);
 	XMStoreFloat3(&forward, newForward);

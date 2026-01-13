@@ -101,10 +101,7 @@ float4 main(VSOutput vsOut) : SV_Target
     float3 irradiance = diffuseIrradiance.SampleLevel(texSampler, nor, 0.f).rgb;
     float3 diffuse = irradiance * albedo;
     
-    //const float MAX_REFLECTION_LOD = 4.0;
-    
-    //temp
-    const float MAX_REFLECTION_LOD = 0.0;
+    const float MAX_REFLECTION_LOD = 3.0;
     
     float3 prefilteredColor = glossyIrradiance.SampleLevel(texSampler, wi, roughness * MAX_REFLECTION_LOD).rgb;
     float2 brdf = brdfLookup.SampleLevel(texSampler, float2(max(dot(wh, wo), 0.f), roughness), 0.f).rg;

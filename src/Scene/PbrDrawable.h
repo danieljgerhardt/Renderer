@@ -15,7 +15,7 @@ public:
 
 	bool drawEveryFrame() override { return true; }
 
-	void setIblTextures(Texture* diffuseConvolution, Texture* glossyConvolution);
+	void setIblTextures(Texture* diffuseConvolution, Texture* glossyConvolution, Texture* brdfLut);
 
 	size_t getTriangleCount() override;
 
@@ -36,6 +36,7 @@ private:
 
 	Texture* diffuseConvolution;
 	Texture* glossyConvolution;
+	Texture* brdfLut;
 
 	void construct();
 };
