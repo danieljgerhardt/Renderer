@@ -44,6 +44,10 @@ void PbrDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
     ID3D12GraphicsCommandList6* cmdList = renderPipeline->getCommandList();
     Window::get().setCmdListRenderTarget(cmdList);
     Window::get().setViewport(vp, cmdList);
+
+    std::array<UINT, 2> brdfLutUsage = { 0, 1 };
+    UINT brdfLutUsageIdx = 0;
+
     for (Mesh* m : meshes) {
         // == IA ==
         cmdList->IASetVertexBuffers(0, 1, m->getVBV());
@@ -65,6 +69,8 @@ void PbrDrawable::draw(Camera* camera, D3D12_VIEWPORT& vp) {
         cmdList->SetGraphicsRoot32BitConstants(0, 16, &projMat, 16);
         cmdList->SetGraphicsRoot32BitConstants(0, 16, m->getModelMatrix(), 32);
 		cmdList->SetGraphicsRoot32BitConstants(0, 4, &pos, 48);
+		cmdList->SetGraphicsRoot32BitConstants(0, 1, &brdfLutUsage[brdfLutUsageIdx], 52);
+        brdfLutUsageIdx++;
 
         cmdList->SetGraphicsRootDescriptorTable(1, m->getTexture(TextureType::DIFFUSE)->getSrvGpuDescriptorHandle());
         cmdList->SetGraphicsRootDescriptorTable(2, m->getTexture(TextureType::METALLIC_ROUGHNESS)->getSrvGpuDescriptorHandle());

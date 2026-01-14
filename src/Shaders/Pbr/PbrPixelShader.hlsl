@@ -9,12 +9,13 @@ Texture2D brdfLookup : register(t4);
 
 SamplerState texSampler : register(s0);
 
-cbuffer rc_CameraMatrices : register(b0)
+cbuffer rc_Constants : register(b0)
 {
     float4x4 viewMatrix;
     float4x4 projectionMatrix;
     float4x4 modelMatrix;
     float4 cameraPos;
+    uint4 useBrdfLut;
 };
 
 struct VSOutput
@@ -79,12 +80,13 @@ float4 main(VSOutput vsOut) : SV_Target
 {
     float3 pos = vsOut.WorldPos.xyz;
     float3 nor = vsOut.Normal;
+    
     float3 metalRough = metallicRoughness.SampleLevel(texSampler, vsOut.UV, 0.f).rgb;
-    //float3 metalRough = float3(0.0, 1.0, 0.0);
     float metallic = metalRough.b;
     float roughness = metalRough.g;
+    
     float3 albedo = diffuseTexture.SampleLevel(texSampler, vsOut.UV, 0.f).rgb;
-    //float3 albedo = float3(1.0, 0.0, 0.0);
+    albedo = pow(albedo, 2.2f);
     
     float ambientOccl = 1.0;
 
@@ -104,7 +106,7 @@ float4 main(VSOutput vsOut) : SV_Target
     const float MAX_REFLECTION_LOD = 3.0;
     
     float3 prefilteredColor = glossyIrradiance.SampleLevel(texSampler, wi, roughness * MAX_REFLECTION_LOD).rgb;
-    float2 brdf = brdfLookup.SampleLevel(texSampler, float2(max(dot(wh, wo), 0.f), roughness), 0.f).rg;
+    float2 brdf = useBrdfLut[0] ? brdfLookup.SampleLevel(texSampler, float2(max(dot(wh, wo), 0.f), roughness), 0.f).rg : float2(0.f, 0.f);
     float3 specular = prefilteredColor * (baseReflectivty * brdf.x + brdf.y);
     float3 ambient = (kD * diffuse + specular) * ambientOccl;
     float3 color = ambient + Lo;
