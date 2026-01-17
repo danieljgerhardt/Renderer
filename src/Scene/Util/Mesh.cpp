@@ -12,7 +12,6 @@ Mesh::Mesh(DXContext* context, RenderPipeline* pipeline, XMFLOAT4X4 p_modelMatri
 
 	vertexBuffer = ResourceManager::get(context).getVertexBuffer(
 		ResourceManager::get(context).createVertexBuffer(
-			pipeline,
 			vertices,
 			(UINT)(vertices.size() * sizeof(Vertex)),
 			(UINT)sizeof(Vertex)
@@ -21,7 +20,6 @@ Mesh::Mesh(DXContext* context, RenderPipeline* pipeline, XMFLOAT4X4 p_modelMatri
 
 	indexBuffer = ResourceManager::get(context).getIndexBuffer(
 		ResourceManager::get(context).createIndexBuffer(
-			pipeline,
 			indices,
 			(UINT)(indices.size() * sizeof(unsigned int))
 		)

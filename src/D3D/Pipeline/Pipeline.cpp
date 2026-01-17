@@ -1,7 +1,7 @@
 #include "Pipeline.h"
 
 Pipeline::Pipeline(DXContext& context, CommandListID cmdID)
-	: cmdID(cmdID), cmdList(context.createCommandList(cmdID)), context(context)
+	: cmdID(cmdID), context(context), cmdList(context.createCommandList(cmdID))
 {
   	context.resetCommandList(cmdID);
 }

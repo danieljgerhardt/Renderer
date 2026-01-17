@@ -9,7 +9,8 @@
 #include "D3D/Pipeline/ComputePipeline.h"
 
 #include "Scene/Util/Camera.h"
-#include "Scene/Scene.h"
+#include "Scene/PbrScene.h"
+#include "Scene/PtScene.h"
 
 #include "Support/ImguiManager.h"
 
@@ -40,7 +41,9 @@ int main() {
     mouse->SetWindow(window.getHWND());
 
     //initialize scene
-    Scene scene{camera.get(), &context};
+    PbrScene scene{camera.get(), &context};
+	PtScene ptScene{ camera.get(), &context };
+	bool usePtScene = false;
 	imguiInfo.triangleCount = scene.getTriangleCount();
 
     //create viewport
@@ -65,31 +68,54 @@ int main() {
         mouse->SetMode(mState.leftButton ? Mouse::MODE_RELATIVE : Mouse::MODE_ABSOLUTE);
         camera->kmStateCheck(kState, mState);
 
-        RenderPipeline* renderPipeline = scene.getRenderPipeline(0);
+        if (!usePtScene) {
+            RenderPipeline* renderPipeline = scene.getRenderPipeline(0);
 
-        //begin frame
-        window.beginFrame(renderPipeline->getCommandList());
+            //begin frame
+            window.beginFrame(renderPipeline->getCommandList());
 
-		//draw scene
-		scene.draw(windowViewport);
+            //draw scene
+            scene.draw(windowViewport);
 
-        //render imgui
-        Window::get().setCmdListRenderTarget(renderPipeline->getCommandList());
-		imguiManager.render(renderPipeline->getCommandList(), imguiInfo);
-        context.executeCommandList(renderPipeline->getCommandListID());
-        context.resetCommandList(renderPipeline->getCommandListID());
+            //render imgui
+            Window::get().setCmdListRenderTarget(renderPipeline->getCommandList());
+            imguiManager.render(renderPipeline->getCommandList(), imguiInfo);
+            context.executeCommandList(renderPipeline->getCommandListID());
+            context.resetCommandList(renderPipeline->getCommandListID());
 
-        //end frame
-        window.endFrame(renderPipeline->getCommandList());
+            //end frame
+            window.endFrame(renderPipeline->getCommandList());
 
-        // Execute command list
-		context.executeCommandList(renderPipeline->getCommandListID());
-        window.present();
-		context.resetCommandList(renderPipeline->getCommandListID());
+            // Execute command list
+            context.executeCommandList(renderPipeline->getCommandListID());
+            window.present();
+            context.resetCommandList(renderPipeline->getCommandListID());
+        } else {
+			RayPipeline* rayPipeline = ptScene.getRayPipeline();
+
+			window.beginFrame(rayPipeline->getCommandList());
+
+			ptScene.draw(windowViewport);
+
+			//render imgui
+			/*Window::get().setCmdListRenderTarget(rayPipeline->getCommandList());
+			imguiManager.render(rayPipeline->getCommandList(), imguiInfo);
+			context.executeCommandList(rayPipeline->getCommandListID());
+			context.resetCommandList(rayPipeline->getCommandListID());*/
+
+			//end frame
+			window.endFrame(rayPipeline->getCommandList());
+
+			// Execute command list
+			context.executeCommandList(rayPipeline->getCommandListID());
+			window.present();
+			context.resetCommandList(rayPipeline->getCommandListID());
+        }
     }
 
     //scene should release all drawable and pipeline resources
     scene.releaseResources();
+	ptScene.releaseResources();
 
     //release imgui resources
 	imguiManager.releaseResources();

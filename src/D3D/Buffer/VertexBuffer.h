@@ -22,6 +22,9 @@ public:
 
 	void releaseResources();
 
+	UINT getVertexDataSize() const { return vertexDataSize; }
+	UINT getVertexDataStride() const { return vertexDataStride; }
+
 private:
 	ComPointer<ID3D12Resource1> uploadBuffer;
 	ComPointer<ID3D12Resource1> vertexBuffer;

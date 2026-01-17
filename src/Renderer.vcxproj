@@ -17,6 +17,7 @@
     <ClCompile Include="D3D\Buffer\IndexBuffer.cpp" />
     <ClCompile Include="D3D\Buffer\StructuredBuffer.cpp" />
     <ClCompile Include="D3D\Pipeline\Pipeline.cpp" />
+    <ClCompile Include="D3D\Pipeline\RayPipeline.cpp" />
     <ClCompile Include="D3D\Pipeline\RenderPipeline.cpp" />
     <ClCompile Include="D3D\Pipeline\MeshPipeline.cpp" />
     <ClCompile Include="D3D\Buffer\VertexBuffer.cpp" />
@@ -36,6 +37,8 @@
     <ClCompile Include="Scene\CubemapGlossyConvolution.cpp" />
     <ClCompile Include="Scene\EnvironmentMapDrawable.cpp" />
     <ClCompile Include="Scene\PbrDrawable.cpp" />
+    <ClCompile Include="Scene\PbrScene.cpp" />
+    <ClCompile Include="Scene\PtScene.cpp" />
     <ClCompile Include="Support\ImguiManager.cpp" />
     <ClCompile Include="Support\RootSignatureBuilder.cpp" />
     <ClCompile Include="Scene\Util\Loader.cpp" />
@@ -55,6 +58,7 @@
     <ClInclude Include="D3D\DXContext.h" />
     <ClInclude Include="D3D\Buffer\IndexBuffer.h" />
     <ClInclude Include="D3D\Pipeline\MeshPipeline.h" />
+    <ClInclude Include="D3D\Pipeline\RayPipeline.h" />
     <ClInclude Include="D3D\Pipeline\RenderPipeline.h" />
     <ClInclude Include="D3D\Pipeline\Pipeline.h" />
     <ClInclude Include="D3D\Buffer\VertexBuffer.h" />
@@ -76,6 +80,8 @@
     <ClInclude Include="Scene\CubemapGlossyConvolution.h" />
     <ClInclude Include="Scene\EnvironmentMapDrawable.h" />
     <ClInclude Include="Scene\PbrDrawable.h" />
+    <ClInclude Include="Scene\PbrScene.h" />
+    <ClInclude Include="Scene\PtScene.h" />
     <ClInclude Include="Scene\Util\CubeMapGeometry.h" />
     <ClInclude Include="Support\ImguiManager.h" />
     <ClInclude Include="Support\RootSignatureBuilder.h" />
@@ -95,6 +101,7 @@
     <ClInclude Include="Support\WinInclude.h" />
     <None Include="ImGUI\misc\debuggers\imgui.natstepfilter" />
     <None Include="Shaders\FluidSurfaceConstruction\utils.hlsl" />
+    <None Include="Shaders\PT\PtCommon.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\GenerateMips.hlsl">
@@ -163,6 +170,24 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.0</ShaderModel>
     </FxCompile>
+    <DxcCompile Include="Shaders\PT\ClosestHit.hlsl">
+      <EntryPoint>ClosestHit</EntryPoint>
+      <ShaderProfile>lib_6_6</ShaderProfile>
+      <AdditionalOptions>-T lib_6_6</AdditionalOptions>
+	  <ObjectFileOutput>$(OutDir)%(Filename).cso</ObjectFileOutput>
+    </DxcCompile>
+    <DxcCompile Include="Shaders\PT\Miss.hlsl">
+      <EntryPoint>Miss</EntryPoint>
+      <ShaderProfile>lib_6_6</ShaderProfile>
+      <AdditionalOptions>-T lib_6_6</AdditionalOptions>
+	  <ObjectFileOutput>$(OutDir)%(Filename).cso</ObjectFileOutput>
+    </DxcCompile>
+    <DxcCompile Include="Shaders\PT\RayGen.hlsl">
+      <EntryPoint>RayGen</EntryPoint>
+      <ShaderProfile>lib_6_6</ShaderProfile>
+      <AdditionalOptions>-T lib_6_6</AdditionalOptions>
+	  <ObjectFileOutput>$(OutDir)%(Filename).cso</ObjectFileOutput>
+    </DxcCompile>
     <FxCompile Include="Shaders\VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>

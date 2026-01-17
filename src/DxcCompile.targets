@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+  </ItemGroup>
+  
+  <Target Name="DxcCompile" 
+          Inputs="@(DxcCompile)" 
+          Outputs="@(DxcCompile->'$(OutDir)%(Filename).cso')">
+    <Message Text="Compiling DXC shader: %(DxcCompile.Identity)" Importance="High" />
+    <Exec Command="dxc.exe -T %(DxcCompile.ShaderProfile) -E %(DxcCompile.EntryPoint) &quot;%(DxcCompile.FullPath)&quot; -Fo &quot;$(OutDir)%(DxcCompile.Filename).cso&quot;" />
+  </Target>
+
+  <PropertyGroup>
+    <BuildDependsOn>
+      DxcCompile;
+      $(BuildDependsOn)
+    </BuildDependsOn>
+  </PropertyGroup>
+</Project>

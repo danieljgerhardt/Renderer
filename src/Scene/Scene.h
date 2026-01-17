@@ -20,13 +20,13 @@ public:
 
 	void compute();
 
-	void draw(D3D12_VIEWPORT& vp);
+	virtual void draw(D3D12_VIEWPORT& vp);
 
 	size_t getTriangleCount();
 
 	void releaseResources();
 
-private:
+protected:
 	Camera* camera;
 
 	std::vector<std::unique_ptr<RenderPipeline>> renderPipelines;
@@ -37,4 +37,6 @@ private:
 
 	RenderPipeline* currentRP;
 	ComputePipeline* currentCP;
+
+	DXContext* context;
 };
