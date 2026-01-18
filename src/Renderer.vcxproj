@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.props" Condition="Exists('..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -170,23 +171,20 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.0</ShaderModel>
     </FxCompile>
-    <DxcCompile Include="Shaders\PT\ClosestHit.hlsl">
-      <EntryPoint>ClosestHit</EntryPoint>
+    <DxcCompile Include="Shaders\PT\RayGen.hlsl">
       <ShaderProfile>lib_6_6</ShaderProfile>
-      <AdditionalOptions>-T lib_6_6</AdditionalOptions>
-	  <ObjectFileOutput>$(OutDir)%(Filename).cso</ObjectFileOutput>
+      <AdditionalOptions>-exports RayGen</AdditionalOptions>
+      <ObjectFileOutput>$(OutDir)RayGen.cso</ObjectFileOutput>
+    </DxcCompile>
+    <DxcCompile Include="Shaders\PT\ClosestHit.hlsl">
+      <ShaderProfile>lib_6_6</ShaderProfile>
+      <AdditionalOptions>-exports ClosestHit</AdditionalOptions>
+      <ObjectFileOutput>$(OutDir)ClosestHit.cso</ObjectFileOutput>
     </DxcCompile>
     <DxcCompile Include="Shaders\PT\Miss.hlsl">
-      <EntryPoint>Miss</EntryPoint>
       <ShaderProfile>lib_6_6</ShaderProfile>
-      <AdditionalOptions>-T lib_6_6</AdditionalOptions>
-	  <ObjectFileOutput>$(OutDir)%(Filename).cso</ObjectFileOutput>
-    </DxcCompile>
-    <DxcCompile Include="Shaders\PT\RayGen.hlsl">
-      <EntryPoint>RayGen</EntryPoint>
-      <ShaderProfile>lib_6_6</ShaderProfile>
-      <AdditionalOptions>-T lib_6_6</AdditionalOptions>
-	  <ObjectFileOutput>$(OutDir)%(Filename).cso</ObjectFileOutput>
+      <AdditionalOptions>-exports Miss</AdditionalOptions>
+      <ObjectFileOutput>$(OutDir)Miss.cso</ObjectFileOutput>
     </DxcCompile>
     <FxCompile Include="Shaders\VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
@@ -301,6 +299,7 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\directxtk12_desktop_2019.2024.10.29.1\build\native\directxtk12_desktop_2019.targets" Condition="Exists('..\packages\directxtk12_desktop_2019.2024.10.29.1\build\native\directxtk12_desktop_2019.targets')" />
     <Import Project="..\packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets" Condition="Exists('..\packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets')" />
+    <Import Project="..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.targets" Condition="Exists('..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -308,5 +307,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\directxtk12_desktop_2019.2024.10.29.1\build\native\directxtk12_desktop_2019.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtk12_desktop_2019.2024.10.29.1\build\native\directxtk12_desktop_2019.targets'))" />
     <Error Condition="!Exists('..\packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.targets'))" />
   </Target>
 </Project>

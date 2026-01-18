@@ -2,9 +2,9 @@
 
 RayPipeline::RayPipeline(DXContext& context, CommandListID id, DescriptorHeap* dh)
     : Pipeline(context, id), 
-    closestHit("ClosestHit.cso", ShaderType::RootSigOrUnassigned),
-    miss("Miss.cso", ShaderType::RootSigOrUnassigned),
-    rayGen("RayGen.cso", ShaderType::RootSigOrUnassigned)
+    closestHit("ClosestHit.hlsl", ShaderType::RootSigOrUnassigned),
+    miss("Miss.hlsl", ShaderType::RootSigOrUnassigned),
+    rayGen("RayGen.hlsl", ShaderType::RootSigOrUnassigned)
 {
 	createRootSignature(context, { &closestHit, &miss, &rayGen });
 	descriptorHeap = dh;
