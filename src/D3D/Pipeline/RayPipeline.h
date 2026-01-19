@@ -2,6 +2,8 @@
 
 #include "Pipeline.h"
 
+#include "Support/ShaderLib.h"
+
 class RayPipeline : public Pipeline {
 public:
 	RayPipeline() = delete;
@@ -22,7 +24,7 @@ protected:
 
 	void initShaderTables();
 
-	Shader closestHit, miss, rayGen;
+	ShaderLib shaderLib;
 	UINT shaderCount{ 3 };
 	ID3D12Resource* shaderIds;
 

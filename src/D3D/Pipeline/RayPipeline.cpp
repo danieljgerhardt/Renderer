@@ -1,12 +1,9 @@
 #include "RayPipeline.h"
 
 RayPipeline::RayPipeline(DXContext& context, CommandListID id, DescriptorHeap* dh)
-    : Pipeline(context, id), 
-    closestHit("ClosestHit.hlsl", ShaderType::RootSigOrUnassigned),
-    miss("Miss.hlsl", ShaderType::RootSigOrUnassigned),
-    rayGen("RayGen.hlsl", ShaderType::RootSigOrUnassigned)
+	: Pipeline(context, id), shaderLib("RayGeneration.hlsl", "Miss.hlsl", "ClosestHit.hlsl")
 {
-	createRootSignature(context, { &closestHit, &miss, &rayGen });
+	createRootSignature(context, {});
 	descriptorHeap = dh;
 	createPipelineState(context.getDevice());
 	initShaderTables();
@@ -17,17 +14,24 @@ void RayPipeline::releaseResources() {
 }
 
 void RayPipeline::createRootSignature(DXContext& context, std::vector<Shader*> shaders) {
-
     D3D12_DESCRIPTOR_RANGE uavRange = {
        .RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV,
        .NumDescriptors = 1,
     };
+	D3D12_DESCRIPTOR_RANGE cbvRange = {
+	   .RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV,
+	   .NumDescriptors = 1,
+	};
     D3D12_ROOT_PARAMETER params[] = {
         {.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE,
          .DescriptorTable = {.NumDescriptorRanges = 1,
                              .pDescriptorRanges = &uavRange}},
                              {.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV,
-         .Descriptor = {.ShaderRegister = 0, .RegisterSpace = 0}} };
+         .Descriptor = {.ShaderRegister = 0, .RegisterSpace = 0}},
+		{.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE,
+		 .DescriptorTable = {.NumDescriptorRanges = 1,
+							 .pDescriptorRanges = &cbvRange}
+        } };
 
     D3D12_ROOT_SIGNATURE_DESC desc = { .NumParameters = std::size(params),
                                       .pParameters = params };
@@ -50,9 +54,18 @@ void RayPipeline::createPSOD() {
 }
 
 void RayPipeline::createPipelineState(ComPointer<ID3D12Device6>& device) {
+    /*D3D12_EXPORT_DESC exports[] = {
+        { .Name = L"RayGeneration", .ExportToRename = nullptr, .Flags = D3D12_EXPORT_FLAG_NONE },
+		{ .Name = L"Miss", .ExportToRename = nullptr, .Flags = D3D12_EXPORT_FLAG_NONE },
+        { .Name = L"ClosestHit", .ExportToRename = nullptr, .Flags = D3D12_EXPORT_FLAG_NONE }
+    };*/
+
     D3D12_DXIL_LIBRARY_DESC lib = {
-        .DXILLibrary = {.pShaderBytecode = rayGen.getBuffer(),
-                        .BytecodeLength = rayGen.getSize()}};
+        .DXILLibrary = {.pShaderBytecode = shaderLib.getBuffer(),
+                        .BytecodeLength = shaderLib.getSize()},
+        //.NumExports = _countof(exports),
+        //.pExports = exports
+    };
 
     D3D12_HIT_GROUP_DESC hitGroup = { .HitGroupExport = L"HitGroup",
                                      .Type = D3D12_HIT_GROUP_TYPE_TRIANGLES,
@@ -106,8 +119,8 @@ void RayPipeline::initShaderTables() {
 
     shaderIds->Map(0, nullptr, &data);
     writeId(L"RayGeneration");
-    writeId(L"Miss");
     writeId(L"HitGroup");
+    writeId(L"Miss");
     shaderIds->Unmap(0, nullptr);
 
     props->Release();

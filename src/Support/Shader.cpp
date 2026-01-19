@@ -26,65 +26,7 @@ Shader::Shader(std::string_view name, ShaderType type) {
     } else {
         //TODO - check if name is hlsl or cso instead of doing the if here, and clean this func up in general
         //dxc shader
-        ComPointer<IDxcUtils> utils;
-        ComPointer<IDxcCompiler3> compiler;
-
-		HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils));
-		assert(SUCCEEDED(hr));
-
-		hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler));
-		assert(SUCCEEDED(hr));
-
-        ComPointer<IDxcBlobEncoding> source;
-        
-        static std::filesystem::path newShader = shaderDir.parent_path().parent_path().parent_path().parent_path() / "src\\Shaders\\PT\\" / name;
-		static std::filesystem::path includeShaderLoc = newShader.parent_path();
-
-		utils->LoadFile(
-			(newShader).wstring().c_str(),
-			nullptr,
-			&source
-		);
-
-		assert(source != nullptr);
-
-        DxcBuffer buffer{ .Ptr = source->GetBufferPointer(), .Size = source->GetBufferSize(), .Encoding = DXC_CP_UTF8 };
-        const wchar_t* args[] =
-        {
-            L"-T", L"lib_6_6",
-            L"-I", includeShaderLoc.c_str(),
-            L"-Zi",
-            L"-Qembed_debug"
-        };
-
-		ComPointer<IDxcIncludeHandler> includeHandler;
-		hr = utils->CreateDefaultIncludeHandler(&includeHandler);
-		assert(SUCCEEDED(hr));
-
-        ComPointer<IDxcResult> result;
-        compiler->Compile(
-            &buffer,
-            args,
-            _countof(args),
-            includeHandler,
-            IID_PPV_ARGS(&result)
-        );
-
-        ComPointer<IDxcBlobUtf8> errors;
-        result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), nullptr);
-
-        if (errors && errors->GetStringLength() > 0)
-        {
-            OutputDebugStringA(errors->GetStringPointer());
-            throw std::runtime_error("DXC compilation failed");
-        }
-
-        ComPointer<IDxcBlob> dxil;
-        result->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&dxil), nullptr);
-
-		data = malloc(dxil->GetBufferSize());
-		size = dxil->GetBufferSize();
-		memcpy(data, dxil->GetBufferPointer(), size);
+		assert(false);
     }
 
 	if (type == ShaderType::RootSigOrUnassigned) {

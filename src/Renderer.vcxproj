@@ -50,6 +50,7 @@
     <ClCompile Include="Scene\Util\Mesh.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Support\Shader.cpp" />
+    <ClCompile Include="Support\ShaderLib.cpp" />
     <ClCompile Include="Support\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -98,6 +99,7 @@
     <ClInclude Include="Scene\Util\Vertex.h" />
     <ClInclude Include="Support\ComPointer.h" />
     <ClInclude Include="Support\Shader.h" />
+    <ClInclude Include="Support\ShaderLib.h" />
     <ClInclude Include="Support\Window.h" />
     <ClInclude Include="Support\WinInclude.h" />
     <None Include="ImGUI\misc\debuggers\imgui.natstepfilter" />
