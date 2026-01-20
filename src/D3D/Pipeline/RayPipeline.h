@@ -13,6 +13,8 @@ public:
 
 	ID3D12Resource* getShaderIds() { return shaderIds; }
 
+	ID3D12StateObject* getStateObject() { return pso; }
+
 protected:
 	void createRootSignature(DXContext& context, std::vector<Shader*> shaders) override;
 

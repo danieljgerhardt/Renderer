@@ -52,6 +52,9 @@ D3D12_VERTEX_BUFFER_VIEW VertexBuffer::passVertexDataToGPU(DXContext& context, I
     // Copy CPU Resource --> GPU Resource
     cmdList->CopyBufferRegion(vertexBuffer, 0, uploadBuffer, 0, vertexDataSize);
 
+    //todo - remove
+	vertexBuffer->SetName(L"Vertex Buffer");
+
     // === Vertex buffer view ===
     D3D12_VERTEX_BUFFER_VIEW vbv{};
     vbv.BufferLocation = vertexBuffer->GetGPUVirtualAddress();

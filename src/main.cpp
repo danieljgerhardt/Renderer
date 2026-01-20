@@ -43,7 +43,7 @@ int main() {
     //initialize scene
     PbrScene scene{camera.get(), &context};
 	PtScene ptScene{ camera.get(), &context };
-	bool usePtScene = false;
+	bool usePtScene = true;
 	imguiInfo.triangleCount = scene.getTriangleCount();
 
     //create viewport

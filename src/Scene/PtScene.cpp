@@ -45,6 +45,8 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 	IndexBuffer* cubeIb = ResourceManager::get(context).getIndexBuffer(cubeIbHandle);
 	cubeIb->passIndexDataToGPU(*context, rayPipeline->getCommandList());
 
+	quadVb->transitionState(rayPipeline->getCommandList(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
 	//accel structure
 	ID3D12Resource* quadBlas;
 	ID3D12Resource* cubeBlas;
@@ -74,6 +76,8 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 			.AccelerationStructure = (i ? quadBlas : cubeBlas)->GetGPUVirtualAddress(),
 		};
 	}
+
+	initTopLevel();
 
 	updateTransforms();
 }
@@ -119,10 +123,10 @@ ID3D12Resource* PtScene::makeAccelStruct(RayPipeline* rayPipeline, const D3D12_B
 	.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress() };
 
 	ID3D12GraphicsCommandList6* cmdList = rayPipeline->getCommandList();
-	context->resetCommandList(rayPipeline->getCommandListID());
 		
 	cmdList->BuildRaytracingAccelerationStructure(&buildDesc, 0, nullptr);
 	context->executeCommandList(rayPipeline->getCommandListID());
+	context->resetCommandList(rayPipeline->getCommandListID());
 	scratch->Release();
 	return accelStruct;
 }
@@ -238,7 +242,7 @@ void PtScene::draw(D3D12_VIEWPORT& vp) {
 	Window::get().setCmdListRenderTarget(cmdList);
 	Window::get().setViewport(vp, cmdList);
 
-	cmdList->SetPipelineState(rayPipeline->getPSO());
+	cmdList->SetPipelineState1(rayPipeline->getStateObject());
 	cmdList->SetComputeRootSignature(rayPipeline->getRootSignature());
 
 	ID3D12DescriptorHeap* descriptorHeaps[] = { rayPipeline->getDescriptorHeap()->getAddress() };
