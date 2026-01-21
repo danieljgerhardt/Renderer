@@ -2,7 +2,7 @@
 
 #include "Scene/Util/Loader.h"
 
-ResourceHandle ResourceManager::createTexture(RenderPipeline* pipeline, TextureData textureData) {
+ResourceHandle ResourceManager::createTexture(Pipeline* pipeline, TextureData textureData) {
 	std::unique_ptr<Texture> texture = std::make_unique<Texture>(context, pipeline, textureData);
 	UINT id = textureCount++;
 	textures[id] = std::move(texture);

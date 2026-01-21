@@ -54,6 +54,14 @@ public:
 	static D3D12_VIEWPORT getWindowViewport();
 	static void setViewport(D3D12_VIEWPORT& vp, ID3D12GraphicsCommandList5* cmdList);
 
+	DescriptorHeap* getRtvHeap() {
+		return rtvDescHeap;
+	}
+
+	ID3D12Resource1* getCurrentBackBuffer() {
+		return swapChainBuffers[currentSwapChainBufferIdx].Get();
+	}
+
 private:
 	Window() = default;
 

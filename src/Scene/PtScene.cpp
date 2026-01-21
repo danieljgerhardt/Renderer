@@ -4,7 +4,7 @@
 
 PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 	ResourceManager& rm = ResourceManager::get(context);
-	ResourceHandle renderHeapHandle = rm.createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1000,
+	ResourceHandle renderHeapHandle = rm.createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1,
 		D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 	DescriptorHeap* renderHeap = rm.getDescriptorHeap(renderHeapHandle);
 
@@ -46,7 +46,8 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 	quadBlas = makeBlas(rayPipeline.get(), quadVb, (UINT)(quadVertices.size() * 3));
 	cubeBlas = makeBlas(rayPipeline.get(), cubeVb, (UINT)(cubeVertices.size() * 3), cubeIb, (UINT)cubeIndices.size());
 
-	constexpr UINT numInstances = 3;
+	numInstances = 3;
+
 	DXGI_SAMPLE_DESC NO_AA = { .Count = 1, .Quality = 0 };
 	D3D12_RESOURCE_DESC instancesDesc = {
 		.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER,
@@ -73,6 +74,18 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 	initTopLevel();
 
 	updateTransforms();
+
+	//create pt target
+	TextureData texData;
+	texData.width = Window::get().getWidth();
+	texData.height = Window::get().getHeight();
+	texData.format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	texData.type = TextureType::PT_TARGET;
+
+	ResourceHandle rtHandle = rm.createTexture(rayPipeline.get(), texData);
+
+	renderTarget = rm.getTexture(rtHandle);
+	renderTarget->makeUav(context, rayPipeline.get());
 }
 
 ID3D12Resource* PtScene::makeAccelStruct(RayPipeline* rayPipeline, const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& inputs, UINT64* updateScratchSize) {
@@ -130,7 +143,7 @@ ID3D12Resource* PtScene::makeBlas(RayPipeline* rayPipeline, VertexBuffer* vertex
 		.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE,
 		.Triangles = {
 			.Transform3x4 = 0,
-			.IndexFormat = indexBuffer ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_UNKNOWN,
+			.IndexFormat = indexBuffer ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_UNKNOWN,
 			.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT,
 			.IndexCount = indices,
 			.VertexCount = vertexFloats / 3,
@@ -229,6 +242,8 @@ void PtScene::updateScene() {
 }
 
 void PtScene::draw(D3D12_VIEWPORT& vp) {
+	//get window render target
+
 	updateScene();
 
 	ID3D12GraphicsCommandList6* cmdList = rayPipeline->getCommandList();
@@ -267,6 +282,9 @@ void PtScene::draw(D3D12_VIEWPORT& vp) {
 		.Height = height,
 		.Depth = 1 };
 	cmdList->DispatchRays(&dispatchDesc);
+
+	//copy to backbuffer
+	cmdList->CopyResource(Window::get().getCurrentBackBuffer(), renderTarget->getTextureResource());
 
 	context->executeCommandList(rayPipeline->getCommandListID());
 	context->resetCommandList(rayPipeline->getCommandListID());

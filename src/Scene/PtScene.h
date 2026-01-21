@@ -33,4 +33,6 @@ private:
 	UINT numInstances{ 0 };
 
 	std::unique_ptr<RayPipeline> rayPipeline;
+
+	Texture* renderTarget;
 };

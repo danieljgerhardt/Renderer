@@ -37,7 +37,7 @@ public:
 	ResourceManager(const ResourceManager&) = delete;
 	ResourceManager& operator=(const ResourceManager&) = delete;
 
-	ResourceHandle createTexture(RenderPipeline* pipeline, TextureData textureData);
+	ResourceHandle createTexture(Pipeline* pipeline, TextureData textureData);
 	ResourceHandle createTextureFromFile(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, TextureType type);
 	ResourceHandle createVertexBuffer(void* vertexData, UINT vertexDataSize, UINT vertexDataStride);
 	ResourceHandle createIndexBuffer(std::vector<UINT>& indexData, UINT indexDataSize);

@@ -20,6 +20,7 @@ enum TextureType {
 	METALLIC_ROUGHNESS,
 	ENV_MAP,
 	BRDF_LUT,
+	PT_TARGET,
 	NUM_TEXTURE_TYPES
 };
 
@@ -47,14 +48,14 @@ public:
 	Texture(Texture&&) noexcept = default;
 	Texture& operator=(Texture&&) noexcept = default;
 
-	Texture(DXContext* context, RenderPipeline* pipeline, TextureData textureData);
+	Texture(DXContext* context, Pipeline* pipeline, TextureData textureData);
 	~Texture();
 
 	D3D12_GPU_DESCRIPTOR_HANDLE getSrvGpuDescriptorHandle();
 	D3D12_GPU_DESCRIPTOR_HANDLE getUavGpuDescriptorHandle();
 
-	void makeSrv(DXContext* context, RenderPipeline* pipeline, D3D12_SRV_DIMENSION srvDimension = D3D12_SRV_DIMENSION_TEXTURE2D);
-	void makeUav(DXContext* context, RenderPipeline* pipeline, D3D12_UAV_DIMENSION uavDimension = D3D12_UAV_DIMENSION_TEXTURE2D);
+	void makeSrv(DXContext* context, Pipeline* pipeline, D3D12_SRV_DIMENSION srvDimension = D3D12_SRV_DIMENSION_TEXTURE2D);
+	void makeUav(DXContext* context, Pipeline* pipeline, D3D12_UAV_DIMENSION uavDimension = D3D12_UAV_DIMENSION_TEXTURE2D);
 
 	void generateMipMaps(DXContext* context, RenderPipeline* renderPipeline);
 
