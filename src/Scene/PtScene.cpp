@@ -10,29 +10,22 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 
 	rayPipeline = std::make_unique<RayPipeline>(*context, RAY_ID, renderHeap);
 
-	std::vector<Vertex> cubeVertices{
-		{{-1, -1, -1}, {0, 0, 0}, {0, 0}},
-		{{ 1, -1, -1}, {0, 0, 0}, {0, 0}},
-		{{-1,  1, -1}, {0, 0, 0}, {0, 0}},
-		{{ 1,  1, -1}, {0, 0, 0}, {0, 0}},
-		{{-1, -1,  1}, {0, 0, 0}, {0, 0}},
-		{{ 1, -1,  1}, {0, 0, 0}, {0, 0}},
-		{{-1,  1,  1}, {0, 0, 0}, {0, 0}},
-		{{ 1,  1,  1}, {0, 0, 0}, {0, 0}},
+	std::vector<float> cubeVertices{
+		-1, -1, -1,
+		 1, -1, -1,
+		-1,  1, -1,
+		 1,  1, -1,
+		-1, -1,  1,
+		 1, -1,  1,
+		-1,  1,  1,
+		 1,  1,  1,
 	};
-	ResourceHandle cubeVbHandle = ResourceManager::get(context).createVertexBuffer(cubeVertices, (UINT)(cubeVertices.size() * sizeof(Vertex)), sizeof(Vertex));
+	ResourceHandle cubeVbHandle = ResourceManager::get(context).createVertexBuffer(cubeVertices.data(), (UINT)(cubeVertices.size() * sizeof(float) * 3), sizeof(float) * 3);
 	VertexBuffer* cubeVb = ResourceManager::get(context).getVertexBuffer(cubeVbHandle);
 	cubeVb->passVertexDataToGPU(*context, rayPipeline->getCommandList());
 
-	std::vector<Vertex> quadVertices{
-		{{-1, 0, -1}, {0, 0, 0}, {0, 0}},
-		{{-1, 0, 1}, {0, 0, 0}, {0, 0}},
-		{{1, 0, 1}, {0, 0, 0}, {0, 0}},
-		{{-1, 0, -1}, {0, 0, 0}, {0, 0}},
-		{{1, 0, -1}, {0, 0, 0}, {0, 0}},
-		{{1, 0, 1}, {0, 0, 0}, {0, 0}}
-	};
-	ResourceHandle quadVbHandle = ResourceManager::get(context).createVertexBuffer(quadVertices, (UINT)(quadVertices.size() * sizeof(Vertex)), sizeof(Vertex));
+	std::vector<float> quadVertices{-1, 0, -1, -1, 0, 1, 1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1};
+	ResourceHandle quadVbHandle = ResourceManager::get(context).createVertexBuffer(quadVertices.data(), (UINT)(quadVertices.size() * sizeof(float) * 3), sizeof(float) * 3);
 	VertexBuffer* quadVb = ResourceManager::get(context).getVertexBuffer(quadVbHandle);
 	quadVb->passVertexDataToGPU(*context, rayPipeline->getCommandList());
 
@@ -50,7 +43,7 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 	//accel structure
 	ID3D12Resource* quadBlas;
 	ID3D12Resource* cubeBlas;
-	quadBlas = makeBlas(rayPipeline.get(), quadVb, (UINT)(quadVertices.size() * 3), nullptr, 0);
+	quadBlas = makeBlas(rayPipeline.get(), quadVb, (UINT)(quadVertices.size() * 3));
 	cubeBlas = makeBlas(rayPipeline.get(), cubeVb, (UINT)(cubeVertices.size() * 3), cubeIb, (UINT)cubeIndices.size());
 
 	constexpr UINT numInstances = 3;

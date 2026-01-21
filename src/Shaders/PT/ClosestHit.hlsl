@@ -21,7 +21,10 @@ void HitCube(inout Payload payload, float2 uv)
 void HitMirror(inout Payload payload, float2 uv)
 {
     if (!payload.allowReflection)
+    {
+        payload.color = 0.0.rrr;
         return;
+    }
     
     float3 pos = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
     float3 normal = normalize(mul(float3(0, 1, 0), (float3x3) ObjectToWorld4x3()));
@@ -53,6 +56,7 @@ void HitFloor(inout Payload payload, float2 uv)
     Payload shadow;
     shadow.allowReflection = false;
     shadow.missed = false;
+    shadow.color = float3(0, 0, 0);
     TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, shadowRay, shadow);
     
     if (!shadow.missed)
@@ -66,7 +70,7 @@ void ClosestHit(inout Payload payload, BuiltInTriangleIntersectionAttributes att
     
     switch (InstanceID())
     {
-        case 0:
+        /*case 0:
             HitCube(payload, uv);
             break;
         case 1:
@@ -74,7 +78,7 @@ void ClosestHit(inout Payload payload, BuiltInTriangleIntersectionAttributes att
             break;
         case 2:
             HitFloor(payload, uv);
-            break;
+            break;*/
         default:
             payload.color = float3(1, 0, 1);
             break;

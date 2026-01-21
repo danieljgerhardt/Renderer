@@ -28,7 +28,7 @@ inline void createCubeGeometry(DXContext* context, RenderPipeline* renderPipelin
         {XMFLOAT3(1.f,  1.f, 1.f), XMFLOAT3(0.f, 0.f, -1.f), XMFLOAT2(1.f, 0.f)},
         {XMFLOAT3(-1.f, 1.f, 1.f), XMFLOAT3(0.f, 0.f, -1.f), XMFLOAT2(1.f, 1.f)}
     };
-    ResourceHandle vbHandle = rm.createVertexBuffer(vertData, (UINT)(vertData.size() * sizeof(Vertex)), (UINT)sizeof(Vertex));
+    ResourceHandle vbHandle = rm.createVertexBuffer(vertData.data(), (UINT)(vertData.size() * sizeof(Vertex)), (UINT)sizeof(Vertex));
 
     std::vector<UINT> indexData{
         1, 0, 3, 1, 3, 2,

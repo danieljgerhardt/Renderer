@@ -17,7 +17,7 @@ ResourceHandle ResourceManager::createTextureFromFile(std::string fileLocation, 
 	return ResourceHandle{ ResourceType::TEXTURE, id };
 }
 
-ResourceHandle ResourceManager::createVertexBuffer(std::vector<Vertex>& vertexData, UINT vertexDataSize, UINT vertexDataStride) {
+ResourceHandle ResourceManager::createVertexBuffer(void* vertexData, UINT vertexDataSize, UINT vertexDataStride) {
 	std::unique_ptr<VertexBuffer> vertexBuffer = std::make_unique<VertexBuffer>(vertexData, vertexDataSize, vertexDataStride);
 	UINT id = vertexBufferCount++;
 	vertexBuffers[id] = std::move(vertexBuffer);

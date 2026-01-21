@@ -13,7 +13,7 @@ using namespace DirectX;
 class VertexBuffer {
 public:
 	VertexBuffer() = default;
-	VertexBuffer(std::vector<Vertex>& vertexData, UINT vertexDataSize, UINT vertexDataStride);
+	VertexBuffer(void* vertexData, UINT vertexDataSize, UINT vertexDataStride);
 
 	D3D12_VERTEX_BUFFER_VIEW passVertexDataToGPU(DXContext& context, ID3D12GraphicsCommandList6* cmdList);
 
@@ -46,5 +46,5 @@ private:
 
 	UINT vertexDataSize;
 	UINT vertexDataStride;
-	std::vector<Vertex> vertexData;
+	void* vertexData;
 };

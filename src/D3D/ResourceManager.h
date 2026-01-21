@@ -39,7 +39,7 @@ public:
 
 	ResourceHandle createTexture(RenderPipeline* pipeline, TextureData textureData);
 	ResourceHandle createTextureFromFile(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, TextureType type);
-	ResourceHandle createVertexBuffer(std::vector<Vertex>& vertexData, UINT vertexDataSize, UINT vertexDataStride);
+	ResourceHandle createVertexBuffer(void* vertexData, UINT vertexDataSize, UINT vertexDataStride);
 	ResourceHandle createIndexBuffer(std::vector<UINT>& indexData, UINT indexDataSize);
 	ResourceHandle createStructuredBuffer(RenderPipeline* pipeline, void* data, UINT elementCount, UINT elementSize);
 	ResourceHandle createMesh(RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, MeshData meshData);

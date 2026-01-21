@@ -12,7 +12,7 @@ Mesh::Mesh(DXContext* context, RenderPipeline* pipeline, XMFLOAT4X4 p_modelMatri
 
 	vertexBuffer = ResourceManager::get(context).getVertexBuffer(
 		ResourceManager::get(context).createVertexBuffer(
-			vertices,
+			vertices.data(),
 			(UINT)(vertices.size() * sizeof(Vertex)),
 			(UINT)sizeof(Vertex)
 		)
