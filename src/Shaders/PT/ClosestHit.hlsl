@@ -3,7 +3,7 @@
 
 void HitCube(inout Payload payload, float2 uv)
 {
-    uint tri = PrimitiveIndex();
+    /*uint tri = PrimitiveIndex();
     tri /= 2;
     float3 normal = (tri.xxx % 3 == uint3(0, 1, 2)) * (tri < 3 ? -1 : 1);
     float3 worldNormal = normalize(mul(normal, (float3x3) ObjectToWorld4x3()));
@@ -12,9 +12,10 @@ void HitCube(inout Payload payload, float2 uv)
     if (uv.x < 0.03 || uv.y < 0.03)
     {
         color = 0.25.rrr;
-    }
+    }*/
     
-    color *= saturate(dot(worldNormal, normalize(light))) + 0.33;
+    float3 color = float3(0.8, 0.1, 0.1);
+    color *= saturate(dot(float3(1, 0, 0), normalize(light))) + 0.33;
     payload.color = color;
 }
 
@@ -68,20 +69,23 @@ void ClosestHit(inout Payload payload, BuiltInTriangleIntersectionAttributes att
 {
     float2 uv = attribs.barycentrics;
     
-    switch (InstanceID())
+    /*switch (InstanceID())
     {
-        /*case 0:
-            HitCube(payload, uv);
+        case 0:
+            payload.color = float3(0, 1, 1);
+            //HitCube(payload, uv);
             break;
         case 1:
-            HitMirror(payload, uv);
+            payload.color = float3(1, 0, 1);
+            //HitMirror(payload, uv);
             break;
         case 2:
-            HitFloor(payload, uv);
-            break;*/
+            payload.color = float3(1, 0, 1);
+            //HitFloor(payload, uv);
+            break;
         default:
             payload.color = float3(1, 0, 1);
             break;
-    }
-    
+    }*/
+    payload.color = float3(1, 0, 1);
 }

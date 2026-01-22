@@ -24,7 +24,12 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 	VertexBuffer* cubeVb = ResourceManager::get(context).getVertexBuffer(cubeVbHandle);
 	cubeVb->passVertexDataToGPU(*context, rayPipeline->getCommandList());
 
-	std::vector<float> quadVertices{-1, 0, -1, -1, 0, 1, 1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1};
+	std::vector<float> quadVertices{ 
+		-1, 0, -1,
+		-1, 0,  1,
+		 1, 0,  1,
+		 1, 0, -1
+	};
 	ResourceHandle quadVbHandle = ResourceManager::get(context).createVertexBuffer(quadVertices.data(), (UINT)(quadVertices.size() * sizeof(float) * 3), sizeof(float) * 3);
 	VertexBuffer* quadVb = ResourceManager::get(context).getVertexBuffer(quadVbHandle);
 	quadVb->passVertexDataToGPU(*context, rayPipeline->getCommandList());
@@ -38,12 +43,24 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 	IndexBuffer* cubeIb = ResourceManager::get(context).getIndexBuffer(cubeIbHandle);
 	cubeIb->passIndexDataToGPU(*context, rayPipeline->getCommandList());
 
+	std::vector<UINT> quadIndices{
+		0, 1, 2,
+		0, 2, 3
+	};
+	ResourceHandle quadIbHandle = ResourceManager::get(context).createIndexBuffer(quadIndices, (UINT)(quadIndices.size() * sizeof(UINT)));
+	IndexBuffer* quadIb = ResourceManager::get(context).getIndexBuffer(quadIbHandle);
+	quadIb->passIndexDataToGPU(*context, rayPipeline->getCommandList());
+
 	quadVb->transitionState(rayPipeline->getCommandList(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	cubeVb->transitionState(rayPipeline->getCommandList(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+	quadIb->transitionState(rayPipeline->getCommandList(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	cubeIb->transitionState(rayPipeline->getCommandList(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 	//accel structure
 	ID3D12Resource* quadBlas;
 	ID3D12Resource* cubeBlas;
-	quadBlas = makeBlas(rayPipeline.get(), quadVb, (UINT)(quadVertices.size() * 3));
+	quadBlas = makeBlas(rayPipeline.get(), quadVb, (UINT)(quadVertices.size() * 3), quadIb, (UINT)quadIndices.size());
 	cubeBlas = makeBlas(rayPipeline.get(), cubeVb, (UINT)(cubeVertices.size() * 3), cubeIb, (UINT)cubeIndices.size());
 
 	numInstances = 3;
@@ -76,9 +93,10 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 	updateTransforms();
 
 	//create pt target
+	//todo - figure out why these exact dimensions
 	TextureData texData;
-	texData.width = Window::get().getWidth();
-	texData.height = Window::get().getHeight();
+	texData.width = 1260;
+	texData.height = 677;
 	texData.format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	texData.type = TextureType::PT_TARGET;
 
@@ -143,11 +161,11 @@ ID3D12Resource* PtScene::makeBlas(RayPipeline* rayPipeline, VertexBuffer* vertex
 		.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE,
 		.Triangles = {
 			.Transform3x4 = 0,
-			.IndexFormat = indexBuffer ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_UNKNOWN,
+			.IndexFormat = DXGI_FORMAT_R32_UINT,
 			.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT,
 			.IndexCount = indices,
 			.VertexCount = vertexFloats / 3,
-			.IndexBuffer = indexBuffer ? indexBuffer->getIndexBuffer()->GetGPUVirtualAddress() : 0,
+			.IndexBuffer = indexBuffer->getIndexBuffer()->GetGPUVirtualAddress(),
 			.VertexBuffer = { .StartAddress = vertexBuffer->getVertexBuffer()->GetGPUVirtualAddress(),
 							  .StrideInBytes = vertexBuffer->getVertexDataStride() }}
 	};
@@ -242,8 +260,6 @@ void PtScene::updateScene() {
 }
 
 void PtScene::draw(D3D12_VIEWPORT& vp) {
-	//get window render target
-
 	updateScene();
 
 	ID3D12GraphicsCommandList6* cmdList = rayPipeline->getCommandList();
@@ -261,8 +277,8 @@ void PtScene::draw(D3D12_VIEWPORT& vp) {
 	cmdList->SetComputeRootDescriptorTable(0, uavTable);
 	cmdList->SetComputeRootShaderResourceView(1, tlas->GetGPUVirtualAddress());
 
-	UINT width = vp.Width;
-	UINT height = vp.Height;
+	UINT width = 1260;//vp.Width;
+	UINT height = 677;//vp.Height;
 
 	ID3D12Resource* shaderIds = rayPipeline->getShaderIds();
 
@@ -283,8 +299,46 @@ void PtScene::draw(D3D12_VIEWPORT& vp) {
 		.Depth = 1 };
 	cmdList->DispatchRays(&dispatchDesc);
 
+	//transition back buffer to copy dest
+	ID3D12Resource1* backBuffer = Window::get().getCurrentBackBuffer();
+
+	D3D12_RESOURCE_BARRIER barrier = { .Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
+									.Transition = {
+										.pResource = backBuffer,
+										.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+										.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET,
+										.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST } };
+	cmdList->ResourceBarrier(1, &barrier);
+
+	//transition pt target to copy source
+	barrier = { .Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
+									.Transition = {
+										.pResource = renderTarget->getTextureResource(),
+										.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+										.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+										.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE } };
+	cmdList->ResourceBarrier(1, &barrier);
+
 	//copy to backbuffer
 	cmdList->CopyResource(Window::get().getCurrentBackBuffer(), renderTarget->getTextureResource());
+
+	//transition back to render target
+	barrier = { .Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
+									.Transition = {
+										.pResource = backBuffer,
+										.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+										.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST,
+										.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET } };
+	cmdList->ResourceBarrier(1, &barrier);
+
+	//transition pt target back to uav
+	barrier = { .Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
+									.Transition = {
+										.pResource = renderTarget->getTextureResource(),
+										.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+										.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE,
+										.StateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS } };
+	cmdList->ResourceBarrier(1, &barrier);
 
 	context->executeCommandList(rayPipeline->getCommandListID());
 	context->resetCommandList(rayPipeline->getCommandListID());
