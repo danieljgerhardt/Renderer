@@ -78,7 +78,7 @@ void RayPipeline::createPipelineState(ComPointer<ID3D12Device6>& device) {
 
     D3D12_GLOBAL_ROOT_SIGNATURE globalSig = { rootSignature };
 
-    D3D12_RAYTRACING_PIPELINE_CONFIG pipelineCfg = { .MaxTraceRecursionDepth = 3 };
+    D3D12_RAYTRACING_PIPELINE_CONFIG pipelineCfg = { .MaxTraceRecursionDepth = 2 };
 
     D3D12_STATE_SUBOBJECT subobjects[] = {
         {.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY, .pDesc = &lib},
@@ -122,8 +122,8 @@ void RayPipeline::initShaderTables() {
 
     shaderIds->Map(0, nullptr, &data);
     writeId(L"RayGeneration");
-    writeId(L"HitGroup");
     writeId(L"Miss");
+    writeId(L"HitGroup");
     shaderIds->Unmap(0, nullptr);
 
     props->Release();

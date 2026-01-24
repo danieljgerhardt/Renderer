@@ -90,7 +90,7 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 
 	initTopLevel();
 
-	updateTransforms();
+	updateScene();
 
 	//create pt target
 	//todo - figure out why these exact dimensions
@@ -263,8 +263,8 @@ void PtScene::draw(D3D12_VIEWPORT& vp) {
 	updateScene();
 
 	ID3D12GraphicsCommandList6* cmdList = rayPipeline->getCommandList();
-	Window::get().setCmdListRenderTarget(cmdList);
-	Window::get().setViewport(vp, cmdList);
+	//Window::get().setCmdListRenderTarget(cmdList);
+	//Window::get().setViewport(vp, cmdList);
 
 	cmdList->SetPipelineState1(rayPipeline->getStateObject());
 	cmdList->SetComputeRootSignature(rayPipeline->getRootSignature());
