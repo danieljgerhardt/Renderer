@@ -10,7 +10,15 @@ RayPipeline::RayPipeline(DXContext& context, CommandListID id, DescriptorHeap* d
 }
 
 void RayPipeline::releaseResources() {
-    //todo
+    shaderLib.releaseResources();
+	if (shaderIds) {
+		shaderIds->Release();
+		shaderIds = nullptr;
+	}
+	if (pso) {
+		pso->Release();
+		pso = nullptr;
+	}
 }
 
 void RayPipeline::createRootSignature(DXContext& context, std::vector<Shader*> shaders) {

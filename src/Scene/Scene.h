@@ -18,21 +18,19 @@ public:
 
 	RenderPipeline* getRenderPipeline(UINT index);
 
-	void compute();
+	virtual void compute();
 
 	virtual void draw(D3D12_VIEWPORT& vp);
 
-	size_t getTriangleCount();
+	virtual size_t getTriangleCount() = 0;
 
-	void releaseResources();
+	virtual void releaseResources() = 0;
 
 protected:
 	Camera* camera;
 
 	std::vector<std::unique_ptr<RenderPipeline>> renderPipelines;
 	std::vector<std::unique_ptr<ComputePipeline>> computePipelines;
-
-	std::vector<std::unique_ptr<Drawable>> iblSetupDrawables;
 	std::vector<std::unique_ptr<Drawable>> perFrameDrawables;
 
 	RenderPipeline* currentRP;

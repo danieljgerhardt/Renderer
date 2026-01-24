@@ -98,10 +98,10 @@ int main() {
 			ptScene.draw(windowViewport);
 
 			//render imgui
-			/*Window::get().setCmdListRenderTarget(rayPipeline->getCommandList());
+			Window::get().setCmdListRenderTarget(rayPipeline->getCommandList());
 			imguiManager.render(rayPipeline->getCommandList(), imguiInfo);
 			context.executeCommandList(rayPipeline->getCommandListID());
-			context.resetCommandList(rayPipeline->getCommandListID());*/
+			context.resetCommandList(rayPipeline->getCommandListID());
 
 			//end frame
 			window.endFrame(rayPipeline->getCommandList());

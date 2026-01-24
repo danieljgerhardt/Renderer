@@ -94,3 +94,11 @@ ShaderLib::ShaderLib(std::string_view raygenName, std::string_view missName, std
     size = dxil->GetBufferSize();
     memcpy(data, dxil->GetBufferPointer(), size);
 }
+
+void ShaderLib::releaseResources() {
+    if (data) {
+	    free(data);
+	    data = nullptr;
+	    size = 0;
+    }
+}

@@ -14,7 +14,7 @@ RenderPipeline* Scene::getRenderPipeline(UINT index) {
 }
 
 void Scene::compute() {
-	//pbmpmScene.compute();
+	
 }
 
 void Scene::draw(D3D12_VIEWPORT& vp) {
@@ -32,16 +32,12 @@ size_t Scene::getTriangleCount() {
 }
 
 void Scene::releaseResources() {
-	for (std::unique_ptr<Drawable>& drawable : iblSetupDrawables) {
-		drawable->releaseResources();
-		drawable.reset();
-	}
 	for (std::unique_ptr<Drawable>& drawable : perFrameDrawables) {
 		drawable->releaseResources();
 		drawable.reset();
 	}
-	iblSetupDrawables.clear();
 	perFrameDrawables.clear();
+
 	for (std::unique_ptr<RenderPipeline>& rp : renderPipelines) {
 		rp->releaseResources();
 		rp.reset();

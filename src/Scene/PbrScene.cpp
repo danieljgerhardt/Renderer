@@ -75,3 +75,13 @@ PbrScene::PbrScene(Camera* camera, DXContext* context)
 	PbrDrawable* pbrDrawablePtr = static_cast<PbrDrawable*>(perFrameDrawables[0].get());
 	pbrDrawablePtr->setIblTextures(diffuseConvolution, glossyConvolution, brdfLut);
 }
+
+void PbrScene::releaseResources() {
+	Scene::releaseResources();
+
+	for (std::unique_ptr<Drawable>& drawable : iblSetupDrawables) {
+		drawable->releaseResources();
+		drawable.reset();
+	}
+	iblSetupDrawables.clear();
+}

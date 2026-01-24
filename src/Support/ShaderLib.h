@@ -17,8 +17,12 @@ class ShaderLib {
 public:
 	ShaderLib() = delete;
 	ShaderLib(std::string_view raygenName, std::string_view missName, std::string_view closesthitName);
+
 	inline const void* getBuffer() const { return data; }
 	inline size_t getSize() const { return size; }
+
+	void releaseResources();
+
 private:
 	void* data = nullptr;
 	size_t size = 0;

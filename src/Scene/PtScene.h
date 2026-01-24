@@ -12,6 +12,10 @@ public:
 
 	void draw(D3D12_VIEWPORT& vp) override;
 
+	void releaseResources() override;
+
+	size_t getTriangleCount() override;
+
 	RayPipeline* getRayPipeline() { return rayPipeline.get(); }
 
 private:

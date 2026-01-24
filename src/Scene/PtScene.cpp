@@ -343,3 +343,29 @@ void PtScene::draw(D3D12_VIEWPORT& vp) {
 	context->executeCommandList(rayPipeline->getCommandListID());
 	context->resetCommandList(rayPipeline->getCommandListID());
 }
+
+void PtScene::releaseResources() {
+	if (instances) {
+		instances->Unmap(0, nullptr);
+		instances->Release();
+		instances = nullptr;
+	}
+	if (tlas) {
+		tlas->Release();
+		tlas = nullptr;
+	}
+	if (tlasUpdateScratch) {
+		tlasUpdateScratch->Release();
+		tlasUpdateScratch = nullptr;
+	}
+	rayPipeline->releaseResources();
+	rayPipeline.reset();
+	if (renderTarget) {
+		renderTarget->releaseResources();
+		renderTarget = nullptr;
+	}
+}
+
+size_t PtScene::getTriangleCount() {
+	return 12 + 8;
+}
