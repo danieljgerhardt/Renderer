@@ -2,7 +2,7 @@
 
 #include "Scene/Util/Loader.h"
 
-ResourceHandle ResourceManager::createTexture(RenderPipeline* pipeline, TextureData textureData) {
+ResourceHandle ResourceManager::createTexture(Pipeline* pipeline, TextureData textureData) {
 	std::unique_ptr<Texture> texture = std::make_unique<Texture>(context, pipeline, textureData);
 	UINT id = textureCount++;
 	textures[id] = std::move(texture);
@@ -17,14 +17,14 @@ ResourceHandle ResourceManager::createTextureFromFile(std::string fileLocation, 
 	return ResourceHandle{ ResourceType::TEXTURE, id };
 }
 
-ResourceHandle ResourceManager::createVertexBuffer(RenderPipeline* pipeline, std::vector<Vertex>& vertexData, UINT vertexDataSize, UINT vertexDataStride) {
+ResourceHandle ResourceManager::createVertexBuffer(void* vertexData, UINT vertexDataSize, UINT vertexDataStride) {
 	std::unique_ptr<VertexBuffer> vertexBuffer = std::make_unique<VertexBuffer>(vertexData, vertexDataSize, vertexDataStride);
 	UINT id = vertexBufferCount++;
 	vertexBuffers[id] = std::move(vertexBuffer);
 	return ResourceHandle{ ResourceType::VERTEX_BUFFER, id };
 }
 
-ResourceHandle ResourceManager::createIndexBuffer(RenderPipeline* pipeline, std::vector<UINT>& indexData, UINT indexDataSize) {
+ResourceHandle ResourceManager::createIndexBuffer(std::vector<UINT>& indexData, UINT indexDataSize) {
 	std::unique_ptr<IndexBuffer> indexBuffer = std::make_unique<IndexBuffer>(indexData, indexDataSize);
 	UINT id = indexBufferCount++;
 	indexBuffers[id] = std::move(indexBuffer);

@@ -23,6 +23,10 @@ Shader::Shader(std::string_view name, ShaderType type) {
         if (data) {
             shaderIn.read((char*)data, size);
         }
+    } else {
+        //TODO - check if name is hlsl or cso instead of doing the if here, and clean this func up in general
+        //dxc shader
+		assert(false);
     }
 
 	if (type == ShaderType::RootSigOrUnassigned) {

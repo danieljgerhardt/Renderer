@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.props" Condition="Exists('..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -17,6 +18,7 @@
     <ClCompile Include="D3D\Buffer\IndexBuffer.cpp" />
     <ClCompile Include="D3D\Buffer\StructuredBuffer.cpp" />
     <ClCompile Include="D3D\Pipeline\Pipeline.cpp" />
+    <ClCompile Include="D3D\Pipeline\RayPipeline.cpp" />
     <ClCompile Include="D3D\Pipeline\RenderPipeline.cpp" />
     <ClCompile Include="D3D\Pipeline\MeshPipeline.cpp" />
     <ClCompile Include="D3D\Buffer\VertexBuffer.cpp" />
@@ -36,6 +38,8 @@
     <ClCompile Include="Scene\CubemapGlossyConvolution.cpp" />
     <ClCompile Include="Scene\EnvironmentMapDrawable.cpp" />
     <ClCompile Include="Scene\PbrDrawable.cpp" />
+    <ClCompile Include="Scene\PbrScene.cpp" />
+    <ClCompile Include="Scene\PtScene.cpp" />
     <ClCompile Include="Support\ImguiManager.cpp" />
     <ClCompile Include="Support\RootSignatureBuilder.cpp" />
     <ClCompile Include="Scene\Util\Loader.cpp" />
@@ -46,6 +50,7 @@
     <ClCompile Include="Scene\Util\Mesh.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Support\Shader.cpp" />
+    <ClCompile Include="Support\ShaderLib.cpp" />
     <ClCompile Include="Support\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +60,7 @@
     <ClInclude Include="D3D\DXContext.h" />
     <ClInclude Include="D3D\Buffer\IndexBuffer.h" />
     <ClInclude Include="D3D\Pipeline\MeshPipeline.h" />
+    <ClInclude Include="D3D\Pipeline\RayPipeline.h" />
     <ClInclude Include="D3D\Pipeline\RenderPipeline.h" />
     <ClInclude Include="D3D\Pipeline\Pipeline.h" />
     <ClInclude Include="D3D\Buffer\VertexBuffer.h" />
@@ -76,6 +82,8 @@
     <ClInclude Include="Scene\CubemapGlossyConvolution.h" />
     <ClInclude Include="Scene\EnvironmentMapDrawable.h" />
     <ClInclude Include="Scene\PbrDrawable.h" />
+    <ClInclude Include="Scene\PbrScene.h" />
+    <ClInclude Include="Scene\PtScene.h" />
     <ClInclude Include="Scene\Util\CubeMapGeometry.h" />
     <ClInclude Include="Support\ImguiManager.h" />
     <ClInclude Include="Support\RootSignatureBuilder.h" />
@@ -91,10 +99,12 @@
     <ClInclude Include="Scene\Util\Vertex.h" />
     <ClInclude Include="Support\ComPointer.h" />
     <ClInclude Include="Support\Shader.h" />
+    <ClInclude Include="Support\ShaderLib.h" />
     <ClInclude Include="Support\Window.h" />
     <ClInclude Include="Support\WinInclude.h" />
     <None Include="ImGUI\misc\debuggers\imgui.natstepfilter" />
     <None Include="Shaders\FluidSurfaceConstruction\utils.hlsl" />
+    <None Include="Shaders\PT\PtCommon.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\GenerateMips.hlsl">
@@ -163,6 +173,21 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.0</ShaderModel>
     </FxCompile>
+    <DxcCompile Include="Shaders\PT\RayGen.hlsl">
+      <ShaderProfile>lib_6_6</ShaderProfile>
+      <AdditionalOptions>-exports RayGen</AdditionalOptions>
+      <ObjectFileOutput>$(OutDir)RayGen.cso</ObjectFileOutput>
+    </DxcCompile>
+    <DxcCompile Include="Shaders\PT\ClosestHit.hlsl">
+      <ShaderProfile>lib_6_6</ShaderProfile>
+      <AdditionalOptions>-exports ClosestHit</AdditionalOptions>
+      <ObjectFileOutput>$(OutDir)ClosestHit.cso</ObjectFileOutput>
+    </DxcCompile>
+    <DxcCompile Include="Shaders\PT\Miss.hlsl">
+      <ShaderProfile>lib_6_6</ShaderProfile>
+      <AdditionalOptions>-exports Miss</AdditionalOptions>
+      <ObjectFileOutput>$(OutDir)Miss.cso</ObjectFileOutput>
+    </DxcCompile>
     <FxCompile Include="Shaders\VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
@@ -276,6 +301,7 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\directxtk12_desktop_2019.2024.10.29.1\build\native\directxtk12_desktop_2019.targets" Condition="Exists('..\packages\directxtk12_desktop_2019.2024.10.29.1\build\native\directxtk12_desktop_2019.targets')" />
     <Import Project="..\packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets" Condition="Exists('..\packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets')" />
+    <Import Project="..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.targets" Condition="Exists('..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -283,5 +309,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\directxtk12_desktop_2019.2024.10.29.1\build\native\directxtk12_desktop_2019.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtk12_desktop_2019.2024.10.29.1\build\native\directxtk12_desktop_2019.targets'))" />
     <Error Condition="!Exists('..\packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.targets'))" />
   </Target>
 </Project>

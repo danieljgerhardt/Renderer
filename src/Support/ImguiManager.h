@@ -14,9 +14,15 @@
 
 #include "D3D/ResourceManager.h"
 
+enum CurrentScene {
+	PBR_SCENE = 0,
+	PT_SCENE
+};
+
 //info for imgui rendering
 struct ImguiInfo {
     size_t triangleCount{ 0 };
+	CurrentScene currentScene{ CurrentScene::PBR_SCENE };
 };
 
 class ImguiManager {

@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-Texture::Texture(DXContext* context, RenderPipeline* pipeline, TextureData textureData)
+Texture::Texture(DXContext* context, Pipeline* pipeline, TextureData textureData)
     : width(textureData.width), height(textureData.height), type(textureData.type), format(textureData.format), mipLevels(textureData.mipLevels)
 {
     resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -42,7 +42,19 @@ Texture::Texture(DXContext* context, RenderPipeline* pipeline, TextureData textu
         }
 
         return;
-    }
+	}
+	else if (type == TextureType::PT_TARGET) {
+		resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		CD3DX12_HEAP_PROPERTIES heapDefault(D3D12_HEAP_TYPE_DEFAULT);
+		context->getDevice()->CreateCommittedResource(
+			&heapDefault,
+			D3D12_HEAP_FLAG_NONE,
+			&resourceDesc,
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+			nullptr,
+			IID_PPV_ARGS(&textureResource));
+		return;
+	}
 
     CD3DX12_HEAP_PROPERTIES heapDefault(D3D12_HEAP_TYPE_DEFAULT);
     context->getDevice()->CreateCommittedResource(
@@ -105,7 +117,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE Texture::getUavGpuDescriptorHandle() {
     return uavGpuDescriptorHandle;
 }
 
-void Texture::makeSrv(DXContext* context, RenderPipeline* pipeline, D3D12_SRV_DIMENSION srvDimension) {
+void Texture::makeSrv(DXContext* context, Pipeline* pipeline, D3D12_SRV_DIMENSION srvDimension) {
     if (srvCreated) {
         std::cerr << "Warning: Attempted to create SRV for texture that already has one." << std::endl;
         return;
@@ -124,7 +136,7 @@ void Texture::makeSrv(DXContext* context, RenderPipeline* pipeline, D3D12_SRV_DI
     srvCreated = true;
 }
 
-void Texture::makeUav(DXContext* context, RenderPipeline* pipeline, D3D12_UAV_DIMENSION uavDimension) {
+void Texture::makeUav(DXContext* context, Pipeline* pipeline, D3D12_UAV_DIMENSION uavDimension) {
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
     uavDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     uavDesc.ViewDimension = uavDimension;

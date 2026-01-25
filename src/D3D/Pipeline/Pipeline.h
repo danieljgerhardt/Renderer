@@ -28,7 +28,7 @@ protected:
 
 	ComPointer<ID3D12RootSignature> rootSignature;
 
-	DescriptorHeap* descriptorHeap;
+	DescriptorHeap* descriptorHeap{ nullptr };
 	UINT numDescriptors{ 0 };
 
 	ComPointer<ID3D12PipelineState> pso;
