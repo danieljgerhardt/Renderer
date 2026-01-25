@@ -1,14 +1,12 @@
 #include "RootSignatureBuilder.h"
 
-void RootSignatureBuilder::reset()
-{
+void RootSignatureBuilder::reset() {
     parameters.clear();
     staticSamplers.clear();
     descriptorRanges.clear();
 }
 
-void RootSignatureBuilder::addConstantBufferView(UINT shaderRegister, UINT space, D3D12_SHADER_VISIBILITY visibility)
-{
+void RootSignatureBuilder::addConstantBufferView(UINT shaderRegister, UINT space, D3D12_SHADER_VISIBILITY visibility) {
     D3D12_ROOT_PARAMETER cbv = {};
     cbv.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     cbv.ShaderVisibility = visibility;
@@ -17,8 +15,7 @@ void RootSignatureBuilder::addConstantBufferView(UINT shaderRegister, UINT space
     parameters.push_back(cbv);
 }
 
-void RootSignatureBuilder::addShaderResourceView(UINT shaderRegister, UINT space, D3D12_SHADER_VISIBILITY visibility)
-{
+void RootSignatureBuilder::addShaderResourceView(UINT shaderRegister, UINT space, D3D12_SHADER_VISIBILITY visibility) {
     D3D12_DESCRIPTOR_RANGE srvRange = {};
     srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
     srvRange.NumDescriptors = 1;
@@ -29,8 +26,7 @@ void RootSignatureBuilder::addShaderResourceView(UINT shaderRegister, UINT space
     addDescriptorTable(&srvRange, 1, visibility);
 }
 
-void RootSignatureBuilder::addUnorderedAccessView(UINT shaderRegister, UINT space, D3D12_SHADER_VISIBILITY visibility)
-{
+void RootSignatureBuilder::addUnorderedAccessView(UINT shaderRegister, UINT space, D3D12_SHADER_VISIBILITY visibility) {
     D3D12_DESCRIPTOR_RANGE uavRange = {};
     uavRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
     uavRange.NumDescriptors = 1;
@@ -41,8 +37,7 @@ void RootSignatureBuilder::addUnorderedAccessView(UINT shaderRegister, UINT spac
     addDescriptorTable(&uavRange, 1, visibility);
 }
 
-void RootSignatureBuilder::addDescriptorTable(const D3D12_DESCRIPTOR_RANGE* ranges, UINT numRanges, D3D12_SHADER_VISIBILITY visibility)
-{
+void RootSignatureBuilder::addDescriptorTable(const D3D12_DESCRIPTOR_RANGE* ranges, UINT numRanges, D3D12_SHADER_VISIBILITY visibility) {
     descriptorRanges.emplace_back(ranges, ranges + numRanges);
 
     D3D12_ROOT_PARAMETER param = {};
@@ -53,8 +48,7 @@ void RootSignatureBuilder::addDescriptorTable(const D3D12_DESCRIPTOR_RANGE* rang
     parameters.push_back(param);
 }
 
-void RootSignatureBuilder::addRootConstant(UINT shaderRegister, UINT space, UINT num32BitValues, D3D12_SHADER_VISIBILITY visibility)
-{
+void RootSignatureBuilder::addRootConstant(UINT shaderRegister, UINT space, UINT num32BitValues, D3D12_SHADER_VISIBILITY visibility) {
 	D3D12_ROOT_PARAMETER rootConst = {};
 	rootConst.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 	rootConst.ShaderVisibility = visibility;
@@ -64,8 +58,7 @@ void RootSignatureBuilder::addRootConstant(UINT shaderRegister, UINT space, UINT
 	parameters.push_back(rootConst);
 }
 
-void RootSignatureBuilder::addStaticSampler(UINT shaderRegister, UINT registerSpace)
-{
+void RootSignatureBuilder::addStaticSampler(UINT shaderRegister, UINT registerSpace) {
     static std::array<const CD3DX12_STATIC_SAMPLER_DESC, NUM_STATIC_SAMPLERS> sStaticSamplerTemplates = initStaticSamplers();
 
     //todo - keep an eye on this
@@ -79,8 +72,17 @@ void RootSignatureBuilder::addStaticSampler(UINT shaderRegister, UINT registerSp
     staticSamplers.push_back(desc);
 }
 
-void RootSignatureBuilder::build(ID3D12Device* pDevice, ComPointer<ID3D12RootSignature>& rootSig)
-{
+void RootSignatureBuilder::addAccelerationStructure(UINT shaderRegister, UINT space, D3D12_SHADER_VISIBILITY visibility) {
+    D3D12_ROOT_PARAMETER param = {};
+    param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+    param.ShaderVisibility = visibility;
+    param.Descriptor.ShaderRegister = shaderRegister;
+    param.Descriptor.RegisterSpace = space;
+
+    parameters.push_back(param);
+}
+
+void RootSignatureBuilder::build(ID3D12Device* pDevice, ComPointer<ID3D12RootSignature>& rootSig) {
     D3D12_ROOT_SIGNATURE_DESC rootSigDesc = {};
     rootSigDesc.NumParameters = static_cast<UINT>(parameters.size());
     rootSigDesc.pParameters = parameters.data();

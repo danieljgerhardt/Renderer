@@ -15,6 +15,7 @@ public:
     void addDescriptorTable(const D3D12_DESCRIPTOR_RANGE* ranges, UINT numRanges, D3D12_SHADER_VISIBILITY visibility);
 	void addRootConstant(UINT shaderRegister, UINT space, UINT num32BitValues, D3D12_SHADER_VISIBILITY visibility);
     void addStaticSampler(UINT shaderRegister, UINT registerSpace);
+	void addAccelerationStructure(UINT shaderRegister, UINT space, D3D12_SHADER_VISIBILITY visibility);
 
     void build(ID3D12Device* pDevice, ComPointer<ID3D12RootSignature>& rootSig);
 

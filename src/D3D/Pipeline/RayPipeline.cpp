@@ -22,39 +22,80 @@ void RayPipeline::releaseResources() {
 }
 
 void RayPipeline::createRootSignature(DXContext& context, std::vector<Shader*> shaders) {
-    D3D12_DESCRIPTOR_RANGE uavRange = {
-       .RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV,
-       .NumDescriptors = 1,
-    };
-	D3D12_DESCRIPTOR_RANGE cbvRange = {
-	   .RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV,
-	   .NumDescriptors = 1,
-	};
-    D3D12_ROOT_PARAMETER params[] = {
-        {.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE,
-         .DescriptorTable = {.NumDescriptorRanges = 1,
-                             .pDescriptorRanges = &uavRange}},
-                             {.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV,
-         .Descriptor = {.ShaderRegister = 0, .RegisterSpace = 0}},
-		{.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE,
-		 .DescriptorTable = {.NumDescriptorRanges = 1,
-							 .pDescriptorRanges = &cbvRange}
-        } };
-
-    D3D12_ROOT_SIGNATURE_DESC desc = { .NumParameters = std::size(params),
-                                      .pParameters = params };
-
-    ID3DBlob* blob;
-    D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1_0, &blob,
-        nullptr);
-    context.getDevice()->CreateRootSignature(0, blob->GetBufferPointer(),
-        blob->GetBufferSize(),
-        IID_PPV_ARGS(&rootSignature));
-    blob->Release();
+    generateRootSignature(context);
 }
 
-void RayPipeline::generateRootSignature(DXContext& context, Shader& vertexShader, Shader& pixelShader) {
-    //todo
+void RayPipeline::generateRootSignature(DXContext& context) {
+    RootSignatureBuilder builder;
+
+	const ShaderReflectionData& reflectionData = shaderLib.getReflectionData();
+
+    const std::vector<ShaderResourceBinding>& resources = reflectionData.resources;
+    const std::vector<ConstantBufferReflection>& constantBuffers = reflectionData.constantBuffers;
+
+    numDescriptors += static_cast<UINT>(resources.size());
+    numDescriptors += static_cast<UINT>(constantBuffers.size());
+
+    //cbvs, srvs, uavs, samplers, accel structs
+    std::array<std::vector<ShaderResourceBinding>, 5> resourceBindings;
+
+    for (size_t i = 0; i < resources.size(); i++) {
+        const ShaderResourceBinding& res = resources[i];
+
+        switch (res.type) {
+        case ShaderResourceType::RootConstant:
+        case ShaderResourceType::ConstantBuffer:
+            resourceBindings[0].push_back(res);
+            break;
+        case ShaderResourceType::Texture:
+        case ShaderResourceType::StructuredBuffer:
+            resourceBindings[1].push_back(res);
+            break;
+        case ShaderResourceType::RWTexture:
+        case ShaderResourceType::RWStructuredBuffer:
+            resourceBindings[2].push_back(res);
+            break;
+        case ShaderResourceType::Sampler:
+            resourceBindings[3].push_back(res);
+            break;
+		case ShaderResourceType::AccelerationStructure:
+			resourceBindings[4].push_back(res);
+			break;
+        }
+    }
+
+    UINT rootParamIdx = 0;
+    for (const ShaderResourceBinding& cb : resourceBindings[0]) {
+        if (cb.type == ShaderResourceType::RootConstant) {
+            //assume size is in bytes, convert to 32-bit values
+            UINT num32BitValues = cb.size / 4;
+            builder.addRootConstant(cb.bindPoint, cb.space, num32BitValues, cb.visibility);
+            rootParamIdx++;
+            continue;
+        }
+        builder.addConstantBufferView(cb.bindPoint, cb.space, D3D12_SHADER_VISIBILITY_ALL);
+        rootParamIdx++;
+    }
+
+    for (const ShaderResourceBinding& srv : resourceBindings[1]) {
+        builder.addShaderResourceView(srv.bindPoint, srv.space, srv.visibility);
+        rootParamIdx++;
+    }
+
+    for (const ShaderResourceBinding& uav : resourceBindings[2]) {
+        builder.addUnorderedAccessView(uav.bindPoint, uav.space, uav.visibility);
+        rootParamIdx++;
+    }
+
+    for (const ShaderResourceBinding& sampler : resourceBindings[3]) {
+        builder.addStaticSampler(sampler.bindPoint, sampler.space);
+    }
+
+    for (const ShaderResourceBinding& as : resourceBindings[4]) {
+        builder.addAccelerationStructure(as.bindPoint, as.space, as.visibility);
+    }
+
+    builder.build(context.getDevice().Get(), rootSignature);
 }
 
 void RayPipeline::createPSOD() {
@@ -62,17 +103,9 @@ void RayPipeline::createPSOD() {
 }
 
 void RayPipeline::createPipelineState(ComPointer<ID3D12Device6>& device) {
-    /*D3D12_EXPORT_DESC exports[] = {
-        { .Name = L"RayGeneration", .ExportToRename = nullptr, .Flags = D3D12_EXPORT_FLAG_NONE },
-		{ .Name = L"Miss", .ExportToRename = nullptr, .Flags = D3D12_EXPORT_FLAG_NONE },
-        { .Name = L"ClosestHit", .ExportToRename = nullptr, .Flags = D3D12_EXPORT_FLAG_NONE }
-    };*/
-
     D3D12_DXIL_LIBRARY_DESC lib = {
         .DXILLibrary = {.pShaderBytecode = shaderLib.getBuffer(),
-                        .BytecodeLength = shaderLib.getSize()},
-        //.NumExports = _countof(exports),
-        //.pExports = exports
+                        .BytecodeLength = shaderLib.getSize()}
     };
 
     D3D12_HIT_GROUP_DESC hitGroup = { .HitGroupExport = L"HitGroup",

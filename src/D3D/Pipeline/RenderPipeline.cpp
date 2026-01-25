@@ -25,8 +25,7 @@ D3D12_INPUT_ELEMENT_DESC vertexLayout[] =
         D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 };
 
-void RenderPipeline::createRootSignature(DXContext& context, std::vector<Shader*> shaders)
-{
+void RenderPipeline::createRootSignature(DXContext& context, std::vector<Shader*> shaders) {
 	if (shaders.size() != 2) {
 		throw std::runtime_error("RenderPipeline::createRootSignature requires exactly 2 shaders (vertex and pixel)");
 	}
