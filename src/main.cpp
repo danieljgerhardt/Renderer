@@ -83,49 +83,27 @@ int main() {
 			imguiInfo.triangleCount = currentScene->getTriangleCount();
 		}
 
-        if (!usePtScene) {
-            Pipeline* renderPipeline = currentScene->getRenderPipeline(0);
+        Pipeline* pipeline = currentScene->getPrimaryPipeline();
 
-            //begin frame
-            window.beginFrame(renderPipeline->getCommandList());
+        //begin frame
+        window.beginFrame(pipeline->getCommandList());
 
-            //draw scene
-            currentScene->draw(windowViewport);
+        //draw scene
+        currentScene->draw(windowViewport);
 
-            //render imgui
-            Window::get().setCmdListRenderTarget(renderPipeline->getCommandList());
-            imguiManager.render(renderPipeline->getCommandList(), imguiInfo);
-            context.executeCommandList(renderPipeline->getCommandListID());
-            context.resetCommandList(renderPipeline->getCommandListID());
+        //render imgui
+        Window::get().setCmdListRenderTarget(pipeline->getCommandList());
+        imguiManager.render(pipeline->getCommandList(), imguiInfo);
+        context.executeCommandList(pipeline->getCommandListID());
+        context.resetCommandList(pipeline->getCommandListID());
 
-            //end frame
-            window.endFrame(renderPipeline->getCommandList());
+        //end frame
+        window.endFrame(pipeline->getCommandList());
 
-            // Execute command list
-            context.executeCommandList(renderPipeline->getCommandListID());
-            window.present();
-            context.resetCommandList(renderPipeline->getCommandListID());
-        } else {
-			Pipeline* rayPipeline = ptScene.getRayPipeline();
-
-			window.beginFrame(rayPipeline->getCommandList());
-
-			ptScene.draw(windowViewport);
-
-			//render imgui
-			Window::get().setCmdListRenderTarget(rayPipeline->getCommandList());
-			imguiManager.render(rayPipeline->getCommandList(), imguiInfo);
-			context.executeCommandList(rayPipeline->getCommandListID());
-			context.resetCommandList(rayPipeline->getCommandListID());
-
-			//end frame
-			window.endFrame(rayPipeline->getCommandList());
-
-			// Execute command list
-			context.executeCommandList(rayPipeline->getCommandListID());
-			window.present();
-			context.resetCommandList(rayPipeline->getCommandListID());
-        }
+        // Execute command list
+        context.executeCommandList(pipeline->getCommandListID());
+        window.present();
+        context.resetCommandList(pipeline->getCommandListID());
     }
 
     //scene should release all drawable and pipeline resources
