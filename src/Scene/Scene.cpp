@@ -5,7 +5,7 @@
 Scene::Scene(Camera* p_camera, DXContext* context)
 	: camera(p_camera),
 	context(context),
-	currentRP(),
+	primaryPipeline(),
 	currentCP()
 {}
 

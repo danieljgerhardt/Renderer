@@ -9,6 +9,7 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 	DescriptorHeap* renderHeap = rm.getDescriptorHeap(renderHeapHandle);
 
 	rayPipeline = std::make_unique<RayPipeline>(*context, RAY_ID, renderHeap);
+	primaryPipeline = rayPipeline.get();
 
 	std::vector<float> cubeVertices{
 		-1, -1, -1,

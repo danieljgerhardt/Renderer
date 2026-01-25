@@ -41,10 +41,13 @@ int main() {
     mouse->SetWindow(window.getHWND());
 
     //initialize scene
-    PbrScene scene{camera.get(), &context};
+    PbrScene pbrScene{camera.get(), &context};
 	PtScene ptScene{ camera.get(), &context };
-	bool usePtScene = true;
-	imguiInfo.triangleCount = scene.getTriangleCount();
+
+	Scene* currentScene = &pbrScene;
+	bool usePtScene = currentScene == &ptScene;
+    bool toggleScene = false;
+	imguiInfo.triangleCount = currentScene->getTriangleCount();
 
     //create viewport
     D3D12_VIEWPORT windowViewport = window.getWindowViewport();
@@ -65,17 +68,29 @@ int main() {
 
         DirectX::Keyboard::State kState = keyboard->GetState();
         DirectX::Mouse::State mState = mouse->GetState();
+
         mouse->SetMode(mState.leftButton ? Mouse::MODE_RELATIVE : Mouse::MODE_ABSOLUTE);
         camera->kmStateCheck(kState, mState);
 
+		if (imguiInfo.currentScene == CurrentScene::PBR_SCENE && usePtScene) {
+			currentScene = &pbrScene;
+			usePtScene = false;
+			imguiInfo.triangleCount = currentScene->getTriangleCount();
+		}
+		else if (imguiInfo.currentScene == CurrentScene::PT_SCENE && !usePtScene) {
+			currentScene = &ptScene;
+			usePtScene = true;
+			imguiInfo.triangleCount = currentScene->getTriangleCount();
+		}
+
         if (!usePtScene) {
-            RenderPipeline* renderPipeline = scene.getRenderPipeline(0);
+            Pipeline* renderPipeline = currentScene->getRenderPipeline(0);
 
             //begin frame
             window.beginFrame(renderPipeline->getCommandList());
 
             //draw scene
-            scene.draw(windowViewport);
+            currentScene->draw(windowViewport);
 
             //render imgui
             Window::get().setCmdListRenderTarget(renderPipeline->getCommandList());
@@ -91,7 +106,7 @@ int main() {
             window.present();
             context.resetCommandList(renderPipeline->getCommandListID());
         } else {
-			RayPipeline* rayPipeline = ptScene.getRayPipeline();
+			Pipeline* rayPipeline = ptScene.getRayPipeline();
 
 			window.beginFrame(rayPipeline->getCommandList());
 
@@ -114,7 +129,7 @@ int main() {
     }
 
     //scene should release all drawable and pipeline resources
-    scene.releaseResources();
+    pbrScene.releaseResources();
 	ptScene.releaseResources();
 
     //release imgui resources

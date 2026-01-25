@@ -50,6 +50,8 @@ void ImguiManager::setupImguiWindow(ImguiInfo& imguiInfo) {
 
 	ImGui::Text("Triangle Count: %zu", imguiInfo.triangleCount);
 
+	ImGui::Combo("Current Scene", (int*)&imguiInfo.currentScene, "PBR Scene\0Path Tracing Scene\0");
+
     ImGui::End();
 }
 

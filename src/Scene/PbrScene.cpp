@@ -74,6 +74,8 @@ PbrScene::PbrScene(Camera* camera, DXContext* context)
 	//pass ibl textures to pbr drawable
 	PbrDrawable* pbrDrawablePtr = static_cast<PbrDrawable*>(perFrameDrawables[0].get());
 	pbrDrawablePtr->setIblTextures(diffuseConvolution, glossyConvolution, brdfLut);
+
+	primaryPipeline = renderPipelines[0].get();
 }
 
 void PbrScene::releaseResources() {

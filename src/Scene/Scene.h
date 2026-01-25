@@ -24,6 +24,10 @@ public:
 
 	virtual size_t getTriangleCount() = 0;
 
+	Pipeline* getPrimaryPipeline() {
+		return primaryPipeline;
+	};
+
 	virtual void releaseResources() = 0;
 
 protected:
@@ -33,7 +37,7 @@ protected:
 	std::vector<std::unique_ptr<ComputePipeline>> computePipelines;
 	std::vector<std::unique_ptr<Drawable>> perFrameDrawables;
 
-	RenderPipeline* currentRP;
+	Pipeline* primaryPipeline;
 	ComputePipeline* currentCP;
 
 	DXContext* context;
