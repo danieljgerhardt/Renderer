@@ -18,7 +18,7 @@ public:
 protected:
 	void createRootSignature(DXContext& context, std::vector<Shader*> shaders) override;
 
-	void generateRootSignature(DXContext& context, Shader& vertexShader, Shader& pixelShader);
+	void generateRootSignature(DXContext& context);
 
 	void createPSOD() override;
 

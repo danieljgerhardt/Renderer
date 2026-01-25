@@ -11,6 +11,8 @@
 #include <unordered_map>
 #include <functional>
 
+#include "Shader.h"
+
 #include "ComPointer.h"
 
 class ShaderLib {
@@ -21,9 +23,15 @@ public:
 	inline const void* getBuffer() const { return data; }
 	inline size_t getSize() const { return size; }
 
+	inline const ShaderReflectionData& getReflectionData() const { return reflectionData; }
+
 	void releaseResources();
 
 private:
 	void* data = nullptr;
 	size_t size = 0;
+
+	ComPointer<IDxcBlob> dxil;
+
+	ShaderReflectionData reflectionData;
 };

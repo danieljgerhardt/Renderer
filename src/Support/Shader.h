@@ -21,7 +21,8 @@ enum class ShaderResourceType
     Sampler,
     RWTexture,
     StructuredBuffer,
-    RWStructuredBuffer
+    RWStructuredBuffer,
+    AccelerationStructure
 };
 
 struct ShaderResourceBinding
