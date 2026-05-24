@@ -226,7 +226,7 @@ void Loader::loadDataFromGltf(std::string fileLocation, GltfConstructionData& gl
     }
 }
 
-GltfData Loader::createMeshFromGltf(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix)
+GltfData Loader::getDataFromGltf(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, Pipeline* pipeline, XMFLOAT4X4 modelMatrix)
 {
     //get data from load func
 	GltfConstructionData constructionData;

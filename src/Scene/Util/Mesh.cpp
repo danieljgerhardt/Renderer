@@ -2,7 +2,9 @@
 
 #include "D3D/ResourceManager.h"
 
-Mesh::Mesh(DXContext* context, RenderPipeline* pipeline, XMFLOAT4X4 p_modelMatrix, MeshData meshData) {
+#include "D3D/Pipeline/RayPipeline.h"
+
+Mesh::Mesh(DXContext* context, Pipeline* pipeline, XMFLOAT4X4 p_modelMatrix, MeshData meshData) {
 	numTriangles = meshData.numTriangles;
 	vertices = meshData.vertices;
 	indices = meshData.indices;
@@ -10,18 +12,34 @@ Mesh::Mesh(DXContext* context, RenderPipeline* pipeline, XMFLOAT4X4 p_modelMatri
     //a mesh will never have an env map
     textures.resize(NUM_TEXTURE_TYPES - 1);
 
-	vertexBuffer = ResourceManager::get(context).getVertexBuffer(
-		ResourceManager::get(context).createVertexBuffer(
-			vertices.data(),
-			(UINT)(vertices.size() * sizeof(Vertex)),
-			(UINT)sizeof(Vertex)
-		)
-	);
+    //if pipeline is raypipeline, populate vertexpositions and vertex buffer with just positions
+	if (dynamic_cast<RayPipeline*>(pipeline) != nullptr) {
+		vertexPositions.reserve(vertices.size());
+		for (const Vertex& vertex : vertices) {
+			vertexPositions.push_back(vertex.pos);
+		}
+		vertexBuffer = ResourceManager::get(context).getVertexBuffer(
+			ResourceManager::get(context).createVertexBuffer(
+				vertexPositions.data(),
+				(UINT)(vertexPositions.size() * sizeof(XMFLOAT3)),
+				(UINT)sizeof(XMFLOAT3)
+			)
+		);
+	}
+	else {
+		vertexBuffer = ResourceManager::get(context).getVertexBuffer(
+			ResourceManager::get(context).createVertexBuffer(
+				vertices.data(),
+				(UINT)(vertices.size() * sizeof(Vertex)),
+				(UINT)sizeof(Vertex)
+			)
+		);
+	}
 
 	indexBuffer = ResourceManager::get(context).getIndexBuffer(
 		ResourceManager::get(context).createIndexBuffer(
 			indices,
-			(UINT)(indices.size() * sizeof(unsigned int))
+			(UINT)(indices.size() * sizeof(UINT))
 		)
 	);
 

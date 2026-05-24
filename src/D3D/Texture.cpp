@@ -141,15 +141,12 @@ void Texture::makeUav(DXContext* context, Pipeline* pipeline, D3D12_UAV_DIMENSIO
     uavDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     uavDesc.ViewDimension = uavDimension;
 
+    uavDesc.Texture2DArray.MipSlice = 0;
+    uavDesc.Texture2DArray.PlaneSlice = 0;
+
     if (uavDimension == D3D12_UAV_DIMENSION_TEXTURE2DARRAY) {
-        uavDesc.Texture2DArray.MipSlice = 0;
         uavDesc.Texture2DArray.FirstArraySlice = 0;
         uavDesc.Texture2DArray.ArraySize = 6;
-        uavDesc.Texture2DArray.PlaneSlice = 0;
-    }
-    else {
-        uavDesc.Texture2D.MipSlice = 0;
-        uavDesc.Texture2D.PlaneSlice = 0;
     }
 
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;

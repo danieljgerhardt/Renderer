@@ -96,8 +96,6 @@ void StructuredBuffer::passCbvDataToGpu(DXContext& context, DescriptorHeap* dh) 
 }
 
 void StructuredBuffer::passDataToGpu(DXContext& context, ID3D12GraphicsCommandList6* cmdList, CommandListID cmdId) {
-	// THIS FUNCTION WILL RESET THE COMMAND LIST AT THE END OF THE CALL
-
 	if (isCbv) {
 		throw std::runtime_error("Cannot create UAV or SRV after creating CBV.");
 	}

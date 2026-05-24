@@ -2,9 +2,9 @@
 
 #include "D3D/ResourceManager.h"
 
-PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
+PtScene::PtScene(Camera* camera, DXContext* context, D3D12_VIEWPORT vp) : Scene(camera, context) {
 	ResourceManager& rm = ResourceManager::get(context);
-	ResourceHandle renderHeapHandle = rm.createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1,
+	ResourceHandle renderHeapHandle = rm.createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 20,
 		D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 	DescriptorHeap* renderHeap = rm.getDescriptorHeap(renderHeapHandle);
 
@@ -21,7 +21,7 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 		-1,  1,  1,
 		 1,  1,  1,
 	};
-	ResourceHandle cubeVbHandle = ResourceManager::get(context).createVertexBuffer(cubeVertices.data(), (UINT)(cubeVertices.size() * sizeof(float) * 3), sizeof(float) * 3);
+	ResourceHandle cubeVbHandle = ResourceManager::get(context).createVertexBuffer(cubeVertices.data(), (UINT)(cubeVertices.size() * sizeof(float)), sizeof(float) * 3);
 	VertexBuffer* cubeVb = ResourceManager::get(context).getVertexBuffer(cubeVbHandle);
 	cubeVb->passVertexDataToGPU(*context, rayPipeline->getCommandList());
 
@@ -31,7 +31,7 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 		 1, 0,  1,
 		 1, 0, -1
 	};
-	ResourceHandle quadVbHandle = ResourceManager::get(context).createVertexBuffer(quadVertices.data(), (UINT)(quadVertices.size() * sizeof(float) * 3), sizeof(float) * 3);
+	ResourceHandle quadVbHandle = ResourceManager::get(context).createVertexBuffer(quadVertices.data(), (UINT)(quadVertices.size() * sizeof(float)), sizeof(float) * 3);
 	VertexBuffer* quadVb = ResourceManager::get(context).getVertexBuffer(quadVbHandle);
 	quadVb->passVertexDataToGPU(*context, rayPipeline->getCommandList());
 
@@ -52,6 +52,14 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 	IndexBuffer* quadIb = ResourceManager::get(context).getIndexBuffer(quadIbHandle);
 	quadIb->passIndexDataToGPU(*context, rayPipeline->getCommandList());
 
+	std::vector<std::string> inputStrings;
+	inputStrings.push_back("objs\\Avocado\\Avocado.gltf");
+	XMFLOAT4X4 identity;
+	XMStoreFloat4x4(&identity, XMMatrixScaling(10.f, 10.f, 10.f));
+
+	GltfData gltfData = Loader::getDataFromGltf((std::filesystem::current_path() / inputStrings.front()).string(), context, rayPipeline->getCommandList(), rayPipeline.get(), identity);
+	Mesh* loadedMesh = gltfData.meshes.front();
+
 	quadVb->transitionState(rayPipeline->getCommandList(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	cubeVb->transitionState(rayPipeline->getCommandList(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
@@ -61,10 +69,12 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 	//accel structure
 	ID3D12Resource* quadBlas;
 	ID3D12Resource* cubeBlas;
+	ID3D12Resource* meshBlas;
 	quadBlas = makeBlas(rayPipeline.get(), quadVb, (UINT)(quadVertices.size() * 3), quadIb, (UINT)quadIndices.size());
 	cubeBlas = makeBlas(rayPipeline.get(), cubeVb, (UINT)(cubeVertices.size() * 3), cubeIb, (UINT)cubeIndices.size());
+	meshBlas = makeBlas(rayPipeline.get(), loadedMesh);
 
-	numInstances = 3;
+	numInstances = 4;
 
 	DXGI_SAMPLE_DESC NO_AA = { .Count = 1, .Quality = 0 };
 	D3D12_RESOURCE_DESC instancesDesc = {
@@ -81,7 +91,7 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 	device->CreateCommittedResource(&UPLOAD_HEAP, D3D12_HEAP_FLAG_NONE, &instancesDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&instances));
 	instances->Map(0, nullptr, reinterpret_cast<void**>(&instanceData));
 
-	for (int i = 0; i < numInstances; i++) {
+	for (int i = 0; i < numInstances - 1; i++) {
 		instanceData[i] = {
 			.InstanceID = 0,
 			.InstanceMask = 1,
@@ -89,15 +99,20 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 		};
 	}
 
+	instanceData[3] = {
+		.InstanceID = 0,
+		.InstanceMask = 1,
+		.AccelerationStructure = meshBlas->GetGPUVirtualAddress(),
+	};
+
 	initTopLevel();
 
 	updateScene();
 
 	//create pt target
-	//todo - figure out why these exact dimensions
 	TextureData texData;
-	texData.width = 1260;
-	texData.height = 677;
+	texData.width = vp.Width;
+	texData.height = vp.Height;
 	texData.format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	texData.type = TextureType::PT_TARGET;
 
@@ -105,9 +120,6 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 
 	renderTarget = rm.getTexture(rtHandle);
 	renderTarget->makeUav(context, rayPipeline.get());
-
-	//set cam pos to test pos
-	camera->setPosition(-0.f, 1.5f, -7.f);
 }
 
 ID3D12Resource* PtScene::makeAccelStruct(RayPipeline* rayPipeline, const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& inputs, UINT64* updateScratchSize) {
@@ -146,9 +158,9 @@ ID3D12Resource* PtScene::makeAccelStruct(RayPipeline* rayPipeline, const D3D12_B
 		D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, nullptr, IID_PPV_ARGS(&accelStruct));
 
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc = {
-	.DestAccelerationStructureData = accelStruct->GetGPUVirtualAddress(),
-	.Inputs = inputs,
-	.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress() };
+		.DestAccelerationStructureData = accelStruct->GetGPUVirtualAddress(),
+		.Inputs = inputs,
+		.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress() };
 
 	ID3D12GraphicsCommandList6* cmdList = rayPipeline->getCommandList();
 		
@@ -172,6 +184,47 @@ ID3D12Resource* PtScene::makeBlas(RayPipeline* rayPipeline, VertexBuffer* vertex
 			.IndexBuffer = indexBuffer->getIndexBuffer()->GetGPUVirtualAddress(),
 			.VertexBuffer = { .StartAddress = vertexBuffer->getVertexBuffer()->GetGPUVirtualAddress(),
 							  .StrideInBytes = vertexBuffer->getVertexDataStride() }}
+	};
+
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {
+		.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL,
+		.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE,
+		.NumDescs = 1,
+		.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY,
+		.pGeometryDescs = &geometryDesc
+	};
+
+	return makeAccelStruct(rayPipeline, inputs);
+}
+
+ID3D12Resource* PtScene::makeBlas(RayPipeline* rayPipeline, Mesh* mesh)
+{
+	//get transform3x4 from mesh's model matrix
+	XMFLOAT4X4 modelMat = *mesh->getModelMatrix();
+	XMFLOAT3X4 modelMat3x4 = XMFLOAT3X4(
+		modelMat._11, modelMat._12, modelMat._13, modelMat._14,
+		modelMat._21, modelMat._22, modelMat._23, modelMat._24,
+		modelMat._31, modelMat._32, modelMat._33, modelMat._34);
+
+	//create buffer for mat
+	ResourceManager& rm = ResourceManager::get(context);
+	StructuredBuffer* modelMatBuffer = rm.getStructuredBuffer(rm.createStructuredBuffer(rayPipeline, &modelMat3x4, 12, sizeof(float)));
+	modelMatBuffer->passDataToGpu(*context, rayPipeline->getCommandList(), rayPipeline->getCommandListID());
+
+	D3D12_GPU_VIRTUAL_ADDRESS modelMatAddr = modelMatBuffer->getBuffer()->GetGPUVirtualAddress();
+
+	D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {
+		.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES,
+		.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE,
+		.Triangles = {
+			.Transform3x4 = modelMatAddr,
+			.IndexFormat = DXGI_FORMAT_R32_UINT,
+			.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT,
+			.IndexCount = mesh->getIndexCount(),
+			.VertexCount = mesh->getVertexCount(),
+			.IndexBuffer = mesh->getIndexBuffer()->getIndexBuffer()->GetGPUVirtualAddress(),
+			.VertexBuffer = {.StartAddress = mesh->getVertexBuffer()->getVertexBuffer()->GetGPUVirtualAddress(),
+							  .StrideInBytes = mesh->getVertexDataStride() }}
 	};
 
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {
@@ -216,6 +269,10 @@ void PtScene::initTopLevel() {
 	context->getDevice()->CreateCommittedResource(&DEFAULT_HEAP, D3D12_HEAP_FLAG_NONE, &tlasBufferDesc,
 		D3D12_RESOURCE_STATE_COMMON, nullptr,
 		IID_PPV_ARGS(&tlasUpdateScratch));
+
+	if (!tlas || !tlasUpdateScratch) {
+		throw std::runtime_error("Failed to create TLAS or TLAS update scratch buffer.");
+	}
 }
 
 void PtScene::updateTransforms() {
@@ -240,6 +297,9 @@ void PtScene::updateTransforms() {
 	XMMATRIX floorMat = XMMatrixScaling(5, 5, 5);
 	floorMat *= XMMatrixTranslation(0, 0, 2);
 	set(2, floorMat);
+
+	XMMATRIX scaleUp = XMMatrixScaling(50.f, 50.f, 50.f);
+	set(3, scaleUp);
 }
 
 void PtScene::updateScene() {
@@ -274,7 +334,7 @@ void PtScene::draw(D3D12_VIEWPORT& vp) {
 	ID3D12DescriptorHeap* descriptorHeaps[] = { rayPipeline->getDescriptorHeap()->getAddress() };
 	cmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
-	auto uavTable = descriptorHeaps[0]->GetGPUDescriptorHandleForHeapStart();
+	D3D12_GPU_DESCRIPTOR_HANDLE uavTable = renderTarget->getUavGpuDescriptorHandle();
 
 	XMVECTOR camPos = camera->getPositionVector();
 	XMVECTOR camForward = camera->getForwardVector();
@@ -377,7 +437,7 @@ void PtScene::releaseResources() {
 	if (renderTarget) {
 		renderTarget->releaseResources();
 		renderTarget = nullptr;
-	}
+	} 
 }
 
 size_t PtScene::getTriangleCount() {

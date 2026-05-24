@@ -36,7 +36,7 @@ public:
 	Mesh(Mesh&&) noexcept = default;
 	Mesh& operator=(Mesh&&) noexcept = default;
 
-	Mesh(DXContext* context, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, MeshData meshData);
+	Mesh(DXContext* context, Pipeline* pipeline, XMFLOAT4X4 modelMatrix, MeshData meshData);
 
 	~Mesh();
 
@@ -64,6 +64,12 @@ public:
 		}
 		return textures[type];
 	}
+
+	VertexBuffer* getVertexBuffer() { return vertexBuffer; }
+	IndexBuffer* getIndexBuffer() { return indexBuffer; }
+	unsigned int getVertexCount() { return (UINT)vertexPositions.size(); }
+	unsigned int getVertexDataStride() { return sizeof(float) * 3; }
+	unsigned int getIndexCount() { return (UINT)indices.size(); }
 
 private:
 	std::vector<Vertex> vertices;

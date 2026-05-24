@@ -1,5 +1,6 @@
 #include "DescriptorHeap.h"
 
+#include <iostream>
 #include <cassert>
 #include <stdexcept>
 
@@ -49,8 +50,10 @@ unsigned int DescriptorHeap::getDescriptorSize()
 
 bool DescriptorHeap::allocate(D3D12_CPU_DESCRIPTOR_HANDLE& outCpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE& outGpuHandle)
 {
-	if (freeIndices.empty())
+	if (freeIndices.empty()) {
+		throw std::runtime_error("No more descriptors available in heap.");
 		return false;
+	}
 
 	UINT idx = freeIndices.back();
 	freeIndices.pop_back();

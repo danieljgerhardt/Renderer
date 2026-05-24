@@ -31,14 +31,14 @@ ResourceHandle ResourceManager::createIndexBuffer(std::vector<UINT>& indexData, 
 	return ResourceHandle{ ResourceType::INDEX_BUFFER, id };
 }
 
-ResourceHandle ResourceManager::createStructuredBuffer(RenderPipeline* pipeline, void* data, UINT elementCount, UINT elementSize) {
+ResourceHandle ResourceManager::createStructuredBuffer(Pipeline* pipeline, void* data, UINT elementCount, UINT elementSize) {
 	std::unique_ptr<StructuredBuffer> structuredBuffer = std::make_unique<StructuredBuffer>(data, elementCount, elementSize);
 	UINT id = structuredBufferCount++;
 	structuredBuffers[id] = std::move(structuredBuffer);
 	return ResourceHandle{ ResourceType::STRUCTURED_BUFFER, id };
 }
 
-ResourceHandle ResourceManager::createMesh(RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, MeshData meshData) {
+ResourceHandle ResourceManager::createMesh(Pipeline* pipeline, XMFLOAT4X4 modelMatrix, MeshData meshData) {
 	std::unique_ptr<Mesh> mesh = std::make_unique<Mesh>(context, pipeline, modelMatrix, meshData);
 	UINT id = meshCount++;
 	meshes[id] = std::move(mesh);

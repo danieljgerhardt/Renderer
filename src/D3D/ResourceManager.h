@@ -41,8 +41,8 @@ public:
 	ResourceHandle createTextureFromFile(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, TextureType type);
 	ResourceHandle createVertexBuffer(void* vertexData, UINT vertexDataSize, UINT vertexDataStride);
 	ResourceHandle createIndexBuffer(std::vector<UINT>& indexData, UINT indexDataSize);
-	ResourceHandle createStructuredBuffer(RenderPipeline* pipeline, void* data, UINT elementCount, UINT elementSize);
-	ResourceHandle createMesh(RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix, MeshData meshData);
+	ResourceHandle createStructuredBuffer(Pipeline* pipeline, void* data, UINT elementCount, UINT elementSize);
+	ResourceHandle createMesh(Pipeline* pipeline, XMFLOAT4X4 modelMatrix, MeshData meshData);
 	ResourceHandle createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, unsigned int numberOfDescriptors, D3D12_DESCRIPTOR_HEAP_FLAGS flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 
 	Texture* getTexture(ResourceHandle handle) {

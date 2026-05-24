@@ -42,7 +42,7 @@ int main() {
 
     //initialize scene
     PbrScene pbrScene{camera.get(), &context};
-	PtScene ptScene{ camera.get(), &context };
+	PtScene ptScene{ camera.get(), &context, window.getWindowViewport()};
 
 	Scene* currentScene = &pbrScene;
 	bool usePtScene = currentScene == &ptScene;

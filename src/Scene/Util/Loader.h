@@ -23,7 +23,7 @@ struct GltfConstructionData {
 
 class Loader {
 public:
-	static GltfData createMeshFromGltf(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, XMFLOAT4X4 modelMatrix);
+	static GltfData getDataFromGltf(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, Pipeline* pipeline, XMFLOAT4X4 modelMatrix);
 	static Texture createTextureFromFile(std::string fileLocation, DXContext* context, ID3D12GraphicsCommandList6* cmdList, RenderPipeline* pipeline, TextureType type);
 
 private:

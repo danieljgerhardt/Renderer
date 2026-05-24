@@ -25,7 +25,7 @@ void ObjectDrawable::construct() {
     UINT currentMeshIdx = 0;
     for (UINT i = 0; i < inputStrings.size(); i++) {
 		std::string& inputString = inputStrings[i];
-        gltfData = Loader::createMeshFromGltf((std::filesystem::current_path() / inputString).string(), context, renderPipeline->getCommandList(), renderPipeline, modelMatrices[i]);
+        gltfData = Loader::getDataFromGltf((std::filesystem::current_path() / inputString).string(), context, renderPipeline->getCommandList(), renderPipeline, modelMatrices[i]);
         
         for (Mesh* newMesh : gltfData.meshes) {
             meshes.push_back(newMesh);
