@@ -21,6 +21,8 @@ public:
 	void rotate();
 	void translate(XMFLOAT3 distance);
 
+	void setPosition(float x, float y, float z);
+
 	void updateViewMat();
 
 	XMFLOAT4 getForward() { return { forward.x, forward.y, forward.z, 0 }; }
@@ -30,6 +32,10 @@ public:
 	const XMMATRIX getViewProjMat();
 	const XMMATRIX getViewProjOrientOnly();
 	const XMVECTOR getPositionVector();
+	const float getFovY();
+	const XMVECTOR getForwardVector();
+	const XMVECTOR getRightVector();
+	const XMVECTOR getUpVector();
 	const XMFLOAT3 getPosition() { return position; }
 
 	const XMMATRIX getInvViewProjMat();

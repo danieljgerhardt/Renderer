@@ -13,10 +13,10 @@ struct Payload
 
 cbuffer rc_Camera : register(b0)
 {
-    float4x4 viewMatrix;
-    float4x4 projectionMatrix;
-    float4x4 modelMatrix;
-    float4 cameraPos;
+    float4 cameraPos; //z -> fovy
+    float4 forward;
+    float4 right;
+    float4 up;
 };
 
 RaytracingAccelerationStructure scene : register(t0);

@@ -67,8 +67,22 @@ void Camera::rotate() {
 void Camera::translate(XMFLOAT3 distance) {
 	XMVECTOR P = XMLoadFloat3(&position);
 	XMVECTOR D = XMLoadFloat3(&distance);
-	D *= MOVE_SCALAR;
-	XMStoreFloat3(&position, XMVectorAdd(P, D));
+
+	//D is assuming camera is unrotated, so rotate D to match camera axes
+	XMVECTOR forwardVec = XMLoadFloat3(&forward);
+	XMVECTOR rightVec = XMLoadFloat3(&right);
+	XMVECTOR upVec = XMLoadFloat3(&up);
+	XMVECTOR rotatedD = distance.x * rightVec + distance.y * upVec + distance.z * forwardVec;
+
+	rotatedD = XMVector3Normalize(rotatedD);
+	rotatedD *= MOVE_SCALAR;
+
+	XMStoreFloat3(&position, XMVectorAdd(P, rotatedD));
+}
+
+void Camera::setPosition(float x, float y, float z) {
+	position = { x, y, z };
+	XMStoreFloat3(&position, XMLoadFloat3(&position));
 }
 
 void Camera::updateViewMat() {
@@ -142,6 +156,22 @@ const XMMATRIX Camera::getViewProjOrientOnly() {
 
 const XMVECTOR Camera::getPositionVector() {
 	return XMLoadFloat3(&position);
+}
+
+const float Camera::getFovY() {
+	return FOVY;
+}
+
+const XMVECTOR Camera::getForwardVector() {
+	return XMLoadFloat3(&forward);
+}
+
+const XMVECTOR Camera::getRightVector() {
+	return XMLoadFloat3(&right);
+}
+
+const XMVECTOR Camera::getUpVector() {
+	return XMLoadFloat3(&up);
 }
 
 const XMMATRIX Camera::getInvViewProjMat() {

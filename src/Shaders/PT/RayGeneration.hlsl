@@ -7,16 +7,21 @@ void RayGeneration()
     uint2 idx = DispatchRaysIndex().xy;
     float2 size = DispatchRaysDimensions().xy;
     
-    float3 testCamPos = float3(0, 1.5, -7);
+    float2 uv = (idx + 0.5) / size;
+    float2 ndc = uv * 2.0 - 1.0;
     
-    float2 uv = idx / size;
-    float3 target = float3((uv.x * 2 - 1) * 1.8 * (size.x / size.y),
-                           (1 - uv.y) * 4 - 2 + testCamPos.y,
-                           0);
+    float fovY = cameraPos.w == 0 ? 0.78 : cameraPos.w;
+    float aspect = size.x / size.y;
+    float tanHalfFov = tan(fovY * 0.5);
+    
+    float4 rayDir =
+        forward +
+        ndc.x * aspect * tanHalfFov * right +
+        ndc.y * tanHalfFov * -up;
     
     RayDesc ray;
-    ray.Origin = testCamPos.xyz;
-    ray.Direction = normalize(target - testCamPos.xyz);
+    ray.Origin = cameraPos.xyz;
+    ray.Direction = normalize(rayDir.xyz);
     ray.TMin = 0.001f;
     ray.TMax = 1000.f;
 

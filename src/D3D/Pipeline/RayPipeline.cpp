@@ -127,9 +127,10 @@ void RayPipeline::createPipelineState(ComPointer<ID3D12Device6>& device) {
         {.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_SHADER_CONFIG, .pDesc = &shaderCfg},
         {.Type = D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE, .pDesc = &globalSig},
         {.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_PIPELINE_CONFIG, .pDesc = &pipelineCfg} };
-    D3D12_STATE_OBJECT_DESC desc = { .Type = D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE,
-                                    .NumSubobjects = std::size(subobjects),
-                                    .pSubobjects = subobjects };
+    D3D12_STATE_OBJECT_DESC desc = { 
+        .Type = D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE,
+        .NumSubobjects = std::size(subobjects),
+        .pSubobjects = subobjects };
     HRESULT hr = device->CreateStateObject(&desc, IID_PPV_ARGS(&pso));
 	if (FAILED(hr)) {
 		throw std::runtime_error("Could not create raytracing pipeline state object");

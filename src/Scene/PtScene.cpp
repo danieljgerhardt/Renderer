@@ -105,6 +105,9 @@ PtScene::PtScene(Camera* camera, DXContext* context) : Scene(camera, context) {
 
 	renderTarget = rm.getTexture(rtHandle);
 	renderTarget->makeUav(context, rayPipeline.get());
+
+	//set cam pos to test pos
+	camera->setPosition(-0.f, 1.5f, -7.f);
 }
 
 ID3D12Resource* PtScene::makeAccelStruct(RayPipeline* rayPipeline, const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& inputs, UINT64* updateScratchSize) {
@@ -264,8 +267,6 @@ void PtScene::draw(D3D12_VIEWPORT& vp) {
 	updateScene();
 
 	ID3D12GraphicsCommandList6* cmdList = rayPipeline->getCommandList();
-	//Window::get().setCmdListRenderTarget(cmdList);
-	//Window::get().setViewport(vp, cmdList);
 
 	cmdList->SetPipelineState1(rayPipeline->getStateObject());
 	cmdList->SetComputeRootSignature(rayPipeline->getRootSignature());
@@ -275,11 +276,23 @@ void PtScene::draw(D3D12_VIEWPORT& vp) {
 
 	auto uavTable = descriptorHeaps[0]->GetGPUDescriptorHandleForHeapStart();
 
-	cmdList->SetComputeRootDescriptorTable(0, uavTable);
-	cmdList->SetComputeRootShaderResourceView(1, tlas->GetGPUVirtualAddress());
+	XMVECTOR camPos = camera->getPositionVector();
+	XMVECTOR camForward = camera->getForwardVector();
+	XMVECTOR camRight = camera->getRightVector();
+	XMVECTOR camUp = camera->getUpVector();
 
-	UINT width = 1260;//vp.Width;
-	UINT height = 677;//vp.Height;
+	//set cam pos y to fovy
+	XMVectorSetW(camPos, camera->getFovY());
+
+	cmdList->SetComputeRoot32BitConstants(0, 4, &camPos, 0);
+	cmdList->SetComputeRoot32BitConstants(0, 4, &camForward, 4);
+	cmdList->SetComputeRoot32BitConstants(0, 4, &camRight, 8);
+	cmdList->SetComputeRoot32BitConstants(0, 4, &camUp, 12);
+	cmdList->SetComputeRootDescriptorTable(1, uavTable);
+	cmdList->SetComputeRootShaderResourceView(2, tlas->GetGPUVirtualAddress());
+
+	UINT width = vp.Width;
+	UINT height = vp.Height;
 
 	ID3D12Resource* shaderIds = rayPipeline->getShaderIds();
 
