@@ -3,7 +3,7 @@
 PbrScene::PbrScene(Camera* camera, DXContext* context)
 	: Scene(camera, context)
 {
-	ResourceManager& rm = ResourceManager::get(context);
+	ResourceManager& rm = ResourceManager::get();
 	ResourceHandle renderHeapHandle = rm.createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1000,
 		D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 	DescriptorHeap* renderHeap = rm.getDescriptorHeap(renderHeapHandle);

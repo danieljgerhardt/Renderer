@@ -50,7 +50,7 @@ DXContext::~DXContext() {
     for (ComPointer<ID3D12GraphicsCommandList6>& cmdList : cmdLists) {
         cmdList.Release();
     }
-    for (ComPointer<ID3D12CommandAllocator> cmdAllocator : cmdAllocators) {
+    for (ComPointer<ID3D12CommandAllocator>& cmdAllocator : cmdAllocators) {
         cmdAllocator.Release();
     }
 

@@ -83,8 +83,8 @@ bool Window::init(DXContext* contextPtr, int w, int h) {
     }
 
     // Create RTV Heap
-	ResourceHandle rtvDescHeapHandle = ResourceManager::get(dxContext).createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, FRAME_COUNT, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
-	rtvDescHeap = ResourceManager::get(dxContext).getDescriptorHeap(rtvDescHeapHandle);
+	ResourceHandle rtvDescHeapHandle = ResourceManager::get().createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, FRAME_COUNT, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+	rtvDescHeap = ResourceManager::get().getDescriptorHeap(rtvDescHeapHandle);
 
     //create rtv handles for view
     for (size_t i = 0; i < FRAME_COUNT; i++) {
@@ -93,8 +93,8 @@ bool Window::init(DXContext* contextPtr, int w, int h) {
     }
 
     // Create DSV Heap
-	ResourceHandle dsvDescHeapHandle = ResourceManager::get(dxContext).createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
-	dsvDescHeap = ResourceManager::get(dxContext).getDescriptorHeap(dsvDescHeapHandle);
+	ResourceHandle dsvDescHeapHandle = ResourceManager::get().createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+	dsvDescHeap = ResourceManager::get().getDescriptorHeap(dsvDescHeapHandle);
 
     // Create handles to view
 	D3D12_GPU_DESCRIPTOR_HANDLE dsvGpuHandle{};

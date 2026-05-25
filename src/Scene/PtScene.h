@@ -33,6 +33,8 @@ private:
 	ID3D12Resource* tlas;
 	ID3D12Resource* tlasUpdateScratch;
 
+	std::vector<ID3D12Resource*> blases;
+
 	ID3D12Resource* instances;
 
 	UINT numInstances{ 0 };

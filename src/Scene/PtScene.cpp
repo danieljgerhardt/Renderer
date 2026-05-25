@@ -3,7 +3,7 @@
 #include "D3D/ResourceManager.h"
 
 PtScene::PtScene(Camera* camera, DXContext* context, D3D12_VIEWPORT vp) : Scene(camera, context) {
-	ResourceManager& rm = ResourceManager::get(context);
+	ResourceManager& rm = ResourceManager::get();
 	ResourceHandle renderHeapHandle = rm.createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 20,
 		D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 	DescriptorHeap* renderHeap = rm.getDescriptorHeap(renderHeapHandle);
@@ -21,8 +21,8 @@ PtScene::PtScene(Camera* camera, DXContext* context, D3D12_VIEWPORT vp) : Scene(
 		-1,  1,  1,
 		 1,  1,  1,
 	};
-	ResourceHandle cubeVbHandle = ResourceManager::get(context).createVertexBuffer(cubeVertices.data(), (UINT)(cubeVertices.size() * sizeof(float)), sizeof(float) * 3);
-	VertexBuffer* cubeVb = ResourceManager::get(context).getVertexBuffer(cubeVbHandle);
+	ResourceHandle cubeVbHandle = ResourceManager::get().createVertexBuffer(cubeVertices.data(), (UINT)(cubeVertices.size() * sizeof(float)), sizeof(float) * 3);
+	VertexBuffer* cubeVb = ResourceManager::get().getVertexBuffer(cubeVbHandle);
 	cubeVb->passVertexDataToGPU(*context, rayPipeline->getCommandList());
 
 	std::vector<float> quadVertices{ 
@@ -31,8 +31,8 @@ PtScene::PtScene(Camera* camera, DXContext* context, D3D12_VIEWPORT vp) : Scene(
 		 1, 0,  1,
 		 1, 0, -1
 	};
-	ResourceHandle quadVbHandle = ResourceManager::get(context).createVertexBuffer(quadVertices.data(), (UINT)(quadVertices.size() * sizeof(float)), sizeof(float) * 3);
-	VertexBuffer* quadVb = ResourceManager::get(context).getVertexBuffer(quadVbHandle);
+	ResourceHandle quadVbHandle = ResourceManager::get().createVertexBuffer(quadVertices.data(), (UINT)(quadVertices.size() * sizeof(float)), sizeof(float) * 3);
+	VertexBuffer* quadVb = ResourceManager::get().getVertexBuffer(quadVbHandle);
 	quadVb->passVertexDataToGPU(*context, rayPipeline->getCommandList());
 
 	std::vector<UINT> cubeIndices{
@@ -40,16 +40,16 @@ PtScene::PtScene(Camera* camera, DXContext* context, D3D12_VIEWPORT vp) : Scene(
 		0, 2, 1, 3, 1, 2, 1, 3, 5, 7, 5, 3,
 		2, 6, 3, 7, 3, 6, 4, 5, 6, 7, 6, 5
 	};
-	ResourceHandle cubeIbHandle = ResourceManager::get(context).createIndexBuffer(cubeIndices, (UINT)(cubeIndices.size() * sizeof(UINT)));
-	IndexBuffer* cubeIb = ResourceManager::get(context).getIndexBuffer(cubeIbHandle);
+	ResourceHandle cubeIbHandle = ResourceManager::get().createIndexBuffer(cubeIndices, (UINT)(cubeIndices.size() * sizeof(UINT)));
+	IndexBuffer* cubeIb = ResourceManager::get().getIndexBuffer(cubeIbHandle);
 	cubeIb->passIndexDataToGPU(*context, rayPipeline->getCommandList());
 
 	std::vector<UINT> quadIndices{
 		0, 1, 2,
 		0, 2, 3
 	};
-	ResourceHandle quadIbHandle = ResourceManager::get(context).createIndexBuffer(quadIndices, (UINT)(quadIndices.size() * sizeof(UINT)));
-	IndexBuffer* quadIb = ResourceManager::get(context).getIndexBuffer(quadIbHandle);
+	ResourceHandle quadIbHandle = ResourceManager::get().createIndexBuffer(quadIndices, (UINT)(quadIndices.size() * sizeof(UINT)));
+	IndexBuffer* quadIb = ResourceManager::get().getIndexBuffer(quadIbHandle);
 	quadIb->passIndexDataToGPU(*context, rayPipeline->getCommandList());
 
 	std::vector<std::string> inputStrings;
@@ -74,6 +74,10 @@ PtScene::PtScene(Camera* camera, DXContext* context, D3D12_VIEWPORT vp) : Scene(
 	cubeBlas = makeBlas(rayPipeline.get(), cubeVb, (UINT)(cubeVertices.size() * 3), cubeIb, (UINT)cubeIndices.size());
 	meshBlas = makeBlas(rayPipeline.get(), loadedMesh);
 
+	blases.push_back(quadBlas);
+	blases.push_back(cubeBlas);
+	blases.push_back(meshBlas);
+
 	numInstances = 4;
 
 	DXGI_SAMPLE_DESC NO_AA = { .Count = 1, .Quality = 0 };
@@ -91,7 +95,7 @@ PtScene::PtScene(Camera* camera, DXContext* context, D3D12_VIEWPORT vp) : Scene(
 	device->CreateCommittedResource(&UPLOAD_HEAP, D3D12_HEAP_FLAG_NONE, &instancesDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&instances));
 	instances->Map(0, nullptr, reinterpret_cast<void**>(&instanceData));
 
-	for (int i = 0; i < numInstances - 1; i++) {
+	for (UINT i = 0; i < numInstances - 1; i++) {
 		instanceData[i] = {
 			.InstanceID = 0,
 			.InstanceMask = 1,
@@ -111,8 +115,8 @@ PtScene::PtScene(Camera* camera, DXContext* context, D3D12_VIEWPORT vp) : Scene(
 
 	//create pt target
 	TextureData texData;
-	texData.width = vp.Width;
-	texData.height = vp.Height;
+	texData.width = (UINT)vp.Width;
+	texData.height = (UINT)vp.Height;
 	texData.format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	texData.type = TextureType::PT_TARGET;
 
@@ -207,7 +211,7 @@ ID3D12Resource* PtScene::makeBlas(RayPipeline* rayPipeline, Mesh* mesh)
 		modelMat._31, modelMat._32, modelMat._33, modelMat._34);
 
 	//create buffer for mat
-	ResourceManager& rm = ResourceManager::get(context);
+	ResourceManager& rm = ResourceManager::get();
 	StructuredBuffer* modelMatBuffer = rm.getStructuredBuffer(rm.createStructuredBuffer(rayPipeline, &modelMat3x4, 12, sizeof(float)));
 	modelMatBuffer->passDataToGpu(*context, rayPipeline->getCommandList(), rayPipeline->getCommandListID());
 
@@ -275,6 +279,7 @@ void PtScene::initTopLevel() {
 	}
 }
 
+//per frame updates to instance transforms
 void PtScene::updateTransforms() {
 	using namespace DirectX;
 	
@@ -302,6 +307,7 @@ void PtScene::updateTransforms() {
 	set(3, scaleUp);
 }
 
+//per frame updates to TLAS
 void PtScene::updateScene() {
 	updateTransforms();
 
@@ -351,9 +357,6 @@ void PtScene::draw(D3D12_VIEWPORT& vp) {
 	cmdList->SetComputeRootDescriptorTable(1, uavTable);
 	cmdList->SetComputeRootShaderResourceView(2, tlas->GetGPUVirtualAddress());
 
-	UINT width = vp.Width;
-	UINT height = vp.Height;
-
 	ID3D12Resource* shaderIds = rayPipeline->getShaderIds();
 
 	D3D12_DISPATCH_RAYS_DESC dispatchDesc = {
@@ -368,8 +371,8 @@ void PtScene::draw(D3D12_VIEWPORT& vp) {
 			.StartAddress = shaderIds->GetGPUVirtualAddress() +
 							2 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT,
 			.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES},
-		.Width = width,
-		.Height = height,
+		.Width = (UINT)vp.Width,
+		.Height = (UINT)vp.Height,
 		.Depth = 1 };
 	cmdList->DispatchRays(&dispatchDesc);
 
@@ -437,7 +440,12 @@ void PtScene::releaseResources() {
 	if (renderTarget) {
 		renderTarget->releaseResources();
 		renderTarget = nullptr;
-	} 
+	}
+	for (ID3D12Resource* blas : blases) {
+		if (blas) {
+			blas->Release();
+		}
+	}
 }
 
 size_t PtScene::getTriangleCount() {

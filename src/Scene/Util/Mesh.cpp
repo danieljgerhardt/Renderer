@@ -18,8 +18,8 @@ Mesh::Mesh(DXContext* context, Pipeline* pipeline, XMFLOAT4X4 p_modelMatrix, Mes
 		for (const Vertex& vertex : vertices) {
 			vertexPositions.push_back(vertex.pos);
 		}
-		vertexBuffer = ResourceManager::get(context).getVertexBuffer(
-			ResourceManager::get(context).createVertexBuffer(
+		vertexBuffer = ResourceManager::get().getVertexBuffer(
+			ResourceManager::get().createVertexBuffer(
 				vertexPositions.data(),
 				(UINT)(vertexPositions.size() * sizeof(XMFLOAT3)),
 				(UINT)sizeof(XMFLOAT3)
@@ -27,8 +27,8 @@ Mesh::Mesh(DXContext* context, Pipeline* pipeline, XMFLOAT4X4 p_modelMatrix, Mes
 		);
 	}
 	else {
-		vertexBuffer = ResourceManager::get(context).getVertexBuffer(
-			ResourceManager::get(context).createVertexBuffer(
+		vertexBuffer = ResourceManager::get().getVertexBuffer(
+			ResourceManager::get().createVertexBuffer(
 				vertices.data(),
 				(UINT)(vertices.size() * sizeof(Vertex)),
 				(UINT)sizeof(Vertex)
@@ -36,8 +36,8 @@ Mesh::Mesh(DXContext* context, Pipeline* pipeline, XMFLOAT4X4 p_modelMatrix, Mes
 		);
 	}
 
-	indexBuffer = ResourceManager::get(context).getIndexBuffer(
-		ResourceManager::get(context).createIndexBuffer(
+	indexBuffer = ResourceManager::get().getIndexBuffer(
+		ResourceManager::get().createIndexBuffer(
 			indices,
 			(UINT)(indices.size() * sizeof(UINT))
 		)

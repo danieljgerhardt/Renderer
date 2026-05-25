@@ -24,7 +24,8 @@ int main() {
     std::unique_ptr<Keyboard> keyboard = std::make_unique<Keyboard>();
     std::unique_ptr<Mouse> mouse = std::make_unique<Mouse>();
 
-	ResourceManager& resourceManager = ResourceManager::get(&context);
+    ResourceManager::initialize(&context);
+	ResourceManager& resourceManager = ResourceManager::get();
 	Window& window = Window::get();
 
     if (!window.init(&context, SCREEN_WIDTH, SCREEN_HEIGHT)) {
@@ -116,7 +117,7 @@ int main() {
     //flush pending buffer operations in swapchain
     context.flush(FRAME_COUNT);
 
-	resourceManager.releaseAllResources();
+    resourceManager.shutdown();
 
     window.shutdown();
 }

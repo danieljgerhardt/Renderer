@@ -10,7 +10,7 @@ EnvironmentMapDrawable::EnvironmentMapDrawable(DXContext* context, RenderPipelin
 }
 
 void EnvironmentMapDrawable::construct() {
-	ResourceManager& rm = ResourceManager::get(context);
+	ResourceManager& rm = ResourceManager::get();
 
     createCubeGeometry(context, renderPipeline, cubeIbv, cubeVbv);
 

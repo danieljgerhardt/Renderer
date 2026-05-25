@@ -236,16 +236,16 @@ GltfData Loader::getDataFromGltf(std::string fileLocation, DXContext* context, I
 	std::vector<Mesh*> newMeshes;
 	newMeshes.reserve(constructionData.meshDataVector.size());
     for (MeshData& meshData : constructionData.meshDataVector) {
-		newMeshes.emplace_back(ResourceManager::get(context).getMesh(
-			ResourceManager::get(context).createMesh(pipeline, modelMatrix, meshData)
+		newMeshes.emplace_back(ResourceManager::get().getMesh(
+			ResourceManager::get().createMesh(pipeline, modelMatrix, meshData)
 		));
     }
 
     std::vector<Texture*> newTextures;
 	newTextures.reserve(constructionData.textureDataVector.size());
     for (TextureData& textureData : constructionData.textureDataVector) {
-		newTextures.emplace_back(ResourceManager::get(context).getTexture(
-			ResourceManager::get(context).createTexture(pipeline, textureData)
+		newTextures.emplace_back(ResourceManager::get().getTexture(
+			ResourceManager::get().createTexture(pipeline, textureData)
 		));
         //TODO - will not work when multiple meshes are loaded from a single gltf
 		newMeshes[0]->assignTexture(newTextures.back());

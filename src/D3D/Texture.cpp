@@ -242,7 +242,7 @@ void Texture::generateMipMaps(DXContext* context, RenderPipeline* renderPipeline
         tempResources[slice]->Unmap(0, nullptr);
     }
 
-    // ============================================================
+// ============================================================
 // PHASE 2: GENERATE MIPS (CPU)
 // ============================================================
 
@@ -264,8 +264,7 @@ void Texture::generateMipMaps(DXContext* context, RenderPipeline* renderPipeline
 
         if (FAILED(hr))
         {
-			//error report
-			std::cerr << "Error: GenerateMipMaps failed for slice " << slice << " with HRESULT " << std::hex << hr << std::dec << std::endl;
+			std::cerr << "Error: GenerateMipMaps failed for slice " << slice << std::endl;
             return;
         }
 

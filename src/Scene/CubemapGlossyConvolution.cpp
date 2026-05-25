@@ -92,7 +92,7 @@ void CubemapGlossyConvolution::releaseResources() {
 }
 
 void CubemapGlossyConvolution::construct() {
-	ResourceManager& rm = ResourceManager::get(context);
+	ResourceManager& rm = ResourceManager::get();
 
 	TextureData textureData{ .width = 512, .height = 512, .type = TextureType::ENV_MAP, .mipLevels = 4 };
 	ResourceHandle diffuseConvolutionHandle = rm.createTexture(renderPipeline, textureData);

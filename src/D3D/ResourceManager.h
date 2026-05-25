@@ -29,9 +29,20 @@ struct ResourceHandle {
 
 class ResourceManager {
 public:
-	static ResourceManager& get(DXContext* context) {
-		static ResourceManager instance(context);
-		return instance;
+	static void initialize(DXContext* context) {
+		assert(!instance && "Already initialized");
+		instance = new ResourceManager(context);
+	}
+
+	static ResourceManager& get() {
+		assert(instance && "Call initialize() first");
+		return *instance;
+	}
+
+	static void shutdown() {
+		instance->releaseAllResources();
+		delete instance;
+		instance = nullptr;
 	}
 
 	ResourceManager(const ResourceManager&) = delete;
@@ -73,7 +84,8 @@ public:
 
 private:
 	ResourceManager(DXContext* context) : context(context) {}
-	~ResourceManager() { releaseAllResources(); }
+
+	inline static ResourceManager* instance = nullptr;
 
 	DXContext* context;
 

@@ -16,7 +16,7 @@ inline void fillCubemapViewMatrices(std::array<XMMATRIX, 6>& viewMatrices) {
 }
 
 inline void createCubeGeometry(DXContext* context, RenderPipeline* renderPipeline, D3D12_INDEX_BUFFER_VIEW& outIbv, D3D12_VERTEX_BUFFER_VIEW& outVbv) {
-    ResourceManager& rm = ResourceManager::get(context);
+    ResourceManager& rm = ResourceManager::get();
 
     std::vector<Vertex> vertData{
         {XMFLOAT3(-1.f, -1.f, -1.f), XMFLOAT3(0.f, 0.f, -1.f), XMFLOAT2(0.f, 1.f)},

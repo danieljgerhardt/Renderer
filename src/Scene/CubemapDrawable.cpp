@@ -88,7 +88,7 @@ void CubemapDrawable::releaseResources() {
 }
 
 void CubemapDrawable::construct() {
-	ResourceManager& rm = ResourceManager::get(context);
+	ResourceManager& rm = ResourceManager::get();
 
 	ResourceHandle envMapHandle = rm.createTextureFromFile("textures\\environments\\Tropical_Beach_3k.hdr", context, renderPipeline->getCommandList(), renderPipeline, TextureType::DIFFUSE);
 	envMap = rm.getTexture(envMapHandle);

@@ -26,8 +26,8 @@ void ImguiManager::initImgui(DXContext& context) {
     imguiDXInfo.NumFramesInFlight = FRAME_COUNT;
     imguiDXInfo.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    ResourceHandle imguiHeapHandle = ResourceManager::get(&context).createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 64, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
-    imguiSrvHeap = ResourceManager::get(&context).getDescriptorHeap(imguiHeapHandle);
+    ResourceHandle imguiHeapHandle = ResourceManager::get().createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 64, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+    imguiSrvHeap = ResourceManager::get().getDescriptorHeap(imguiHeapHandle);
     imguiSrvHeapPtr = imguiSrvHeap->getAddress();
 
     imguiDXInfo.SrvDescriptorHeap = imguiSrvHeapPtr;
